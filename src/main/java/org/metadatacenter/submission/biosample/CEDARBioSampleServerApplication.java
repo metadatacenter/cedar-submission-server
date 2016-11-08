@@ -25,8 +25,7 @@ public class CEDARBioSampleServerApplication extends Application<CEDARBioSampleS
 
   @Override public void run(final CEDARBioSampleServerConfiguration configuration, final Environment environment)
   {
-    final CEDARBioSampleServerResource resource = new CEDARBioSampleServerResource(configuration.getMessage(),
-      configuration.getDefaultName());
+    final CEDARBioSampleServerResource resource = new CEDARBioSampleServerResource();
     environment.jersey().register(resource);
 
     final CEDARBioSampleServerHealthCheck healthCheck = new CEDARBioSampleServerHealthCheck(configuration.getMessage());

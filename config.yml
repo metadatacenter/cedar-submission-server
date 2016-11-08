@@ -2,3 +2,5 @@ logging:
   level: INFO
   loggers:
     org.metadatacenter: DEBUG
+
+message: Hello!

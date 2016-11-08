@@ -59,10 +59,10 @@ public class BioSampleValidator
     AMIA2016DemoBioSampleTemplate amiaBioSampleSubmission = mapper
       .readValue(submissionInstanceJSONFile, AMIA2016DemoBioSampleTemplate.class);
 
-    CEDARBioSampleValidationResponse s = validateAMIABioSampleSubmission(amiaBioSampleSubmission);
+//    CEDARBioSampleValidationResponse s = validateAMIABioSampleSubmission(amiaBioSampleSubmission);
   }
 
-  public static CEDARBioSampleValidationResponse validateAMIABioSampleSubmission(
+  public  CEDARBioSampleValidationResponse validateAMIABioSampleSubmission(
     AMIA2016DemoBioSampleTemplate amiaBioSampleSubmissionInstance)
     throws IOException, JAXBException, DatatypeConfigurationException
   {
@@ -90,7 +90,7 @@ public class BioSampleValidator
     }
   }
 
-  private static CEDARBioSampleValidationResponse generateUnexpectedStatusCodeCEDARBioSampleValidationResponse(
+  private CEDARBioSampleValidationResponse generateUnexpectedStatusCodeCEDARBioSampleValidationResponse(
     int statusCode)
   {
     CEDARBioSampleValidationResponse cedarValidationResponse = new CEDARBioSampleValidationResponse();
@@ -103,7 +103,7 @@ public class BioSampleValidator
     return cedarValidationResponse;
   }
 
-  private static CEDARBioSampleValidationResponse bioSampleValidationResponse2CEDARValidationResponse(
+  private CEDARBioSampleValidationResponse bioSampleValidationResponse2CEDARValidationResponse(
     BioSampleValidate bioSampleValidationResponse)
   {
     CEDARBioSampleValidationResponse cedarValidationResponse = new CEDARBioSampleValidationResponse();
@@ -129,7 +129,7 @@ public class BioSampleValidator
     return cedarValidationResponse;
   }
 
-  private static String generateBioSampleSubmissionXML(AMIA2016DemoBioSampleTemplate amiaBioSampleSubmission)
+  private String generateBioSampleSubmissionXML(AMIA2016DemoBioSampleTemplate amiaBioSampleSubmission)
     throws DatatypeConfigurationException, JAXBException
   {
     generated.ObjectFactory objectFactory = new generated.ObjectFactory();
@@ -275,7 +275,7 @@ public class BioSampleValidator
     return writer.toString();
   }
 
-  private static BioSampleValidate bioSampleXMLResponse2BioSampleValidate(InputStream xmlResponse) throws JAXBException
+  private BioSampleValidate bioSampleXMLResponse2BioSampleValidate(InputStream xmlResponse) throws JAXBException
   {
     JAXBContext jaxbBioSampleValidateContext = JAXBContext.newInstance(BioSampleValidate.class);
     Unmarshaller jaxbBioSampleValidateUnmarshaller = jaxbBioSampleValidateContext.createUnmarshaller();
@@ -283,7 +283,7 @@ public class BioSampleValidator
     return bioSampleValidate;
   }
 
-  private static XMLGregorianCalendar createXMLGregorianCalendar(String date) throws DatatypeConfigurationException
+  private XMLGregorianCalendar createXMLGregorianCalendar(String date) throws DatatypeConfigurationException
   {
     DatatypeFactory datatypeFactory = DatatypeFactory.newInstance();
     GregorianCalendar gc = new GregorianCalendar();

@@ -1,35 +1,35 @@
 package org.metadatacenter.submission.biosample.resources;
 
 import com.codahale.metrics.annotation.Timed;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.metadatacenter.submission.biosample.AMIA2016DemoBioSampleTemplate;
 import org.metadatacenter.submission.biosample.CEDARBioSampleValidationResponse;
-import org.metadatacenter.submission.biosample.api.Saying;
+import org.metadatacenter.submission.biosample.core.BioSampleValidator;
 
-import javax.ws.rs.GET;
+import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
-import java.util.Optional;
-import java.util.concurrent.atomic.AtomicLong;
+import javax.xml.bind.JAXBException;
+import javax.xml.datatype.DatatypeConfigurationException;
+import java.io.IOException;
 
-@Path("/hello-world") @Produces(MediaType.APPLICATION_JSON) public class CEDARBioSampleServerResource
+@Path("/validate") @Produces(MediaType.APPLICATION_JSON) public class CEDARBioSampleServerResource
 {
-  private final String message;
-  private final String defaultName;
-  private final AtomicLong counter;
+  private static final ObjectMapper mapper = new ObjectMapper();
 
-  public CEDARBioSampleServerResource(String message, String defaultName)
+  private final BioSampleValidator bioSampleValidator;
+
+  public CEDARBioSampleServerResource()
   {
-    this.message = message;
-    this.defaultName = defaultName;
-    this.counter = new AtomicLong();
+    this.bioSampleValidator = new BioSampleValidator();
   }
 
-  @GET @Timed public CEDARBioSampleValidationResponse sayHello(@QueryParam("name") Optional<String> name)
+  @POST @Timed public CEDARBioSampleValidationResponse validate(String body)
+    throws JAXBException, IOException, DatatypeConfigurationException
   {
-    final String value = String.format(message, name.orElse(defaultName));
-    CEDARBioSampleValidationResponse response = new CEDARBioSampleValidationResponse();
-    response.setIsValid(true);
-    return response;
+    AMIA2016DemoBioSampleTemplate amiaBioSampleSubmissionInstance = mapper.readValue(body, AMIA2016DemoBioSampleTemplate.class);
+
+    return this.bioSampleValidator.validateAMIABioSampleSubmission(amiaBioSampleSubmissionInstance);
   }
 }
