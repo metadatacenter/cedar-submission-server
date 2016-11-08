@@ -44,7 +44,7 @@ import java.util.List;
 
 public class BioSampleValidator
 {
-  private static final String BIOSAMPLE_VALIDAITON_URL = "https://www.ncbi.nlm.nih.gov/projects/biosample/validate/";
+  private static final String BIOSAMPLE_VALIDATION_URL = "https://www.ncbi.nlm.nih.gov/projects/biosample/validate/";
 
   public static void main(String[] argc) throws IOException, JAXBException, DatatypeConfigurationException
   {
@@ -67,7 +67,7 @@ public class BioSampleValidator
     throws IOException, JAXBException, DatatypeConfigurationException
   {
     CloseableHttpClient client = HttpClientBuilder.create().build();
-    HttpPost post = new HttpPost(BIOSAMPLE_VALIDAITON_URL);
+    HttpPost post = new HttpPost(BIOSAMPLE_VALIDATION_URL);
     String submissionXML = generateBioSampleSubmissionXML(amiaBioSampleSubmissionInstance);
     StringEntity requestEntity = new StringEntity(submissionXML, ContentType.APPLICATION_XML);
 
