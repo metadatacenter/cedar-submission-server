@@ -6,10 +6,7 @@ import org.metadatacenter.submission.biosample.AMIA2016DemoBioSampleTemplate;
 import org.metadatacenter.submission.biosample.CEDARBioSampleValidationResponse;
 import org.metadatacenter.submission.biosample.core.BioSampleValidator;
 
-import javax.ws.rs.Consumes;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
+import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.xml.bind.JAXBException;
 import javax.xml.datatype.DatatypeConfigurationException;
