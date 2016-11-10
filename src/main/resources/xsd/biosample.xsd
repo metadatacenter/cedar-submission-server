@@ -3,17 +3,17 @@
 
 <!-- Modified to include SP.common from a local file -->
 
-<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:com="SP.common" version="2.0">
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:com="SP.common" xmlns:biosample="biosample" version="2.0" targetNamespace="biosample">
 
   <xs:import schemaLocation="SP.common.xsd" namespace="SP.common"/>
 
   <!-- BioSample object -->
-  <xs:element name="BioSample" type="typeBioSample"/>
+  <xs:element name="BioSample" type="biosample:typeBioSample"/>
 
   <xs:complexType name="typeBioSample">
     <xs:sequence>
 
-      <xs:element name="SampleId" type="typeBioSampleIdentifier" minOccurs="1" maxOccurs="1">
+      <xs:element name="SampleId" type="biosample:typeBioSampleIdentifier" minOccurs="1" maxOccurs="1">
         <xs:annotation>
           <xs:documentation>
             List of all sample Ids: submitter assigned, archive assigned, etc.
@@ -59,7 +59,7 @@
         </xs:annotation>
         <xs:complexType>
           <xs:sequence>
-            <xs:element name="Attribute" type="typeAttribute" minOccurs="0" maxOccurs="unbounded"/>
+            <xs:element name="Attribute" type="biosample:typeAttribute" minOccurs="0" maxOccurs="unbounded"/>
           </xs:sequence>
         </xs:complexType>
       </xs:element>
