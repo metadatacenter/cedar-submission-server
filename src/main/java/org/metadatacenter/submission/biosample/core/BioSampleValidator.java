@@ -1,14 +1,14 @@
 package org.metadatacenter.submission.biosample.core;
 
+import biosample.TypeAttribute;
+import biosample.TypeBioSample;
+import biosample.TypeBioSampleIdentifier;
 import common.sp.TypeDescriptor;
 import common.sp.TypeOrganism;
 import common.sp.TypePrimaryId;
 import common.sp.TypeRefId;
 import generated.BioSampleValidate;
 import generated.TypeActionStatus;
-import generated.TypeAttribute;
-import generated.TypeBioSample;
-import generated.TypeBioSampleIdentifier;
 import generated.TypeContactInfo;
 import generated.TypeName;
 import generated.TypeOrganization;
@@ -114,6 +114,7 @@ public class BioSampleValidator
     throws DatatypeConfigurationException, JAXBException
   {
     generated.ObjectFactory objectFactory = new generated.ObjectFactory();
+    biosample.ObjectFactory biosampleObjectFactory = new biosample.ObjectFactory();
     common.sp.ObjectFactory spCommonObjectFactory = new common.sp.ObjectFactory();
 
     TypeSubmission xmlSubmission = objectFactory.createTypeSubmission();
@@ -169,16 +170,16 @@ public class BioSampleValidator
     data.setXmlContent(xmlContent);
 
     // Submission/Action/AddData/Data/XMLContent/BioSample/schema_version
-    TypeBioSample bioSample = objectFactory.createTypeBioSample();
+    TypeBioSample bioSample = biosampleObjectFactory.createTypeBioSample();
     xmlContent.setBioSample(bioSample);
     bioSample.setSchemaVersion("2.0");
 
     // Submission/Action/AddData/Data/XMLContent/BioSample/SampleID
-    TypeBioSampleIdentifier sampleID = objectFactory.createTypeBioSampleIdentifier();
+    TypeBioSampleIdentifier sampleID = biosampleObjectFactory.createTypeBioSampleIdentifier();
     bioSample.setSampleId(sampleID);
 
     // Submission/Action/AddData/Data/XMLContent/BioSample/SampleID/SPUID
-    TypeBioSampleIdentifier.SPUID spuid = objectFactory.createTypeBioSampleIdentifierSPUID();
+    TypeBioSampleIdentifier.SPUID spuid = biosampleObjectFactory.createTypeBioSampleIdentifierSPUID();
     sampleID.getSPUID().add(spuid);
     spuid.setSpuidNamespace("CEDAR");
     spuid.setValue(amiaBioSampleSubmission.getSampleName().getValue());
@@ -207,39 +208,39 @@ public class BioSampleValidator
     bioSample.setPackage("Human.1.0");
 
     // Submission/Action/AddData/Data/XMLContent/BioSample/Attributes
-    TypeBioSample.Attributes attributes = objectFactory.createTypeBioSampleAttributes();
+    TypeBioSample.Attributes attributes = biosampleObjectFactory.createTypeBioSampleAttributes();
     bioSample.setAttributes(attributes);
 
     // Submission/Action/AddData/Data/XMLContent/BioSample/Attributes/Attribute
 
     // Required attributes
-    TypeAttribute attribute = objectFactory.createTypeAttribute();
+    TypeAttribute attribute = biosampleObjectFactory.createTypeAttribute();
     attributes.getAttribute().add(attribute);
     attribute.setAttributeName("isolate");
     attribute.setValue(amiaBioSampleSubmission.getIsolate().getValue());
 
-    attribute = objectFactory.createTypeAttribute();
+    attribute = biosampleObjectFactory.createTypeAttribute();
     attributes.getAttribute().add(attribute);
     attribute.setAttributeName("age");
     attribute.setValue(amiaBioSampleSubmission.getAge().getValue());
 
-    attribute = objectFactory.createTypeAttribute();
+    attribute = biosampleObjectFactory.createTypeAttribute();
     attributes.getAttribute().add(attribute);
     attribute.setAttributeName("sex");
     attribute.setValue(amiaBioSampleSubmission.getSex().getValueLabel());
 
-    attribute = objectFactory.createTypeAttribute();
+    attribute = biosampleObjectFactory.createTypeAttribute();
     attributes.getAttribute().add(attribute);
     attribute.setAttributeName("biomaterial provider");
     attribute.setValue(amiaBioSampleSubmission.getBiomaterialProvider().getValue());
 
-    attribute = objectFactory.createTypeAttribute();
+    attribute = biosampleObjectFactory.createTypeAttribute();
     attributes.getAttribute().add(attribute);
     attribute.setAttributeName("tissue");
     attribute.setValue(amiaBioSampleSubmission.getTissue().getValueLabel());
 
     for (OptionalAttribute optionalAttribute : amiaBioSampleSubmission.getOptionalAttribute()) {
-      attribute = objectFactory.createTypeAttribute();
+      attribute = biosampleObjectFactory.createTypeAttribute();
       attributes.getAttribute().add(attribute);
       attribute.setAttributeName(optionalAttribute.getName().getValue());
       attribute.setValue(optionalAttribute.getValue().getValue());
