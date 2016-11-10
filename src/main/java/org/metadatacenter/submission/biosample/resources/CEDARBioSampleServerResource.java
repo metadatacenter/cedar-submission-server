@@ -3,11 +3,14 @@ package org.metadatacenter.submission.biosample.resources;
 import com.codahale.metrics.annotation.Timed;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.metadatacenter.submission.biosample.AMIA2016DemoBioSampleTemplate;
-import org.metadatacenter.submission.biosample.CEDARBioSampleValidationResponse;
 import org.metadatacenter.submission.biosample.core.BioSampleValidator;
 
-import javax.ws.rs.*;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 import javax.xml.bind.JAXBException;
 import javax.xml.datatype.DatatypeConfigurationException;
 import java.io.IOException;
@@ -23,13 +26,20 @@ import java.io.IOException;
     this.bioSampleValidator = new BioSampleValidator();
   }
 
-  @POST @Timed public CEDARBioSampleValidationResponse validate(
-    AMIA2016DemoBioSampleTemplate amiaBioSampleSubmissionInstance)
-    throws JAXBException, IOException, DatatypeConfigurationException
-  {
-    //    AMIA2016DemoBioSampleTemplate amiaBioSampleSubmissionInstance = mapper
-    //      .readValue(body, AMIA2016DemoBioSampleTemplate.class);
+  //CEDARBioSampleValidationResponseCEDARBioSampleValidationResponse
 
-    return this.bioSampleValidator.validateAMIABioSampleSubmission(amiaBioSampleSubmissionInstance);
+  //http://kielczewski.eu/2013/05/developing-restful-web-services-using-dropwizard-part-ii/
+  @POST @Timed public Response validate(AMIA2016DemoBioSampleTemplate amiaBioSampleSubmissionInstance)
+  {
+    try {
+      return Response.ok(this.bioSampleValidator.validateAMIABioSampleSubmission(amiaBioSampleSubmissionInstance))
+        .build();
+    } catch (JAXBException e) {
+      return Response.status(Response.Status.BAD_REQUEST).build();
+    } catch (IOException e) {
+      return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
+    } catch (DatatypeConfigurationException e) {
+      return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
+    }
   }
 }
