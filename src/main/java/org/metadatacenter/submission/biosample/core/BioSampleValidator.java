@@ -1,6 +1,5 @@
 package org.metadatacenter.submission.biosample.core;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import common.sp.TypeDescriptor;
 import common.sp.TypeOrganism;
 import common.sp.TypePrimaryId;
@@ -34,7 +33,6 @@ import javax.xml.bind.Unmarshaller;
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
@@ -46,23 +44,7 @@ public class BioSampleValidator
 {
   private static final String BIOSAMPLE_VALIDATION_URL = "https://www.ncbi.nlm.nih.gov/projects/biosample/validate/";
 
-  public static void main(String[] argc) throws IOException, JAXBException, DatatypeConfigurationException
-  {
-    ObjectMapper mapper = new ObjectMapper();
-
-    JAXBContext jaxbBioSampleValidateContext = JAXBContext.newInstance(BioSampleValidate.class);
-    Unmarshaller jaxbBioSampleValidateUnmarshaller = jaxbBioSampleValidateContext.createUnmarshaller();
-
-    File submissionInstanceJSONFile = new File(
-      BioSampleValidator.class.getClassLoader().getResource("./json/AMIA2016DemoBioSampleInstance1.json").getFile());
-
-    AMIA2016DemoBioSampleTemplate amiaBioSampleSubmission = mapper
-      .readValue(submissionInstanceJSONFile, AMIA2016DemoBioSampleTemplate.class);
-
-//    CEDARBioSampleValidationResponse s = validateAMIABioSampleSubmission(amiaBioSampleSubmission);
-  }
-
-  public  CEDARBioSampleValidationResponse validateAMIABioSampleSubmission(
+  public CEDARBioSampleValidationResponse validateAMIABioSampleSubmission(
     AMIA2016DemoBioSampleTemplate amiaBioSampleSubmissionInstance)
     throws IOException, JAXBException, DatatypeConfigurationException
   {
@@ -90,8 +72,7 @@ public class BioSampleValidator
     }
   }
 
-  private CEDARBioSampleValidationResponse generateUnexpectedStatusCodeCEDARBioSampleValidationResponse(
-    int statusCode)
+  private CEDARBioSampleValidationResponse generateUnexpectedStatusCodeCEDARBioSampleValidationResponse(int statusCode)
   {
     CEDARBioSampleValidationResponse cedarValidationResponse = new CEDARBioSampleValidationResponse();
     List<String> messages = new ArrayList<>();
