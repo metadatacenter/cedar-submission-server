@@ -26,9 +26,6 @@ import java.io.IOException;
     this.bioSampleValidator = new BioSampleValidator();
   }
 
-  //CEDARBioSampleValidationResponseCEDARBioSampleValidationResponse
-
-  //http://kielczewski.eu/2013/05/developing-restful-web-services-using-dropwizard-part-ii/
   @POST @Timed public Response validate(AMIA2016DemoBioSampleTemplate amiaBioSampleSubmissionInstance)
   {
     try {
