@@ -11,18 +11,18 @@
   <parent>
     <groupId>org.metadatacenter</groupId>
     <artifactId>cedar-parent</artifactId>
-    <version>0.8.3-SNAPSHOT</version>
+    <version>0.8.5</version>
   </parent>
 
   <groupId>org.metadatacenter</groupId>
   <artifactId>cedar-biosample-server</artifactId>
-  <version>0.8.5</version>
+  <version>0.8.3-SNAPSHOT</version>
   <packaging>jar</packaging>
 
   <name>CEDAR BioSample Server</name>
 
   <properties>
-    <dropwizard.version>1.0.2</dropwizard.version>
+    <dropwizard.version>1.0.3</dropwizard.version>
   </properties>
 
   <scm>
