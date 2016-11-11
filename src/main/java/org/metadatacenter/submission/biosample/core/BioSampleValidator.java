@@ -192,7 +192,10 @@ public class BioSampleValidator
     // Submission/Action/AddData/Data/XMLContent/BioSample/Organism
     TypeOrganism organism = spCommonObjectFactory.createTypeOrganism();
     bioSample.setOrganism(organism);
-    organism.setOrganismName(amiaBioSampleSubmission.getOrganism().getValueLabel());
+    if (amiaBioSampleSubmission.getOrganism().getValueLabel() != null)
+      organism.setOrganismName(amiaBioSampleSubmission.getOrganism().getValueLabel());
+    else
+      organism.setOrganismName("");
 
     // Submission/Action/AddData/Data/XMLContent/BioSample/BioProject
     TypeRefId bioProject = spCommonObjectFactory.createTypeRefId();
@@ -251,7 +254,7 @@ public class BioSampleValidator
     JAXBContext ctx = JAXBContext.newInstance(TypeSubmission.class);
     Marshaller marshaller = ctx.createMarshaller();
     marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
-    //    marshaller.marshal(submissionRoot, System.out);
+    //marshaller.marshal(submissionRoot, System.out);
     marshaller.marshal(submissionRoot, writer);
 
     return writer.toString();

@@ -4,6 +4,8 @@ To run the server
 
     mvn exec:java
 
+The server will listen on port 9010. This port number can be changed in the `config.yml` file.
+
 To try an example CEDAR BioSample instance:
 
     curl -X POST -H "Accept: application/json" -H "Content-type: application/json" \
