@@ -1,15 +1,14 @@
 package org.metadatacenter.submission.biosample.core;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import biosample.TypeAttribute;
+import biosample.TypeBioSample;
+import biosample.TypeBioSampleIdentifier;
 import common.sp.TypeDescriptor;
 import common.sp.TypeOrganism;
 import common.sp.TypePrimaryId;
 import common.sp.TypeRefId;
 import generated.BioSampleValidate;
 import generated.TypeActionStatus;
-import generated.TypeAttribute;
-import generated.TypeBioSample;
-import generated.TypeBioSampleIdentifier;
 import generated.TypeContactInfo;
 import generated.TypeName;
 import generated.TypeOrganization;
@@ -34,7 +33,6 @@ import javax.xml.bind.Unmarshaller;
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
@@ -44,30 +42,14 @@ import java.util.List;
 
 public class BioSampleValidator
 {
-  private static final String BIOSAMPLE_VALIDAITON_URL = "https://www.ncbi.nlm.nih.gov/projects/biosample/validate/";
+  private static final String BIOSAMPLE_VALIDATION_URL = "https://www.ncbi.nlm.nih.gov/projects/biosample/validate/";
 
-  public static void main(String[] argc) throws IOException, JAXBException, DatatypeConfigurationException
-  {
-    ObjectMapper mapper = new ObjectMapper();
-
-    JAXBContext jaxbBioSampleValidateContext = JAXBContext.newInstance(BioSampleValidate.class);
-    Unmarshaller jaxbBioSampleValidateUnmarshaller = jaxbBioSampleValidateContext.createUnmarshaller();
-
-    File submissionInstanceJSONFile = new File(
-      BioSampleValidator.class.getClassLoader().getResource("./json/AMIA2016DemoBioSampleInstance1.json").getFile());
-
-    AMIA2016DemoBioSampleTemplate amiaBioSampleSubmission = mapper
-      .readValue(submissionInstanceJSONFile, AMIA2016DemoBioSampleTemplate.class);
-
-    CEDARBioSampleValidationResponse s = validateAMIABioSampleSubmission(amiaBioSampleSubmission);
-  }
-
-  public static CEDARBioSampleValidationResponse validateAMIABioSampleSubmission(
+  public CEDARBioSampleValidationResponse validateAMIABioSampleSubmission(
     AMIA2016DemoBioSampleTemplate amiaBioSampleSubmissionInstance)
     throws IOException, JAXBException, DatatypeConfigurationException
   {
     CloseableHttpClient client = HttpClientBuilder.create().build();
-    HttpPost post = new HttpPost(BIOSAMPLE_VALIDAITON_URL);
+    HttpPost post = new HttpPost(BIOSAMPLE_VALIDATION_URL);
     String submissionXML = generateBioSampleSubmissionXML(amiaBioSampleSubmissionInstance);
     StringEntity requestEntity = new StringEntity(submissionXML, ContentType.APPLICATION_XML);
 
@@ -90,8 +72,7 @@ public class BioSampleValidator
     }
   }
 
-  private static CEDARBioSampleValidationResponse generateUnexpectedStatusCodeCEDARBioSampleValidationResponse(
-    int statusCode)
+  private CEDARBioSampleValidationResponse generateUnexpectedStatusCodeCEDARBioSampleValidationResponse(int statusCode)
   {
     CEDARBioSampleValidationResponse cedarValidationResponse = new CEDARBioSampleValidationResponse();
     List<String> messages = new ArrayList<>();
@@ -103,7 +84,7 @@ public class BioSampleValidator
     return cedarValidationResponse;
   }
 
-  private static CEDARBioSampleValidationResponse bioSampleValidationResponse2CEDARValidationResponse(
+  private CEDARBioSampleValidationResponse bioSampleValidationResponse2CEDARValidationResponse(
     BioSampleValidate bioSampleValidationResponse)
   {
     CEDARBioSampleValidationResponse cedarValidationResponse = new CEDARBioSampleValidationResponse();
@@ -129,10 +110,11 @@ public class BioSampleValidator
     return cedarValidationResponse;
   }
 
-  private static String generateBioSampleSubmissionXML(AMIA2016DemoBioSampleTemplate amiaBioSampleSubmission)
+  private String generateBioSampleSubmissionXML(AMIA2016DemoBioSampleTemplate amiaBioSampleSubmission)
     throws DatatypeConfigurationException, JAXBException
   {
     generated.ObjectFactory objectFactory = new generated.ObjectFactory();
+    biosample.ObjectFactory biosampleObjectFactory = new biosample.ObjectFactory();
     common.sp.ObjectFactory spCommonObjectFactory = new common.sp.ObjectFactory();
 
     TypeSubmission xmlSubmission = objectFactory.createTypeSubmission();
@@ -188,16 +170,16 @@ public class BioSampleValidator
     data.setXmlContent(xmlContent);
 
     // Submission/Action/AddData/Data/XMLContent/BioSample/schema_version
-    TypeBioSample bioSample = objectFactory.createTypeBioSample();
+    TypeBioSample bioSample = biosampleObjectFactory.createTypeBioSample();
     xmlContent.setBioSample(bioSample);
     bioSample.setSchemaVersion("2.0");
 
     // Submission/Action/AddData/Data/XMLContent/BioSample/SampleID
-    TypeBioSampleIdentifier sampleID = objectFactory.createTypeBioSampleIdentifier();
+    TypeBioSampleIdentifier sampleID = biosampleObjectFactory.createTypeBioSampleIdentifier();
     bioSample.setSampleId(sampleID);
 
     // Submission/Action/AddData/Data/XMLContent/BioSample/SampleID/SPUID
-    TypeBioSampleIdentifier.SPUID spuid = objectFactory.createTypeBioSampleIdentifierSPUID();
+    TypeBioSampleIdentifier.SPUID spuid = biosampleObjectFactory.createTypeBioSampleIdentifierSPUID();
     sampleID.getSPUID().add(spuid);
     spuid.setSpuidNamespace("CEDAR");
     spuid.setValue(amiaBioSampleSubmission.getSampleName().getValue());
@@ -226,39 +208,39 @@ public class BioSampleValidator
     bioSample.setPackage("Human.1.0");
 
     // Submission/Action/AddData/Data/XMLContent/BioSample/Attributes
-    TypeBioSample.Attributes attributes = objectFactory.createTypeBioSampleAttributes();
+    TypeBioSample.Attributes attributes = biosampleObjectFactory.createTypeBioSampleAttributes();
     bioSample.setAttributes(attributes);
 
     // Submission/Action/AddData/Data/XMLContent/BioSample/Attributes/Attribute
 
     // Required attributes
-    TypeAttribute attribute = objectFactory.createTypeAttribute();
+    TypeAttribute attribute = biosampleObjectFactory.createTypeAttribute();
     attributes.getAttribute().add(attribute);
     attribute.setAttributeName("isolate");
     attribute.setValue(amiaBioSampleSubmission.getIsolate().getValue());
 
-    attribute = objectFactory.createTypeAttribute();
+    attribute = biosampleObjectFactory.createTypeAttribute();
     attributes.getAttribute().add(attribute);
     attribute.setAttributeName("age");
     attribute.setValue(amiaBioSampleSubmission.getAge().getValue());
 
-    attribute = objectFactory.createTypeAttribute();
+    attribute = biosampleObjectFactory.createTypeAttribute();
     attributes.getAttribute().add(attribute);
     attribute.setAttributeName("sex");
     attribute.setValue(amiaBioSampleSubmission.getSex().getValueLabel());
 
-    attribute = objectFactory.createTypeAttribute();
+    attribute = biosampleObjectFactory.createTypeAttribute();
     attributes.getAttribute().add(attribute);
     attribute.setAttributeName("biomaterial provider");
     attribute.setValue(amiaBioSampleSubmission.getBiomaterialProvider().getValue());
 
-    attribute = objectFactory.createTypeAttribute();
+    attribute = biosampleObjectFactory.createTypeAttribute();
     attributes.getAttribute().add(attribute);
     attribute.setAttributeName("tissue");
     attribute.setValue(amiaBioSampleSubmission.getTissue().getValueLabel());
 
     for (OptionalAttribute optionalAttribute : amiaBioSampleSubmission.getOptionalAttribute()) {
-      attribute = objectFactory.createTypeAttribute();
+      attribute = biosampleObjectFactory.createTypeAttribute();
       attributes.getAttribute().add(attribute);
       attribute.setAttributeName(optionalAttribute.getName().getValue());
       attribute.setValue(optionalAttribute.getValue().getValue());
@@ -275,7 +257,7 @@ public class BioSampleValidator
     return writer.toString();
   }
 
-  private static BioSampleValidate bioSampleXMLResponse2BioSampleValidate(InputStream xmlResponse) throws JAXBException
+  private BioSampleValidate bioSampleXMLResponse2BioSampleValidate(InputStream xmlResponse) throws JAXBException
   {
     JAXBContext jaxbBioSampleValidateContext = JAXBContext.newInstance(BioSampleValidate.class);
     Unmarshaller jaxbBioSampleValidateUnmarshaller = jaxbBioSampleValidateContext.createUnmarshaller();
@@ -283,7 +265,7 @@ public class BioSampleValidator
     return bioSampleValidate;
   }
 
-  private static XMLGregorianCalendar createXMLGregorianCalendar(String date) throws DatatypeConfigurationException
+  private XMLGregorianCalendar createXMLGregorianCalendar(String date) throws DatatypeConfigurationException
   {
     DatatypeFactory datatypeFactory = DatatypeFactory.newInstance();
     GregorianCalendar gc = new GregorianCalendar();

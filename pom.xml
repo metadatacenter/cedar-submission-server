@@ -16,7 +16,7 @@
 
   <groupId>org.metadatacenter</groupId>
   <artifactId>cedar-biosample-server</artifactId>
-  <version>0.8.3-SNAPSHOT</version>
+  <version>0.8.5</version>
   <packaging>jar</packaging>
 
   <name>CEDAR BioSample Server</name>
@@ -24,6 +24,7 @@
   <properties>
     <dropwizard.version>1.0.2</dropwizard.version>
   </properties>
+<<<<<<< HEAD
 
   <dependencies>
 
@@ -32,6 +33,16 @@
       <artifactId>dropwizard-core</artifactId>
       <version>${dropwizard.version}</version>
     </dependency>
+=======
+
+  <scm>
+    <connection>scm:git:git@github.com:metadatacenter/cedar-biosample-server.git</connection>
+    <developerConnection>scm:git:git@github.com:metadatacenter/cedar-biosample-server.git</developerConnection>
+    <url>https://github.com/metadatacenter/cedar-biosample-server</url>
+  </scm>
+
+  <dependencies>
+>>>>>>> release-0.8.5
 
     <dependency>
       <groupId>commons-lang</groupId>
@@ -56,6 +67,21 @@
     <dependency>
       <groupId>org.apache.httpcomponents</groupId>
       <artifactId>httpcore</artifactId>
+    </dependency>
+
+    <!-- TODO Move overall dependency to dependency managment section of CEDAR parent POM when we figure 
+              why including this break some Play stuff -->
+    <dependency>
+      <groupId>io.dropwizard</groupId>
+      <artifactId>dropwizard-bom</artifactId>
+      <version>${dropwizard.version}</version>
+      <type>pom</type>
+    </dependency>
+
+    <dependency>
+      <groupId>io.dropwizard</groupId>
+      <artifactId>dropwizard-core</artifactId>
+      <version>${dropwizard.version}</version>
     </dependency>
 
   </dependencies>

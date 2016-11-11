@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
-  <xs:import schemaLocation="biosample.xsd"/>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:biosample="biosample">
+  <xs:import schemaLocation="biosample.xsd" namespace="biosample"/>
   <!-- Main Submission XML from NCBI web site.
        NOTE: Modified to hard code BioSample.xsd as the submission data in the Action/AddData/Data/XMLContent element.
   -->
@@ -429,7 +429,7 @@
           <xs:sequence>
 
             <!-- Hard code BioSample XML Schema here -->
-            <xs:element name="BioSample" type="typeBioSample"/>
+            <xs:element name="BioSample" type="biosample:typeBioSample"/>
 
           </xs:sequence>
         </xs:complexType>          
