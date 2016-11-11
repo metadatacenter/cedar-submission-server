@@ -3,6 +3,7 @@
   <xs:import schemaLocation="biosample.xsd" namespace="biosample"/>
   <!-- Main Submission XML from NCBI web site.
        NOTE: Modified to hard code BioSample.xsd as the submission data in the Action/AddData/Data/XMLContent element.
+       Also modified to include 'biosample' namespace for imported biosample.xsd and set prefixes accordingly.
   -->
   <xs:element name="Submission" type="typeSubmission">
   </xs:element>
