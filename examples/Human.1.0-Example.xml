@@ -45,8 +45,8 @@
 
               <!-- Required attributes -->
               <Attribute attribute_name="isolate">IsolateID4</Attribute>
-              <Attribute attribute_name="age">34</Attribute>
-              <Attribute attribute_name="sex">missing</Attribute> <!-- This term in controlled -->
+              <Attribute attribute_name="age">34 xxxx</Attribute>
+              <Attribute attribute_name="sex">male</Attribute> <!-- This term in controlled -->
               <Attribute attribute_name="biomaterial provider">Roche</Attribute>
               <Attribute attribute_name="tissue">xxx</Attribute>
 
