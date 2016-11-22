@@ -13,7 +13,7 @@
 
   <groupId>org.metadatacenter</groupId>
   <artifactId>cedar-biosample-server</artifactId>
-  <version>0.8.6-SNAPSHOT</version>
+  <version>0.8.6</version>
   <packaging>jar</packaging>
 
   <name>CEDAR BioSample Server</name>
@@ -26,7 +26,7 @@
     <connection>scm:git:git@github.com:metadatacenter/cedar-biosample-server.git</connection>
     <developerConnection>scm:git:git@github.com:metadatacenter/cedar-biosample-server.git</developerConnection>
     <url>https://github.com/metadatacenter/cedar-biosample-server</url>
-    <tag>HEAD</tag>
+    <tag>release-0.8.6</tag>
   </scm>
 
   <dependencies>
