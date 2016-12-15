@@ -29,7 +29,7 @@ import java.io.IOException;
   @POST @Timed public Response validate(AMIA2016DemoBioSampleTemplate amiaBioSampleSubmissionInstance)
   {
     try {
-      return Response.ok(this.bioSampleValidator.validateAMIABioSampleSubmission(amiaBioSampleSubmissionInstance))
+      return Response.ok(this.bioSampleValidator.validateAMIA2016DemoBioSampleSubmission(amiaBioSampleSubmissionInstance))
         .build();
     } catch (JAXBException e) {
       return Response.status(Response.Status.BAD_REQUEST).build();

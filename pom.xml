@@ -57,7 +57,7 @@
     </dependency>
 
     <!-- TODO Move overall dependency to dependency managment section of CEDAR parent POM when we figure 
-              why including this break some Play stuff -->
+              why including this breaks some Play stuff -->
     <dependency>
       <groupId>io.dropwizard</groupId>
       <artifactId>dropwizard-bom</artifactId>
@@ -95,6 +95,7 @@
 	</configuration>
       </plugin>
 
+      <!-- jsonchema2pojo generates Java classes from JSON Schema documents -->
       <plugin>
         <groupId>org.jsonschema2pojo</groupId>
         <artifactId>jsonschema2pojo-maven-plugin</artifactId>
@@ -111,9 +112,13 @@
         </executions>
       </plugin>
 
+      <!-- JAXB generates Java classes from XML Schema documents -->
       <plugin>
         <groupId>org.jvnet.jaxb2.maven2</groupId>
         <artifactId>maven-jaxb2-plugin</artifactId>
+        <configuration>
+          <schemaDirectory>${basedir}/src/main/resources/xsd</schemaDirectory>
+        </configuration>
         <executions>
           <execution>
             <goals>
@@ -121,9 +126,6 @@
             </goals>
           </execution>
         </executions>
-        <configuration>
-          <schemaDirectory>${basedir}/src/main/resources/xsd</schemaDirectory>
-        </configuration>
       </plugin>
 
       <!-- Tell an IDE to include generated code in its compile phase. jsonschema2pojo uses ${basedir}/target/java-gen -->
