@@ -32,25 +32,26 @@
             </Descriptor>
 
             <Organism>
-              <OrganismName>Homo sapiens</OrganismName> <!-- This term in controlled -->
+              <OrganismName>Homo sapiens</OrganismName> <!-- This term is controlled -->
             </Organism>
 
             <BioProject>
               <PrimaryId db="BioProject">PRJNA212117</PrimaryId> <!-- CEDAR's project ID for testing -->
             </BioProject>
 
+            <!-- See https://www.ncbi.nlm.nih.gov/biosample/docs/packages/ for a list of current packages -->
             <Package>Human.1.0</Package>
 
             <Attributes>
 
-              <!-- Required attributes -->
+              <!-- Required attributes for Human.1.0 package -->
               <Attribute attribute_name="isolate">IsolateID4</Attribute>
-              <Attribute attribute_name="age">34 xxxx</Attribute>
-              <Attribute attribute_name="sex">male</Attribute> <!-- This term in controlled -->
+              <Attribute attribute_name="age">34</Attribute>  <!-- This attribute value is not checked by validator -->
+              <Attribute attribute_name="sex">male</Attribute> <!-- This attribute value is controlled and checked by validator -->
               <Attribute attribute_name="biomaterial provider">Roche</Attribute>
-              <Attribute attribute_name="tissue">xxx</Attribute>
+              <Attribute attribute_name="tissue">liver</Attribute> <!-- This attribute value is not checked by validator -->
 
-              <!-- Optional attributes -->
+              <!-- Optional attributes for Human.1.0 package -->
               <Attribute attribute_name="disease">xxx</Attribute>
               <Attribute attribute_name="treatment">xxx</Attribute>
               <Attribute attribute_name="race">xxx</Attribute>
