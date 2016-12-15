@@ -1,7 +1,6 @@
 package org.metadatacenter.submission.biosample.resources;
 
 import com.codahale.metrics.annotation.Timed;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.metadatacenter.submission.biosample.AMIA2016DemoBioSampleTemplate;
 import org.metadatacenter.submission.biosample.core.BioSampleValidator;
 
@@ -15,21 +14,19 @@ import javax.xml.bind.JAXBException;
 import javax.xml.datatype.DatatypeConfigurationException;
 import java.io.IOException;
 
-@Path("/validate") @Produces(MediaType.APPLICATION_JSON) @Consumes(MediaType.APPLICATION_JSON) public class CEDARBioSampleServerResource
+@Path("/validate") @Produces(MediaType.APPLICATION_JSON) @Consumes(MediaType.APPLICATION_JSON) public class AMIA2016DemoBioSampleServerResource
 {
-  private static final ObjectMapper mapper = new ObjectMapper();
-
   private final BioSampleValidator bioSampleValidator;
 
-  public CEDARBioSampleServerResource()
+  public AMIA2016DemoBioSampleServerResource()
   {
     this.bioSampleValidator = new BioSampleValidator();
   }
 
-  @POST @Timed public Response validate(AMIA2016DemoBioSampleTemplate amiaBioSampleSubmissionInstance)
+  @POST @Timed public Response validate(AMIA2016DemoBioSampleTemplate amia2016BioSampleInstance)
   {
     try {
-      return Response.ok(this.bioSampleValidator.validateAMIA2016DemoBioSampleSubmission(amiaBioSampleSubmissionInstance))
+      return Response.ok(this.bioSampleValidator.validateAMIA2016DemoBioSampleInstance(amia2016BioSampleInstance))
         .build();
     } catch (JAXBException e) {
       return Response.status(Response.Status.BAD_REQUEST).build();

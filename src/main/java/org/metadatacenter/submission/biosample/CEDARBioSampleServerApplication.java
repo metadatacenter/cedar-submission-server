@@ -5,7 +5,7 @@ import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 import org.eclipse.jetty.servlets.CrossOriginFilter;
 import org.metadatacenter.submission.biosample.health.CEDARBioSampleServerHealthCheck;
-import org.metadatacenter.submission.biosample.resources.CEDARBioSampleServerResource;
+import org.metadatacenter.submission.biosample.resources.AMIA2016DemoBioSampleServerResource;
 
 import javax.servlet.DispatcherType;
 import javax.servlet.FilterRegistration;
@@ -28,7 +28,7 @@ public class CEDARBioSampleServerApplication extends Application<CEDARBioSampleS
 
   @Override
   public void run(final CEDARBioSampleServerConfiguration configuration, final Environment environment) {
-    final CEDARBioSampleServerResource resource = new CEDARBioSampleServerResource();
+    final AMIA2016DemoBioSampleServerResource resource = new AMIA2016DemoBioSampleServerResource();
     environment.jersey().register(resource);
 
     final CEDARBioSampleServerHealthCheck healthCheck = new CEDARBioSampleServerHealthCheck(configuration.getMessage());

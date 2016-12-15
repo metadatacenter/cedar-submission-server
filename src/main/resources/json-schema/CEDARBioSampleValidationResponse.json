@@ -1,5 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "CEDARBioSampleValidationResponse",
+  "description": "Representation of the response returned by the CEDAR BioSample validator service",
   "type": "object",
   "properties": {
     "isValid": {
