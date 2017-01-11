@@ -38,3 +38,30 @@ example as follows:
 
     curl -X POST -d @./examples/Human.1.0-Example.xml "https://www.ncbi.nlm.nih.gov/projects/biosample/validate/"
 
+#### Building from Source
+
+To build this server you must have the following items installed:
+
++ [Java 8](http://www.oracle.com/technetwork/java/javase/downloads/index.html)
++ A tool for checking out a [Git](http://git-scm.com/) repository
++ Apache's [Maven](http://maven.apache.org/index.html)
+
+First download and build the CEDAR parent project:
+
+    git clone https://github.com/metadatacenter/cedar-parent.git
+    cd cedar-parent
+    mvn clean install 
+    cd ..
+   
+Get a copy of the latest server code:
+
+    git clone https://github.com/metadatacenter/cedar-biosample-server.git
+
+Change into the cedar-biosample-server directory:
+
+    cd cedar-biosample-server
+
+Then build it with Maven:
+
+    mvn clean install
+
