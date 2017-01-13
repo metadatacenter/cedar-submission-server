@@ -3,6 +3,7 @@ package org.metadatacenter.submission.biosample.core;
 import biosample.TypeAttribute;
 import biosample.TypeBioSample;
 import biosample.TypeBioSampleIdentifier;
+import common.sp.ObjectFactory;
 import common.sp.TypeDescriptor;
 import common.sp.TypeOrganism;
 import common.sp.TypePrimaryId;
@@ -11,6 +12,7 @@ import generated.TypeContactInfo;
 import generated.TypeName;
 import generated.TypeOrganization;
 import generated.TypeSubmission;
+
 import org.metadatacenter.submission.biosample.AIRRTemplate;
 import org.metadatacenter.submission.biosample.OptionalBioSampleAttribute;
 
@@ -21,6 +23,7 @@ import javax.xml.bind.Marshaller;
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
+
 import java.io.StringWriter;
 import java.util.GregorianCalendar;
 
@@ -44,6 +47,8 @@ public class AIRRTemplate2BioSampleConverter
     final generated.ObjectFactory objectFactory = new generated.ObjectFactory();
     final biosample.ObjectFactory bioSampleObjectFactory = new biosample.ObjectFactory();
     final common.sp.ObjectFactory spCommonObjectFactory = new common.sp.ObjectFactory();
+    
+
 
     TypeSubmission xmlSubmission = objectFactory.createTypeSubmission();
 
@@ -146,28 +151,251 @@ public class AIRRTemplate2BioSampleConverter
     attributes.getAttribute().add(attribute);
     attribute.setAttributeName("anatomic_site");
     attribute.setValue(airrInstance.getAIRRBioSampleAttributes().getAnatomicSite().getValue());
-
+    
+    attribute = bioSampleObjectFactory.createTypeAttribute();
+    attributes.getAttribute().add(attribute);
+    attribute.setAttributeName("isolation_source");
+    attribute.setValue(airrInstance.getAIRRBioSampleAttributes().getIsolationSource().getValue());
+    
     attribute = bioSampleObjectFactory.createTypeAttribute();
     attributes.getAttribute().add(attribute);
     attribute.setAttributeName("disease_state_sample");
     attribute.setValue(airrInstance.getAIRRBioSampleAttributes().getDiseaseStateSample().getValue());
+    
+    attribute = bioSampleObjectFactory.createTypeAttribute();
+    attributes.getAttribute().add(attribute);
+    attribute.setAttributeName("collection_time_event");
+    attribute.setValue(airrInstance.getAIRRBioSampleAttributes().getCollectionTimeEvent().getValue());
+    
+    attribute = bioSampleObjectFactory.createTypeAttribute();
+    attributes.getAttribute().add(attribute);
+    attribute.setAttributeName("collection_date");
+    attribute.setValue(airrInstance.getAIRRBioSampleAttributes().getCollectionDate().getValue());
+    
+    attribute = bioSampleObjectFactory.createTypeAttribute();
+    attributes.getAttribute().add(attribute);
+    attribute.setAttributeName("geo_loc_name");
+    attribute.setValue(airrInstance.getAIRRBioSampleAttributes().getGeolocationName().getValue());
+    
+    attribute = bioSampleObjectFactory.createTypeAttribute();
+    attributes.getAttribute().add(attribute);
+    attribute.setAttributeName("source_commercial");
+    attribute.setValue(airrInstance.getAIRRBioSampleAttributes().getSourceCommercial().getValue());
+    
+    attribute = bioSampleObjectFactory.createTypeAttribute();
+    attributes.getAttribute().add(attribute);
+    attribute.setAttributeName("isolate");
+    attribute.setValue(airrInstance.getAIRRBioSampleAttributes().getIsolate().getValue());
+    
+    attribute = bioSampleObjectFactory.createTypeAttribute();
+    attributes.getAttribute().add(attribute);
+    attribute.setAttributeName("age");
+    attribute.setValue(airrInstance.getAIRRBioSampleAttributes().getAge().getValue());
+    
+    attribute = bioSampleObjectFactory.createTypeAttribute();
+    attributes.getAttribute().add(attribute);
+    attribute.setAttributeName("biomaterial_provider");
+    attribute.setValue(airrInstance.getAIRRBioSampleAttributes().getBiomaterialProvider().getValue());
+    
+    attribute = bioSampleObjectFactory.createTypeAttribute();
+    attributes.getAttribute().add(attribute);
+    attribute.setAttributeName("biomaterial_provider");
+    attribute.setValue(airrInstance.getAIRRBioSampleAttributes().getBiomaterialProvider().getValue());
+    
+    attribute = bioSampleObjectFactory.createTypeAttribute();
+    attributes.getAttribute().add(attribute);
+    attribute.setAttributeName("sex");
+    attribute.setValue(airrInstance.getAIRRBioSampleAttributes().getSex().getValue());
+    
+    attribute = bioSampleObjectFactory.createTypeAttribute();
+    attributes.getAttribute().add(attribute);
+    attribute.setAttributeName("sample_type");
+    attribute.setValue(airrInstance.getAIRRBioSampleAttributes().getSampleType().getValue());
+    
+    attribute = bioSampleObjectFactory.createTypeAttribute();
+    attributes.getAttribute().add(attribute);
+    attribute.setAttributeName("tissue");
+    attribute.setValue(airrInstance.getAIRRBioSampleAttributes().getTissue().getValue());
+    
+    attribute = bioSampleObjectFactory.createTypeAttribute();
+    attributes.getAttribute().add(attribute);
+    attribute.setAttributeName("tissue_processing");
+    attribute.setValue(airrInstance.getAIRRBioSampleAttributes().getTissueProcessing().getValue());
+    
+    attribute = bioSampleObjectFactory.createTypeAttribute();
+    attributes.getAttribute().add(attribute);
+    attribute.setAttributeName("cell_storage");
+    attribute.setValue(airrInstance.getAIRRBioSampleAttributes().getCellStorage().getValue());
+    
+    attribute = bioSampleObjectFactory.createTypeAttribute();
+    attributes.getAttribute().add(attribute);
+    attribute.setAttributeName("cell_quality");
+    attribute.setValue(airrInstance.getAIRRBioSampleAttributes().getCellQuality().getValue());
+    
+    attribute = bioSampleObjectFactory.createTypeAttribute();
+    attributes.getAttribute().add(attribute);
+    attribute.setAttributeName("cell_isolation");
+    attribute.setValue(airrInstance.getAIRRBioSampleAttributes().getCellIsolation().getValue());
+    
+    attribute = bioSampleObjectFactory.createTypeAttribute();
+    attributes.getAttribute().add(attribute);
+    attribute.setAttributeName("cell_subset");
+    attribute.setValue(airrInstance.getAIRRBioSampleAttributes().getCellSubset().getValue());
+    
+    attribute = bioSampleObjectFactory.createTypeAttribute();
+    attributes.getAttribute().add(attribute);
+    attribute.setAttributeName("cell_number");
+    attribute.setValue(airrInstance.getAIRRBioSampleAttributes().getCellNumber().getValue());
+    
+    attribute = bioSampleObjectFactory.createTypeAttribute();
+    attributes.getAttribute().add(attribute);
+    attribute.setAttributeName("processing_protocol");
+    attribute.setValue(airrInstance.getAIRRBioSampleAttributes().getProcessingProtocol().getValue());
 
-    // Additional AIRR BioSample attributes:
-    //  collection_date, collection_time_event, geo_loc_name, source_commercial, isolate,
-    //  isolation_source, age, biomaterial_provider, sex, sample_type, tissue,
-    //  tissue_processing, cell_storage, cell_quality, cell_isolation,
-    //  cell_subset cell_involved, cell_number, processing_protocol
-
-    for (OptionalBioSampleAttribute optionalAttribute : airrInstance.getAIRRBioSampleAttributes()
+      for (OptionalBioSampleAttribute optionalAttribute : airrInstance.getAIRRBioSampleAttributes()
       .getOptionalBioSampleAttribute()) {
       attribute = bioSampleObjectFactory.createTypeAttribute();
       attributes.getAttribute().add(attribute);
       attribute.setAttributeName(optionalAttribute.getName().getValue());
       attribute.setValue(optionalAttribute.getValue().getValue());
     }
+     
+      // Submission/Action/AddData/target_db
+      TypeSubmission.Action.AddData addDataToSRA = objectFactory.createTypeSubmissionActionAddData();
+      action.setAddData(addDataToSRA);
+      addData.setTargetDb("SRA");
 
-    // AIRR SRA attributes. TODO Need an SRA section to the XML to generate this.
-    // Extraction e.g., airrInstance.getAIRRSRAAttributes().getBatchNumber().getValue();
+      attribute = bioSampleObjectFactory.createTypeAttribute();
+      attributes.getAttribute().add(attribute);
+      attribute.setAttributeName("library_id");
+      attribute.setValue(airrInstance.getAIRRSRAAttributes().getLibraryID().getValue());
+      
+      attribute = bioSampleObjectFactory.createTypeAttribute();
+      attributes.getAttribute().add(attribute);
+      attribute.setAttributeName("library_startegy");
+      attribute.setValue(airrInstance.getAIRRSRAAttributes().getLibraryStrategy().getValue());
+      
+      attribute = bioSampleObjectFactory.createTypeAttribute();
+      attributes.getAttribute().add(attribute);
+      attribute.setAttributeName("library_source");
+      attribute.setValue(airrInstance.getAIRRSRAAttributes().getLibrarySource().getValue());
+      
+      attribute = bioSampleObjectFactory.createTypeAttribute();
+      attributes.getAttribute().add(attribute);
+      attribute.setAttributeName("library_selection");
+      attribute.setValue(airrInstance.getAIRRSRAAttributes().getLibrarySelection().getValue());
+      
+      attribute = bioSampleObjectFactory.createTypeAttribute();
+      attributes.getAttribute().add(attribute);
+      attribute.setAttributeName("library_layout");
+      attribute.setValue(airrInstance.getAIRRSRAAttributes().getLibraryLayout().getValue());
+      
+      attribute = bioSampleObjectFactory.createTypeAttribute();
+      attributes.getAttribute().add(attribute);
+      attribute.setAttributeName("library_name");
+      attribute.setValue(airrInstance.getAIRRSRAAttributes().getLibraryName().getValue());
+      
+      attribute = bioSampleObjectFactory.createTypeAttribute();
+      attributes.getAttribute().add(attribute);
+      attribute.setAttributeName("platform");
+      attribute.setValue(airrInstance.getAIRRSRAAttributes().getPlatform().getValue());
+            
+      attribute = bioSampleObjectFactory.createTypeAttribute();
+      attributes.getAttribute().add(attribute);
+      attribute.setAttributeName("instrument_model");
+      attribute.setValue(airrInstance.getAIRRSRAAttributes().getInstrumentModel().getValue());
+      
+      attribute = bioSampleObjectFactory.createTypeAttribute();
+      attributes.getAttribute().add(attribute);
+      attribute.setAttributeName("design_description");
+      attribute.setValue(airrInstance.getAIRRSRAAttributes().getDesignDescription().getValue());
+      
+      attribute = bioSampleObjectFactory.createTypeAttribute();
+      attributes.getAttribute().add(attribute);
+      attribute.setAttributeName("filetpe");
+      attribute.setValue(airrInstance.getAIRRSRAAttributes().getFileType().getValue());
+            
+      attribute = bioSampleObjectFactory.createTypeAttribute();
+      attributes.getAttribute().add(attribute);
+      attribute.setAttributeName("filename");
+      attribute.setValue(airrInstance.getAIRRSRAAttributes().getFileName().getValue());
+      
+      attribute = bioSampleObjectFactory.createTypeAttribute();
+      attributes.getAttribute().add(attribute);
+      attribute.setAttributeName("target_subtrate");
+      attribute.setValue(airrInstance.getAIRRSRAAttributes().getTargetSubstrate().getValue());
+      
+      attribute = bioSampleObjectFactory.createTypeAttribute();
+      attributes.getAttribute().add(attribute);
+      attribute.setAttributeName("target_subtrate_quality");
+      attribute.setValue(airrInstance.getAIRRSRAAttributes().getTargetSubstrateQuality().getValue());
+      
+      attribute = bioSampleObjectFactory.createTypeAttribute();
+      attributes.getAttribute().add(attribute);
+      attribute.setAttributeName("library_generation_method");
+      attribute.setValue(airrInstance.getAIRRSRAAttributes().getLibraryGenerationMethod().getValue());
+      
+      attribute = bioSampleObjectFactory.createTypeAttribute();
+      attributes.getAttribute().add(attribute);
+      attribute.setAttributeName("library_generation_protocol");
+      attribute.setValue(airrInstance.getAIRRSRAAttributes().getLibraryGenerationProtocol().getValue());
+      
+      attribute = bioSampleObjectFactory.createTypeAttribute();
+      attributes.getAttribute().add(attribute);
+      attribute.setAttributeName("tartget_locus_PCR");
+      attribute.setValue(airrInstance.getAIRRSRAAttributes().getTargetLocusPCR().getValue());
+      
+      attribute = bioSampleObjectFactory.createTypeAttribute();
+      attributes.getAttribute().add(attribute);
+      attribute.setAttributeName("reverse_PCR_primer_target_location");
+      attribute.setValue(airrInstance.getAIRRSRAAttributes().getReversePCRPrimerTargetLocation().getValue());
+      
+      attribute = bioSampleObjectFactory.createTypeAttribute();
+      attributes.getAttribute().add(attribute);
+      attribute.setAttributeName("whole_vs_partial_sequences");
+      attribute.setValue(airrInstance.getAIRRSRAAttributes().getWholeVsPartialSequences().getValue());
+      
+      attribute = bioSampleObjectFactory.createTypeAttribute();
+      attributes.getAttribute().add(attribute);
+      attribute.setAttributeName("comparison_vs_heavy_light_chain_paired_chains");
+      attribute.setValue(airrInstance.getAIRRSRAAttributes().getComparisonHeavyLightPairedChains().getValue());
+      
+      attribute = bioSampleObjectFactory.createTypeAttribute();
+      attributes.getAttribute().add(attribute);
+      attribute.setAttributeName("ng_templates");
+      attribute.setValue(airrInstance.getAIRRSRAAttributes().getNGTemplate().getValue());
+      
+      attribute = bioSampleObjectFactory.createTypeAttribute();
+      attributes.getAttribute().add(attribute);
+      attribute.setAttributeName("total_reads_passing_qc_filters");
+      attribute.setValue(airrInstance.getAIRRSRAAttributes().getTotalReadsPassingQCFilter().getValue());
+      
+      attribute = bioSampleObjectFactory.createTypeAttribute();
+      attributes.getAttribute().add(attribute);
+      attribute.setAttributeName("protocol_id");
+      attribute.setValue(airrInstance.getAIRRSRAAttributes().getProtocolID().getValue());
+      
+      attribute = bioSampleObjectFactory.createTypeAttribute();
+      attributes.getAttribute().add(attribute);
+      attribute.setAttributeName("read_length");
+      attribute.setValue(airrInstance.getAIRRSRAAttributes().getReadLength().getValue());
+      
+      attribute = bioSampleObjectFactory.createTypeAttribute();
+      attributes.getAttribute().add(attribute);
+      attribute.setAttributeName("sequencing_facility");
+      attribute.setValue(airrInstance.getAIRRSRAAttributes().getSequencingFacility().getValue());
+      
+      attribute = bioSampleObjectFactory.createTypeAttribute();
+      attributes.getAttribute().add(attribute);
+      attribute.setAttributeName("batch_number");
+      attribute.setValue(airrInstance.getAIRRSRAAttributes().getBatchNumber().getValue());
+      
+           
+      attribute = bioSampleObjectFactory.createTypeAttribute();
+      attributes.getAttribute().add(attribute);
+      attribute.setAttributeName("sequencing_ki");
+      attribute.setValue(airrInstance.getAIRRSRAAttributes().getSequencingKit().getValue());
+          
 
     StringWriter writer = new StringWriter();
 
