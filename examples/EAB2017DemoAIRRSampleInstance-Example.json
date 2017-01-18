@@ -1,0 +1,304 @@
+{
+  "@context": {
+    "pav": "http://purl.org/pav/",
+    "schema": "http://schema.org/",
+    "oslc": "http://open-services.net/ns/core#",
+    "sampleName": "https://schema.staging.metadatacenter.net/properties/sampleName",
+    "4b38a426-3e5d-48e9-9cea-8e06b3a35f39": "https://schema.staging.metadatacenter.net/properties/4b38a426-3e5d-48e9-9cea-8e06b3a35f39",
+    "organism": "https://schema.staging.metadatacenter.net/properties/organism",
+    "isolate": "https://schema.staging.metadatacenter.net/properties/isolate",
+    "age": "https://schema.staging.metadatacenter.net/properties/age",
+    "biomaterialProvider": "https://schema.staging.metadatacenter.net/properties/biomaterialProvider",
+    "sex": "https://schema.staging.metadatacenter.net/properties/sex",
+    "tissue": "https://schema.staging.metadatacenter.net/properties/tissue",
+    "48fbb640-879a-4e4e-be6f-ec5e2b9a8dbc": "https://schema.staging.metadatacenter.net/properties/48fbb640-879a-4e4e-be6f-ec5e2b9a8dbc",
+    "sex1": "https://schema.staging.metadatacenter.net/properties/9282a696-dcb7-446b-93a4-90084f131e71",
+    "sex2": "https://schema.staging.metadatacenter.net/properties/b3e9df16-08ad-4d77-96fa-8c18439be0cb",
+    "optionalAttribute": "https://schema.staging.metadatacenter.net/properties/optionalAttribute",
+    "projectDescription": "https://schema.staging.metadatacenter.net/properties/projectDescription",
+    "releaseDate": "https://schema.staging.metadatacenter.net/properties/releaseDate",
+    "collectionDate": "https://schema.staging.metadatacenter.net/properties/collectionDate",
+    "collectionTimeEvent": "https://schema.staging.metadatacenter.net/properties/collectionTimeEvent",
+    "geolocationName": "https://schema.staging.metadatacenter.net/properties/geolocationName",
+    "commercialSource": "https://schema.staging.metadatacenter.net/properties/commercialSource",
+    "isolate1": "https://schema.staging.metadatacenter.net/properties/634ab92c-0b44-489c-8cdb-895670ae160e",
+    "isolationSource": "https://schema.staging.metadatacenter.net/properties/isolationSource",
+    "age1": "https://schema.staging.metadatacenter.net/properties/93c5d8c3-2192-4f57-aa61-59934f3cc407",
+    "biomaterialProvider1": "https://schema.staging.metadatacenter.net/properties/7849eea6-137f-4183-8838-73240846b510",
+    "sex3": "https://schema.staging.metadatacenter.net/properties/72f5ae3d-a2c2-45f8-a9f2-0072114b5b15",
+    "sampleType": "https://schema.staging.metadatacenter.net/properties/sampleType",
+    "tissue1": "https://schema.staging.metadatacenter.net/properties/6209c912-db52-4281-9974-f71a8816f1b1",
+    "tissueProcessing": "https://schema.staging.metadatacenter.net/properties/tissueProcessing",
+    "cellStorage": "https://schema.staging.metadatacenter.net/properties/cellStorage",
+    "cellQuality": "https://schema.staging.metadatacenter.net/properties/cellQuality",
+    "cellIsolation": "https://schema.staging.metadatacenter.net/properties/cellIsolation",
+    "cellSubset": "https://schema.staging.metadatacenter.net/properties/cellSubset",
+    "cellInvolved": "https://schema.staging.metadatacenter.net/properties/cellInvolved",
+    "cellNumber": "https://schema.staging.metadatacenter.net/properties/cellNumber",
+    "processingProtocol": "https://schema.staging.metadatacenter.net/properties/processingProtocol",
+    "aIRRBioSampleAttributes": "https://schema.staging.metadatacenter.net/properties/aIRRBioSampleAttributes",
+    "aIRRSRAAttributes": "https://schema.staging.metadatacenter.net/properties/aIRRSRAAttributes"
+  },
+  "aIRRSRAAttributes": {
+    "@context": {
+      "pav": "http://purl.org/pav/",
+      "oslc": "http://open-services.net/ns/core#",
+      "libraryID": "https://schema.staging.metadatacenter.net/properties/libraryID",
+      "title": "https://schema.staging.metadatacenter.net/properties/title",
+      "libraryStrategy": "https://schema.staging.metadatacenter.net/properties/libraryStrategy",
+      "librarySource": "https://schema.staging.metadatacenter.net/properties/librarySource",
+      "librarySelection": "https://schema.staging.metadatacenter.net/properties/librarySelection",
+      "libraryLayout": "https://schema.staging.metadatacenter.net/properties/libraryLayout",
+      "libraryName": "https://schema.staging.metadatacenter.net/properties/libraryName",
+      "libraryConstructionProtocol": "https://schema.staging.metadatacenter.net/properties/libraryConstructionProtocol",
+      "platform": "https://schema.staging.metadatacenter.net/properties/platform",
+      "instrumentModel": "https://schema.staging.metadatacenter.net/properties/instrumentModel",
+      "designDescription": "https://schema.staging.metadatacenter.net/properties/designDescription",
+      "fileType": "https://schema.staging.metadatacenter.net/properties/fileType",
+      "fileName": "https://schema.staging.metadatacenter.net/properties/fileName",
+      "targetSubstrate": "https://schema.staging.metadatacenter.net/properties/targetSubstrate",
+      "targetSubstrateQuality": "https://schema.staging.metadatacenter.net/properties/targetSubstrateQuality",
+      "libraryGenerationMethod": "https://schema.staging.metadatacenter.net/properties/libraryGenerationMethod",
+      "libraryGenerationProtocol": "https://schema.staging.metadatacenter.net/properties/libraryGenerationProtocol",
+      "targetLocusPCR": "https://schema.staging.metadatacenter.net/properties/targetLocusPCR",
+      "forwardPCRPrimerTargetLocation": "https://schema.staging.metadatacenter.net/properties/forwardPCRPrimerTargetLocation",
+      "reversePCRPrimerTargetLocation": "https://schema.staging.metadatacenter.net/properties/reversePCRPrimerTargetLocation",
+      "wholeVsPartialSequences": "https://schema.staging.metadatacenter.net/properties/wholeVsPartialSequences",
+      "untitled": "https://schema.staging.metadatacenter.net/properties/untitled",
+      "comparisonHeavyLightPairedChains": "https://schema.staging.metadatacenter.net/properties/comparisonHeavyLightPairedChains",
+      "nGTemplate": "https://schema.staging.metadatacenter.net/properties/nGTemplate",
+      "totalReadsPassingQCFilter": "https://schema.staging.metadatacenter.net/properties/totalReadsPassingQCFilter",
+      "protocolID": "https://schema.staging.metadatacenter.net/properties/protocolID",
+      "readLength": "https://schema.staging.metadatacenter.net/properties/readLength",
+      "sequencingFacility": "https://schema.staging.metadatacenter.net/properties/sequencingFacility",
+      "batchNumber": "https://schema.staging.metadatacenter.net/properties/batchNumber",
+      "sequencingKit": "https://schema.staging.metadatacenter.net/properties/sequencingKit"
+    },
+    "libraryID": {
+      "@value": "xxxxx"
+    },
+    "title": {
+      "@value": "xxxxx"
+    },
+    "libraryStrategy": {
+      "@value": "WGS"
+    },
+    "librarySource": {
+      "@value": "GENOMIC"
+    },
+    "librarySelection": {
+      "@value": "RANDOM"
+    },
+    "libraryLayout": {
+      "@value": "PAIRED"
+    },
+    "libraryName": {
+      "@value": "2441"
+    },
+    "libraryConstructionProtocol": {
+      "@value": "TruSeq PCR free DNA preparation from a pure bacterial culture"
+    },
+    "platform": {
+      "@value": "xxxxx"
+    },
+    "instrumentModel": {
+      "@value": "Illumina MiSeq"
+    },
+    "designDescription": {
+      "@value": "xxxxx"
+    },
+    "fileType": {
+      "@value": "xxxxx"
+    },
+    "fileName": {
+      "@value": "xxxxx"
+    },
+    "targetSubstrate": {
+      "@value": "xxxxx"
+    },
+    "targetSubstrateQuality": {
+      "@value": "xxxxx"
+    },
+    "libraryGenerationMethod": {
+      "@value": "xxxxx"
+    },
+    "libraryGenerationProtocol": {
+      "@value": "xxxxx"
+    },
+    "targetLocusPCR": {
+      "@value": "xxxxx"
+    },
+    "forwardPCRPrimerTargetLocation": {
+      "@value": "xxxxx"
+    },
+    "reversePCRPrimerTargetLocation": {
+      "@value": "xxxxx"
+    },
+    "wholeVsPartialSequences": {
+      "@value": "xxxxx"
+    },
+    "untitled": {
+      "@value": "xxxxx"
+    },
+    "comparisonHeavyLightPairedChains": {
+      "@value": "xxxxx"
+    },
+    "nGTemplate": {
+      "@value": "xxxxx"
+    },
+    "totalReadsPassingQCFilter": {
+      "@value": "xxxxx"
+    },
+    "protocolID": {
+      "@value": "xxxxx"
+    },
+    "readLength": {
+      "@value": "xxxxx"
+    },
+    "sequencingFacility": {
+      "@value": "xxxxx"
+    },
+    "batchNumber": {
+      "@value": "xxxxx"
+    },
+    "sequencingKit": {
+      "@value": "xxxxx"
+    }
+  },
+  "projectDescription": {
+    "@context": {
+      "pav": "http://purl.org/pav/",
+      "oslc": "http://open-services.net/ns/core#",
+      "bioProjectID": "https://schema.staging.metadatacenter.net/properties/bioProjectID",
+      "organizationName": "https://schema.staging.metadatacenter.net/properties/organizationName",
+      "comment": "https://schema.staging.metadatacenter.net/properties/comment",
+      "email": "https://schema.staging.metadatacenter.net/properties/email",
+      "pIFirstName": "https://schema.staging.metadatacenter.net/properties/pIFirstName",
+      "pISecondName": "https://schema.staging.metadatacenter.net/properties/pISecondName",
+      "da8d4f91-b554-420e-a87c-7f8f85ded26c": "https://schema.staging.metadatacenter.net/properties/da8d4f91-b554-420e-a87c-7f8f85ded26c",
+      "releaseDate": "https://schema.staging.metadatacenter.net/properties/releaseDate"
+    },
+    "bioProjectID": {
+      "@value": "PRJID000"
+    },
+    "organizationName": {
+      "@value": "Yale University School of Medicine"
+    },
+    "comment": {
+      "@value": "This is dummy AIRR submission to test the CEDAR workbench"
+    },
+    "email": {
+      "@value": "ahmad.chan@yale.edu"
+    },
+    "pIFirstName": {
+      "@value": "Steven H Kleinstein"
+    },
+    "pISecondName": {
+      "@value": "Mark Musen"
+    },
+    "releaseDate": {
+      "@value": "12/27/2017 12:00 AM"
+    }
+  },
+  "aIRRBioSampleAttributes": {
+    "@context": {
+      "pav": "http://purl.org/pav/",
+      "oslc": "http://open-services.net/ns/core#",
+      "anatomicSite": "https://schema.staging.metadatacenter.net/properties/anatomicSite",
+      "diseaseStateSample": "https://schema.staging.metadatacenter.net/properties/diseaseStateSample",
+      "7e9cb0fa-4eb5-45ad-9b5a-467434d9827d": "https://schema.staging.metadatacenter.net/properties/7e9cb0fa-4eb5-45ad-9b5a-467434d9827d",
+      "collectionDate": "https://schema.staging.metadatacenter.net/properties/collectionDate",
+      "collectionTimeEvent": "https://schema.staging.metadatacenter.net/properties/collectionTimeEvent",
+      "geolocationName": "https://schema.staging.metadatacenter.net/properties/geolocationName",
+      "sourceCommercial": "https://schema.staging.metadatacenter.net/properties/sourceCommercial",
+      "isolate": "https://schema.staging.metadatacenter.net/properties/isolate",
+      "isolationSource": "https://schema.staging.metadatacenter.net/properties/isolationSource",
+      "age": "https://schema.staging.metadatacenter.net/properties/age",
+      "biomaterialProvider": "https://schema.staging.metadatacenter.net/properties/biomaterialProvider",
+      "sex": "https://schema.staging.metadatacenter.net/properties/sex",
+      "sampleType": "https://schema.staging.metadatacenter.net/properties/sampleType",
+      "tissue": "https://schema.staging.metadatacenter.net/properties/tissue",
+      "tissueProcessing": "https://schema.staging.metadatacenter.net/properties/tissueProcessing",
+      "cellStorage": "https://schema.staging.metadatacenter.net/properties/cellStorage",
+      "cellQuality": "https://schema.staging.metadatacenter.net/properties/cellQuality",
+      "cellIsolation": "https://schema.staging.metadatacenter.net/properties/cellIsolation",
+      "cellSubset": "https://schema.staging.metadatacenter.net/properties/cellSubset",
+      "cellInvolved": "https://schema.staging.metadatacenter.net/properties/cellInvolved",
+      "cellNumber": "https://schema.staging.metadatacenter.net/properties/cellNumber",
+      "processingProtocol": "https://schema.staging.metadatacenter.net/properties/processingProtocol",
+      "optionalBioSampleAttribute": "https://schema.staging.metadatacenter.net/properties/optionalBioSampleAttribute"
+    },
+    "anatomicSite": {
+      "@value": "spleen"
+    },
+    "diseaseStateSample": {
+      "@value": "tumor"
+    },
+    "collectionDate": {
+      "@value": "12/05/2016 12:00 AM"
+    },
+    "collectionTimeEvent": {
+      "@value": "vaccination"
+    },
+    "geolocationName": {
+      "@value": "Tunisia:Matmata"
+    },
+    "sourceCommercial": {
+      "@value": "None"
+    },
+    "isolate": {
+      "@value": "CD2"
+    },
+    "isolationSource": {
+      "@value": "Respiratory"
+    },
+    "age": {
+      "@value": "45"
+    },
+    "biomaterialProvider": {
+      "@value": "none"
+    },
+    "sex": {
+      "@value": "male"
+    },
+    "sampleType": {
+      "@value": "cell culture"
+    },
+    "tissue": {
+      "@value": "xxxx"
+    },
+    "tissueProcessing": {
+      "@value": "xxxx"
+    },
+    "cellStorage": {
+      "@value": "xxxx"
+    },
+    "cellQuality": {
+      "@value": "xxxx"
+    },
+    "cellIsolation": {
+      "@value": "xxxx"
+    },
+    "cellSubset": {
+      "@value": "xxxx"
+    },
+    "cellInvolved": {
+      "@value": "xxxx"
+    },
+    "cellNumber": {
+      "@value": "xxxx"
+    },
+    "processingProtocol": {
+      "@value": "xxxx"
+    },
+    "optionalBioSampleAttribute": []
+  },
+  "schema:isBasedOn": "https://repo.staging.metadatacenter.net/templates/d7c9d050-a4aa-4448-b7ed-cf58b980baf2",
+  "schema:name": "AIRR Template metadata",
+  "schema:description": "AIRR BioProject/BioSample/SRA template metadata",
+  "pav:createdOn": "2017-01-18T08:16:45-0800",
+  "pav:createdBy": "https://repo.staging.metadatacenter.net/users/a27196c2-41ec-4d93-b8db-7ad5e8dbb3fd",
+  "pav:lastUpdatedOn": "2017-01-18T08:16:45-0800",
+  "oslc:modifiedBy": "https://repo.staging.metadatacenter.net/users/a27196c2-41ec-4d93-b8db-7ad5e8dbb3fd",
+  "@id": "https://repo.staging.metadatacenter.net/template-instances/8bb16fc4-909c-4274-9d12-7aff3003c548"
+}
