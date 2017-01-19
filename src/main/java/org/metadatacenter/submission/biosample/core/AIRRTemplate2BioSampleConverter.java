@@ -3,7 +3,6 @@ package org.metadatacenter.submission.biosample.core;
 import biosample.TypeAttribute;
 import biosample.TypeBioSample;
 import biosample.TypeBioSampleIdentifier;
-import common.sp.ObjectFactory;
 import common.sp.TypeDescriptor;
 import common.sp.TypeOrganism;
 import common.sp.TypePrimaryId;
@@ -12,7 +11,6 @@ import generated.TypeContactInfo;
 import generated.TypeName;
 import generated.TypeOrganization;
 import generated.TypeSubmission;
-
 import org.metadatacenter.submission.biosample.AIRRTemplate;
 import org.metadatacenter.submission.biosample.OptionalBioSampleAttribute;
 
@@ -23,7 +21,6 @@ import javax.xml.bind.Marshaller;
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
-
 import java.io.StringWriter;
 import java.util.GregorianCalendar;
 
@@ -115,7 +112,7 @@ public class AIRRTemplate2BioSampleConverter
     TypeBioSampleIdentifier.SPUID spuid = bioSampleObjectFactory.createTypeBioSampleIdentifierSPUID();
     sampleID.getSPUID().add(spuid);
     spuid.setSpuidNamespace("AIRR"); // TODO What should this be?
-    spuid.setValue(airrInstance.getProjectDescription().getId().getPath()); // TODO What should this be?
+    spuid.setValue(airrInstance.getProjectDescription().getBioProjectID().getValue()); // TODO What should this be?
 
     // Submission/Action/AddData/Data/XMLContent/BioSample/Descriptor
     TypeDescriptor descriptor = spCommonObjectFactory.createTypeDescriptor();
