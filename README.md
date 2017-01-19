@@ -12,6 +12,12 @@ To try an example CEDAR BioSample instance:
          -d @./examples/AMIA2016DemoBioSampleInstance-Example.json \
          "http://localhost:9010/validate"
 
+To try an example CEDAR AIRR instance:
+
+    curl -X POST -H "Accept: application/json" -H "Content-type: application/json" \
+         -d @./examples/EAB2017DemoAIRRSampleInstance-Example.json \
+         "http://localhost:9010/validate_airr"
+
 Here is a success response from the server:
 
 ```

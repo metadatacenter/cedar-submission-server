@@ -14,7 +14,7 @@ import javax.xml.bind.JAXBException;
 import javax.xml.datatype.DatatypeConfigurationException;
 import java.io.IOException;
 
-@Path("/validate-airr") @Produces(MediaType.APPLICATION_JSON) @Consumes(MediaType.APPLICATION_JSON) public class AIRRBioSampleServerResource
+@Path("/validate_airr") @Produces(MediaType.APPLICATION_JSON) @Consumes(MediaType.APPLICATION_JSON) public class AIRRBioSampleServerResource
 {
   private final BioSampleValidator bioSampleValidator;
 
