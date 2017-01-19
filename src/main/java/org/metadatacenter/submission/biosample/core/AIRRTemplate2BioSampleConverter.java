@@ -244,6 +244,11 @@ public class AIRRTemplate2BioSampleConverter
     
     attribute = bioSampleObjectFactory.createTypeAttribute();
     attributes.getAttribute().add(attribute);
+    attribute.setAttributeName("cell_involved");
+    attribute.setValue(airrInstance.getAIRRBioSampleAttributes().getCellInvolved().getValue());
+    
+    attribute = bioSampleObjectFactory.createTypeAttribute();
+    attributes.getAttribute().add(attribute);
     attribute.setAttributeName("cell_number");
     attribute.setValue(airrInstance.getAIRRBioSampleAttributes().getCellNumber().getValue());
     
@@ -269,6 +274,11 @@ public class AIRRTemplate2BioSampleConverter
       attributes.getAttribute().add(attribute);
       attribute.setAttributeName("library_id");
       attribute.setValue(airrInstance.getAIRRSRAAttributes().getLibraryID().getValue());
+      
+      attribute = bioSampleObjectFactory.createTypeAttribute();
+      attributes.getAttribute().add(attribute);
+      attribute.setAttributeName("title");
+      attribute.setValue(airrInstance.getAIRRSRAAttributes().getTitle().getValue());
       
       attribute = bioSampleObjectFactory.createTypeAttribute();
       attributes.getAttribute().add(attribute);
@@ -322,14 +332,14 @@ public class AIRRTemplate2BioSampleConverter
       
       attribute = bioSampleObjectFactory.createTypeAttribute();
       attributes.getAttribute().add(attribute);
-      attribute.setAttributeName("target_subtrate");
+      attribute.setAttributeName("target_substrate");
       attribute.setValue(airrInstance.getAIRRSRAAttributes().getTargetSubstrate().getValue());
       
       attribute = bioSampleObjectFactory.createTypeAttribute();
       attributes.getAttribute().add(attribute);
-      attribute.setAttributeName("target_subtrate_quality");
+      attribute.setAttributeName("target_substrate_quality");
       attribute.setValue(airrInstance.getAIRRSRAAttributes().getTargetSubstrateQuality().getValue());
-      
+           
       attribute = bioSampleObjectFactory.createTypeAttribute();
       attributes.getAttribute().add(attribute);
       attribute.setAttributeName("library_generation_method");
@@ -342,8 +352,13 @@ public class AIRRTemplate2BioSampleConverter
       
       attribute = bioSampleObjectFactory.createTypeAttribute();
       attributes.getAttribute().add(attribute);
-      attribute.setAttributeName("tartget_locus_PCR");
+      attribute.setAttributeName("target_locus_PCR");
       attribute.setValue(airrInstance.getAIRRSRAAttributes().getTargetLocusPCR().getValue());
+      
+      attribute = bioSampleObjectFactory.createTypeAttribute();
+      attributes.getAttribute().add(attribute);
+      attribute.setAttributeName("forward_PCR_primer_target_location");
+      attribute.setValue(airrInstance.getAIRRSRAAttributes().getForwardPCRPrimerTargetLocation().getValue());
       
       attribute = bioSampleObjectFactory.createTypeAttribute();
       attributes.getAttribute().add(attribute);
@@ -393,7 +408,7 @@ public class AIRRTemplate2BioSampleConverter
            
       attribute = bioSampleObjectFactory.createTypeAttribute();
       attributes.getAttribute().add(attribute);
-      attribute.setAttributeName("sequencing_ki");
+      attribute.setAttributeName("sequencing_kit");
       attribute.setValue(airrInstance.getAIRRSRAAttributes().getSequencingKit().getValue());
           
 

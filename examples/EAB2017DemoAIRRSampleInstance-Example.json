@@ -64,7 +64,6 @@
       "forwardPCRPrimerTargetLocation": "https://schema.staging.metadatacenter.net/properties/forwardPCRPrimerTargetLocation",
       "reversePCRPrimerTargetLocation": "https://schema.staging.metadatacenter.net/properties/reversePCRPrimerTargetLocation",
       "wholeVsPartialSequences": "https://schema.staging.metadatacenter.net/properties/wholeVsPartialSequences",
-      "untitled": "https://schema.staging.metadatacenter.net/properties/untitled",
       "comparisonHeavyLightPairedChains": "https://schema.staging.metadatacenter.net/properties/comparisonHeavyLightPairedChains",
       "nGTemplate": "https://schema.staging.metadatacenter.net/properties/nGTemplate",
       "totalReadsPassingQCFilter": "https://schema.staging.metadatacenter.net/properties/totalReadsPassingQCFilter",
@@ -137,10 +136,7 @@
     "wholeVsPartialSequences": {
       "@value": "xxxxx"
     },
-    "untitled": {
-      "@value": "xxxxx"
-    },
-    "comparisonHeavyLightPairedChains": {
+      "comparisonHeavyLightPairedChains": {
       "@value": "xxxxx"
     },
     "nGTemplate": {
