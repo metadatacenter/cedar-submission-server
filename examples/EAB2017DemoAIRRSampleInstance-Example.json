@@ -74,19 +74,19 @@
       "sequencingKit": "https://schema.staging.metadatacenter.net/properties/sequencingKit"
     },
     "libraryID": {
-      "@value": "xxxxx"
+      "@value": "HD07_U_A8ALE"
     },
     "title": {
-      "@value": "xxxxx"
+      "@value": "HD07_U_A8ALE"
     },
     "libraryStrategy": {
-      "@value": "WGS"
+      "@value": "AMPLICON"
     },
     "librarySource": {
-      "@value": "GENOMIC"
+      "@value": "TRANSCRIPTOMIC"
     },
     "librarySelection": {
-      "@value": "RANDOM"
+      "@value": "PCR"
     },
     "libraryLayout": {
       "@value": "PAIRED"
@@ -98,67 +98,67 @@
       "@value": "TruSeq PCR free DNA preparation from a pure bacterial culture"
     },
     "platform": {
-      "@value": "xxxxx"
+      "@value": "Illumina"
     },
     "instrumentModel": {
       "@value": "Illumina MiSeq"
     },
     "designDescription": {
-      "@value": "xxxxx"
+      "@value": "Peripheral blood was obtained from HD and MG subjects. B cells subsets were isolated using flow cytometry. Briefly, peripheral B cells from MG patients and healthy donors were first enriched to >95% by positive selection using CD20 magnetic beads (Milteny). The cells were then stained with perCP-Cy5.5 antiโhuman CD27 (clone O323), Pacific Blue anti-human CD19 (clone HIB19) (both from Biolegend). Naรฏve (CD19+, CD27-) or memory B cells (CD19+, CD27+) were then sorted on a FACSAria flow cytometer (BD) into PCR tubes and immediately frozen on dry ice. RNA (250 ng) was reverse-transcribed into cDNA using a biotinylated oligo dT primer. An adaptor sequence was added to the 3' end of all cDNA, which contains a universal priming site and a 17-nucleotide unique molecular identifier (UMI). Products were purified using streptavidin-coated magnetic beads followed by a primary PCR reaction using a pool of primers targeting the IGHA, IGHD, IGHE, IGHG, IGHM, IGKC and IGLC regions, as well as a primer against the universal adaptor sequence. The immunoglobulin-specific primers contained tail sequences for later Illumina adaptor addition. PCR products were then purified using AMPure XP beads. A secondary PCR was then performed to add the Illumina P5 adaptor to the constant region end and a sample-indexed P7 adaptor to the universal adaptor end. The number of secondary PCR cycles was tailored to each sample to avoid entering plateau phase, as judged by a prior quantitative PCR analysis. Final products were purified, quantified with a TapeStation (Agilent Genomics) and pooled in equimolar proportions, followed by high-throughput 2x300 base-pair paired-end sequencing with a 20% PhiX spike on the Illumina MiSeq platform according to manufacturerโs recommendations, except for performing 325 cycles for read 1 and 275 cycles for read 2."
     },
     "fileType": {
-      "@value": "xxxxx"
+      "@value": "fastq"
     },
     "fileName": {
-      "@value": "xxxxx"
+      "@value": "HD07_U_A8ALE_GAGTGG_L001_R1_001.fastq"
     },
     "targetSubstrate": {
-      "@value": "xxxxx"
+      "@value": "missing"
     },
     "targetSubstrateQuality": {
-      "@value": "xxxxx"
+      "@value": "missing"
     },
     "libraryGenerationMethod": {
-      "@value": "xxxxx"
+      "@value": "missing"
     },
     "libraryGenerationProtocol": {
-      "@value": "xxxxx"
+      "@value": "missing"
     },
     "targetLocusPCR": {
-      "@value": "xxxxx"
+      "@value": "missing"
     },
     "forwardPCRPrimerTargetLocation": {
-      "@value": "xxxxx"
+      "@value": "missing"
     },
     "reversePCRPrimerTargetLocation": {
-      "@value": "xxxxx"
+      "@value": "missing"
     },
     "wholeVsPartialSequences": {
-      "@value": "xxxxx"
+      "@value": "missing"
     },
       "comparisonHeavyLightPairedChains": {
-      "@value": "xxxxx"
+      "@value": "missing"
     },
     "nGTemplate": {
-      "@value": "xxxxx"
+      "@value": "missing"
     },
     "totalReadsPassingQCFilter": {
-      "@value": "xxxxx"
+      "@value": "missing"
     },
     "protocolID": {
-      "@value": "xxxxx"
+      "@value": "missing"
     },
     "readLength": {
-      "@value": "xxxxx"
+      "@value": "300"
     },
     "sequencingFacility": {
-      "@value": "xxxxx"
+      "@value": "Yale University"
     },
     "batchNumber": {
-      "@value": "xxxxx"
+      "@value": "missing"
     },
     "sequencingKit": {
-      "@value": "xxxxx"
+      "@value": "missing"
     }
   },
   "projectDescription": {
@@ -175,7 +175,7 @@
       "releaseDate": "https://schema.staging.metadatacenter.net/properties/releaseDate"
     },
     "bioProjectID": {
-      "@value": "PRJID000"
+      "@value": "PRJNA349"
     },
     "organizationName": {
       "@value": "Yale University School of Medicine"
