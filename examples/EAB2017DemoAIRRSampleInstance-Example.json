@@ -245,6 +245,9 @@
     "isolate": {
       "@value": "CD2"
     },
+     "organism": {
+        "@value": "Homo sapiens"
+    },
     "isolationSource": {
       "@value": "Respiratory"
     },
