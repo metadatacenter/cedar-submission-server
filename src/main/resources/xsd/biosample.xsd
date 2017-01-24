@@ -8,7 +8,7 @@
   <xs:import schemaLocation="SP.common.xsd" namespace="SP.common"/>
 
   <!-- BioSample object -->
-  <xs:element name="BioSample" type="biosample:typeBioSample"/>
+  <!--  <xs:element name="BioSample" type="biosample:typeBioSample"/> -->
 
   <xs:complexType name="typeBioSample">
     <xs:sequence>
