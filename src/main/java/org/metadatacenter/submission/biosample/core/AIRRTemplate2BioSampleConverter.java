@@ -133,7 +133,7 @@ public class AIRRTemplate2BioSampleConverter
     bioProjectPrimaryID.setValue(airrInstance.getProjectDescription().getBioProjectID().getValue());
 
     // Submission/Action/AddData/Data/XMLContent/BioSample/Package
-    bioSample.setPackage("Pathogen.env.1.0"); // TODO Is this hard coded for AIRR?
+    bioSample.setPackage("Human.1.0"); // TODO Is this hard coded for AIRR?
 
     // Submission/Action/AddData/Data/XMLContent/BioSample/Attributes
     TypeBioSample.Attributes bioSampleAttributes = bioSampleObjectFactory.createTypeBioSampleAttributes();
@@ -186,11 +186,6 @@ public class AIRRTemplate2BioSampleConverter
     bioSampleAttributes.getAttribute().add(attribute);
     attribute.setAttributeName("age");
     attribute.setValue(airrInstance.getAIRRBioSampleAttributes().getAge().getValue());
-
-    attribute = bioSampleObjectFactory.createTypeAttribute();
-    bioSampleAttributes.getAttribute().add(attribute);
-    attribute.setAttributeName("biomaterial_provider");
-    attribute.setValue(airrInstance.getAIRRBioSampleAttributes().getBiomaterialProvider().getValue());
 
     attribute = bioSampleObjectFactory.createTypeAttribute();
     bioSampleAttributes.getAttribute().add(attribute);

@@ -89,7 +89,7 @@
       "@value": "PCR"
     },
     "libraryLayout": {
-      "@value": "PAIRED"
+      "@value": "SINGLE"
     },
     "libraryName": {
       "@value": "2441"
@@ -193,7 +193,7 @@
       "@value": "Mark Musen"
     },
     "releaseDate": {
-      "@value": "12/27/2017 12:00 AM"
+      "@value": "27-Dec-2017"
     }
   },
   "aIRRBioSampleAttributes": {
@@ -202,7 +202,7 @@
       "oslc": "http://open-services.net/ns/core#",
       "anatomicSite": "https://schema.staging.metadatacenter.net/properties/anatomicSite",
       "diseaseStateSample": "https://schema.staging.metadatacenter.net/properties/diseaseStateSample",
-      "7e9cb0fa-4eb5-45ad-9b5a-467434d9827d": "https://schema.staging.metadatacenter.net/properties/7e9cb0fa-4eb5-45ad-9b5a-467434d9827d",
+     "7e9cb0fa-4eb5-45ad-9b5a-467434d9827d": "https://schema.staging.metadatacenter.net/properties/7e9cb0fa-4eb5-45ad-9b5a-467434d9827d",
       "collectionDate": "https://schema.staging.metadatacenter.net/properties/collectionDate",
       "collectionTimeEvent": "https://schema.staging.metadatacenter.net/properties/collectionTimeEvent",
       "geolocationName": "https://schema.staging.metadatacenter.net/properties/geolocationName",
@@ -231,22 +231,19 @@
       "@value": "tumor"
     },
     "collectionDate": {
-      "@value": "12/05/2016 12:00 AM"
+      "@value": "12-Dec-2016"
     },
     "collectionTimeEvent": {
       "@value": "vaccination"
     },
     "geolocationName": {
-      "@value": "Tunisia:Matmata"
+      "@value": "Tunisia"
     },
     "sourceCommercial": {
-      "@value": "None"
+      "@value": "missing"
     },
     "isolate": {
       "@value": "CD2"
-    },
-     "organism": {
-        "@value": "Homo sapiens"
     },
     "isolationSource": {
       "@value": "Respiratory"
@@ -255,7 +252,7 @@
       "@value": "45"
     },
     "biomaterialProvider": {
-      "@value": "none"
+      "@value": "Yale university"
     },
     "sex": {
       "@value": "male"
@@ -264,31 +261,31 @@
       "@value": "cell culture"
     },
     "tissue": {
-      "@value": "xxxx"
+      "@value": "missing"
     },
     "tissueProcessing": {
-      "@value": "xxxx"
+      "@value": "missing"
     },
     "cellStorage": {
-      "@value": "xxxx"
+      "@value": "missing"
     },
     "cellQuality": {
-      "@value": "xxxx"
+      "@value": "missing"
     },
     "cellIsolation": {
-      "@value": "xxxx"
+      "@value": "missing"
     },
     "cellSubset": {
-      "@value": "xxxx"
+      "@value": "missing"
     },
     "cellInvolved": {
-      "@value": "xxxx"
+      "@value": "missing"
     },
     "cellNumber": {
-      "@value": "xxxx"
+      "@value": "missing"
     },
     "processingProtocol": {
-      "@value": "xxxx"
+      "@value": "missing"
     },
     "optionalBioSampleAttribute": []
   },
