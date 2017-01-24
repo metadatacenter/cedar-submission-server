@@ -79,69 +79,67 @@ public class AIRRTemplate2BioSampleConverter
     name.setFirst(airrInstance.getProjectDescription().getPIFirstName().getValue());
     name.setLast(airrInstance.getProjectDescription().getPISecondName().getValue());
 
-    // Submission/Action
-    TypeSubmission.Action action = objectFactory.createTypeSubmissionAction();
-    xmlSubmission.getAction().add(action);
+    // Submission/Action[1] - BioSample
+    TypeSubmission.Action bioSampleAction = objectFactory.createTypeSubmissionAction();
+    xmlSubmission.getAction().add(bioSampleAction);
 
-    // Submission/Action/AddData/target_db
+    // Submission/Action[1]/AddData/target_db
     TypeSubmission.Action.AddData addData = objectFactory.createTypeSubmissionActionAddData();
-    action.setAddData(addData);
+    bioSampleAction.setAddData(addData);
     addData.setTargetDb("BioSample");
 
-    // Submission/Action/AddData/Data/content_type
+    // Submission/Action[1]/AddData/Data/content_type
     TypeSubmission.Action.AddData.Data data = objectFactory.createTypeSubmissionActionAddDataData();
     addData.getData().add(data);
     data.setContentType("XML");
 
-    // Submission/Action/AddData/Data/XMLContent
+    // Submission/Action[1]/AddData/Data/XMLContent
     TypeSubmission.Action.AddData.Data.XmlContent xmlContent = objectFactory.createTypeInlineDataXmlContent();
     data.setXmlContent(xmlContent);
 
-    // Submission/Action/AddData/Data/XMLContent/BioSample/schema_version
+    // Submission/Action[1]/AddData/Data/XMLContent/BioSample/schema_version
     TypeBioSample bioSample = bioSampleObjectFactory.createTypeBioSample();
     xmlContent.setBioSample(bioSample);
     bioSample.setSchemaVersion("2.0");
 
-    // Submission/Action/AddData/Data/XMLContent/BioSample/SampleID
+    // Submission/Action[1]/AddData/Data/XMLContent/BioSample/SampleID
     TypeBioSampleIdentifier sampleID = bioSampleObjectFactory.createTypeBioSampleIdentifier();
     bioSample.setSampleId(sampleID);
 
-    // Submission/Action/AddData/Data/XMLContent/BioSample/SampleID/SPUID
+    // Submission/Action[1]/AddData/Data/XMLContent/BioSample/SampleID/SPUID
     TypeBioSampleIdentifier.SPUID spuid = bioSampleObjectFactory.createTypeBioSampleIdentifierSPUID();
     sampleID.getSPUID().add(spuid);
     spuid.setSpuidNamespace("AIRR"); // TODO What should this be?
     spuid.setValue(airrInstance.getProjectDescription().getBioProjectID().getValue()); // TODO What should this be?
 
-    // Submission/Action/AddData/Data/XMLContent/BioSample/Descriptor
+    // Submission/Action[1]/AddData/Data/XMLContent/BioSample/Descriptor
     TypeDescriptor descriptor = spCommonObjectFactory.createTypeDescriptor();
     bioSample.setDescriptor(descriptor);
     descriptor.setTitle("Example CEDAR-generated BioSample AIRR submission");
 
-    // Submission/Action/AddData/Data/XMLContent/BioSample/Organism
+    // Submission/Action[1]/AddData/Data/XMLContent/BioSample/Organism
     TypeOrganism organism = spCommonObjectFactory.createTypeOrganism();
     bioSample.setOrganism(organism);
     organism.setOrganismName("Homo sapiens"); // TODO Where is this in AIRR template?
 
-    // Submission/Action/AddData/Data/XMLContent/BioSample/BioProject
+    // Submission/Action[1]/AddData/Data/XMLContent/BioSample/BioProject
     TypeRefId bioProject = spCommonObjectFactory.createTypeRefId();
     bioSample.getBioProject().add(bioProject);
 
-    // Submission/Action/AddData/Data/XMLContent/BioSample/BioProject/PrimaryID
+    // Submission/Action[1]/AddData/Data/XMLContent/BioSample/BioProject/PrimaryID
     TypePrimaryId bioProjectPrimaryID = spCommonObjectFactory.createTypePrimaryId();
     bioProject.setPrimaryId(bioProjectPrimaryID);
     bioProjectPrimaryID.setDb("BioProject");
     bioProjectPrimaryID.setValue(airrInstance.getProjectDescription().getBioProjectID().getValue());
 
-    // Submission/Action/AddData/Data/XMLContent/BioSample/Package
+    // Submission/Action[1]/AddData/Data/XMLContent/BioSample/Package
     bioSample.setPackage("Human.1.0"); // TODO Is this hard coded for AIRR?
 
-    // Submission/Action/AddData/Data/XMLContent/BioSample/Attributes
+    // Submission/Action[1]/AddData/Data/XMLContent/BioSample/Attributes
     TypeBioSample.Attributes bioSampleAttributes = bioSampleObjectFactory.createTypeBioSampleAttributes();
     bioSample.setAttributes(bioSampleAttributes);
 
-    // Submission/Action/AddData/Data/XMLContent/BioSample/Attributes/Attribute
-
-    // AIRR BioSample attributes
+    // Submission/Action[1]/AddData/Data/XMLContent/BioSample/Attributes/Attribute - AIRR BioSample attributes
     TypeAttribute attribute = bioSampleObjectFactory.createTypeAttribute();
     bioSampleAttributes.getAttribute().add(attribute);
     attribute.setAttributeName("anatomic_site");
@@ -186,6 +184,11 @@ public class AIRRTemplate2BioSampleConverter
     bioSampleAttributes.getAttribute().add(attribute);
     attribute.setAttributeName("age");
     attribute.setValue(airrInstance.getAIRRBioSampleAttributes().getAge().getValue());
+
+    attribute = bioSampleObjectFactory.createTypeAttribute();
+    bioSampleAttributes.getAttribute().add(attribute);
+    attribute.setAttributeName("biomaterial_provider");
+    attribute.setValue(airrInstance.getAIRRBioSampleAttributes().getBiomaterialProvider().getValue());
 
     attribute = bioSampleObjectFactory.createTypeAttribute();
     bioSampleAttributes.getAttribute().add(attribute);
@@ -255,14 +258,26 @@ public class AIRRTemplate2BioSampleConverter
       attribute.setValue(optionalAttribute.getValue().getValue());
     }
 
-    // Submission/Action/AddData/Data/XMLContent/BioSample/Attributes
+    // Submission/Action[1]/AddData/Data/XMLContent/BioSample/Attributes
     TypeBioSample.Attributes sraAttributes = bioSampleObjectFactory.createTypeBioSampleAttributes();
 
-    // Submission/Action/AddData/target_db
-    TypeSubmission.Action.AddData addDataToSRA = objectFactory.createTypeSubmissionActionAddData();
-    // TODO action.setAddData(addDataToSRA);
-    addDataToSRA.setTargetDb("SRA");
+    // Submission/Action[2] - SRA
+    TypeSubmission.Action sraAction = objectFactory.createTypeSubmissionAction();
+    xmlSubmission.getAction().add(sraAction);
 
+    // Submission/Action[2]/AddFiles/target_db
+    TypeSubmission.Action.AddFiles addFilesToSRA = objectFactory.createTypeSubmissionActionAddFiles();
+    sraAction.setAddFiles(addFilesToSRA);
+    addFilesToSRA.setTargetDb("SRA");
+    // TODO Set attribute CDE ID?
+
+    // Submission/Action[2]/AddFiles/File
+    TypeSubmission.Action.AddFiles.File file = objectFactory.createTypeSubmissionActionAddFilesFile();
+    addFilesToSRA.getFile().add(file);
+
+    TypeBioSample.Attributes sraSampleAttributes = bioSampleObjectFactory.createTypeBioSampleAttributes();
+
+    // Submission/Action[1]/AddFiles/Attributes/Attribute - AIRR SRA attributes
     attribute = bioSampleObjectFactory.createTypeAttribute();
     sraAttributes.getAttribute().add(attribute);
     attribute.setAttributeName("library_id");
