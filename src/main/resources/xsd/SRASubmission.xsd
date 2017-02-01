@@ -3,10 +3,283 @@
   <xs:import schemaLocation="biosample.xsd" namespace="biosample"/>
   <!-- Main Submission XML from NCBI web site.
        NOTE: Modified to hard code BioSample.xsd as the submission data in the Action/AddData/Data/XMLContent element.
-       Also modified to include 'biosample' namespace for imported biosample.xsd and set prefixes accordingly.
+       Also modified to replace AddFiles element definition with one in schema received from Ahmad at Yale (./examples/submission-com.xsd).
+       Also modified to include 'biosample' namespace for imported BioSample.xsd and to set prefixes accordingly.
   -->
   <xs:element name="Submission" type="typeSubmission">
   </xs:element>
+
+  <!-- Unique identifier in submitter context (Submitter Provided Unique ID). -->
+  <xs:complexType name="typeSPUID">
+    <xs:annotation>
+      <xs:documentation> Unique identifier in submitter context (Submitter Provided Unique
+      ID). </xs:documentation>
+    </xs:annotation>
+    <xs:simpleContent>
+      <xs:extension base="xs:string">
+        <xs:attribute type="xs:string" name="submitter_id" use="optional">
+          <xs:annotation>
+            <xs:documentation>DEPRICATED and will be removed: Optional submitter id - eg JGI. If omitted, the current submitter is assumed. </xs:documentation>
+          </xs:annotation>
+        </xs:attribute>
+        <xs:attribute type="xs:string" name="spuid_namespace" use="optional">
+          <xs:annotation>
+            <xs:documentation>Will be required: Identifier of the submitter namespace: This is a controlled vocabulary on NCBI side.</xs:documentation>
+          </xs:annotation>
+        </xs:attribute>                    
+      </xs:extension>
+    </xs:simpleContent>
+  </xs:complexType>
+
+
+  <!-- Accession in target archive. -->
+  <xs:complexType name="typePrimaryId">
+    <xs:annotation>
+      <xs:documentation> Unique accession in NCBI Archive. Accession is assigned only after
+      object is successfully loaded into NCBI archive. Optioanl integer id is for internal
+      NCBI use only. </xs:documentation>
+    </xs:annotation>
+    <xs:simpleContent>
+      <xs:extension base="xs:string">
+        <xs:attribute type="xs:string" name="db" use="optional">
+          <xs:annotation>
+            <xs:documentation> Optional identifier of the archive. Can be ommitted if
+            defined by context. </xs:documentation>
+          </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="id" type="xs:integer" use="optional">
+          <xs:annotation>
+            <xs:documentation> Host archive integer id. May be assigned only by NCBI.
+            </xs:documentation>
+          </xs:annotation>
+        </xs:attribute>
+      </xs:extension>
+    </xs:simpleContent>
+  </xs:complexType>
+
+  <!--  Local identifier in submission context. -->
+  <xs:complexType name="typeLocalId">
+    <xs:annotation>
+      <xs:documentation> Local identifier in submission context. </xs:documentation>
+    </xs:annotation>
+    <xs:simpleContent>
+      <xs:extension base="xs:string">
+        <xs:attribute type="xs:string" name="submission_id" use="optional">
+          <xs:annotation>
+            <xs:documentation> Optional submission id. If omitted, the current
+            submission is assumed. </xs:documentation>
+          </xs:annotation>
+        </xs:attribute>
+      </xs:extension>
+    </xs:simpleContent>
+  </xs:complexType>
+
+
+  <!-- Reference to a record inside NCBI database or in Submission Portal. -->
+  <xs:complexType name="typeRefId">
+    <xs:annotation>
+      <xs:documentation> Reference to a record inside NCBI database or in Submission Portal.
+      </xs:documentation>
+    </xs:annotation>
+    <xs:choice>
+      <xs:element name="LocalId" type="typeLocalId" minOccurs="0" maxOccurs="1">
+        <xs:annotation>
+          <xs:documentation> Local id in submission context. </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="SPUID" type="typeSPUID" minOccurs="0" maxOccurs="1">
+        <xs:annotation>
+          <xs:documentation> User-supplied unique id. </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="PrimaryId" type="typePrimaryId" minOccurs="0" maxOccurs="1">
+        <xs:annotation>
+          <xs:documentation> NCBI accession. </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:choice>
+  </xs:complexType>
+
+  <!-- Set of sequence or publication authors -->
+  <xs:complexType name="typeAuthorSet">
+    <xs:sequence maxOccurs="1">
+      <xs:element maxOccurs="unbounded" name="Author">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="Name" minOccurs="0" type="typeName"> </xs:element>
+            <xs:element name="Consortium" type="xs:string" minOccurs="0"/>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+
+  <!-- Identifier placed on the submitted object. -->
+  <xs:complexType name="typeIdentifier">
+    <xs:sequence>
+      <xs:annotation>
+        <xs:documentation> Identifier placed on submitted object by submitter. This is used
+        to tie the submitted object with assigned accession. </xs:documentation>
+      </xs:annotation>
+      <xs:element name="PrimaryId" minOccurs="0" maxOccurs="1" type="typePrimaryId">
+        <xs:annotation>
+          <xs:documentation> Used for updates: NCBI accession of the record being updated.
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="SPUID" type="typeSPUID" minOccurs="0" maxOccurs="1">
+        <xs:annotation>
+          <xs:documentation> An identifier from external database qualified by a
+          namespace. Similar to seq-id type general. </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="LocalId" type="typeLocalId" minOccurs="0" maxOccurs="1">
+        <xs:annotation>
+          <xs:documentation> Local id in submission context. </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+
+  <!-- Publication. Can be either structured or free form citations as well as link to the publication database. -->
+  <xs:complexType name="typePublication">
+    <xs:sequence>
+      <xs:element name="AuthorSet" type="typeAuthorSet" minOccurs="0" maxOccurs="1"> </xs:element>
+      <xs:element name="Reference" type="xs:string" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation>Free form citation.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="StructuredCitation" minOccurs="0">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="Title" type="xs:string"> </xs:element>
+            <xs:element name="Journal" minOccurs="0">
+              <xs:complexType>
+                <xs:sequence>
+                  <xs:element name="JournalTitle" type="xs:string">
+                    <xs:annotation>
+                      <xs:documentation>Journal title in ISO-JTO
+                      format</xs:documentation>
+                    </xs:annotation>
+                  </xs:element>
+                  <xs:element name="Year" minOccurs="0" type="xs:string"/>
+                  <xs:element name="Volume" minOccurs="0" type="xs:string"/>
+                  <xs:element name="Issue" minOccurs="0" type="xs:string"/>
+                  <xs:element name="PagesFrom" minOccurs="0" type="xs:string"/>
+                  <xs:element name="PagesTo" minOccurs="0" type="xs:string"/>
+                </xs:sequence>
+              </xs:complexType>
+            </xs:element>
+
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="DbType">
+        <xs:simpleType>
+          <xs:restriction base="xs:token">
+            <xs:enumeration value="ePMC"> </xs:enumeration>
+            <xs:enumeration value="ePubmed"> </xs:enumeration>
+            <xs:enumeration value="eDOI"> </xs:enumeration>
+            <xs:enumeration value="eNotAvailable">
+              <xs:annotation>
+                <xs:documentation> Use for Unpublished, in press or other databases.
+                </xs:documentation>
+              </xs:annotation>
+            </xs:enumeration>
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:element>
+    </xs:sequence>
+    <xs:attribute name="id" type="xs:string">
+      <xs:annotation>
+        <xs:documentation> Unique publication identifier in the specified database that is
+        specific to the project. </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="date" type="xs:dateTime">
+      <xs:annotation>
+        <xs:documentation> Publication date. </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="status">
+      <xs:simpleType>
+        <xs:restriction base="xs:token">
+          <xs:enumeration value="ePublished"/>
+          <xs:enumeration value="eInPress"/>
+          <xs:enumeration value="eUnpublished"/>
+        </xs:restriction>
+      </xs:simpleType>
+    </xs:attribute>
+  </xs:complexType>
+
+  <!-- 
+       Attributes of data (files and inlined data)
+  -->
+  <xs:complexType name="typeFileAttribute">
+    <xs:simpleContent>
+      <xs:extension base="xs:string">
+        <xs:attribute name="name" type="xs:string">
+          <xs:annotation>
+            <xs:documentation>Named attributes, attached to the file. This way submitter can attribute file to BioProject, BioSample, etc.</xs:documentation>
+          </xs:annotation>
+        </xs:attribute>
+      </xs:extension>
+    </xs:simpleContent>
+  </xs:complexType>
+
+  <!-- Reference ID attribute  -->
+  <xs:complexType name="typeFileAttributeRefId">
+    <xs:sequence>
+      <xs:element name="RefId" type="typeRefId">
+      </xs:element>
+    </xs:sequence>
+    <xs:attribute name="name" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Named attributes, attached to the file. This way submitter can attribute file to BioProject, BioSample, etc.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:complexType>
+
+  <!-- Data about sequences -->
+  <xs:complexType name="typeSequenceData">
+    <xs:sequence>
+      <xs:element name="Sequence" minOccurs="0" maxOccurs="unbounded">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="Attribute" type="typeFileAttribute" minOccurs="1" maxOccurs="unbounded"></xs:element>
+          </xs:sequence>
+          <xs:attribute name="id" type="xs:string" use="required"></xs:attribute>
+          <xs:attribute name="type" type="xs:string" use="required"></xs:attribute> <!-- TODO - restrict this by reasonable type set -->
+          <xs:attribute name="only_one" type="xs:string" use="optional"></xs:attribute>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="AuthorSet" type="typeAuthorSet" minOccurs="0" maxOccurs="1"></xs:element>
+    </xs:sequence>
+  </xs:complexType>
+
+  <!-- 
+       Release status of the data (files and inlined data)
+  -->
+  <xs:complexType name="typeReleaseStatus">
+    <xs:choice>
+      <xs:element name="Release">
+        <xs:annotation>
+          <xs:documentation>Immediate release</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="SetReleaseDate">
+        <xs:annotation>
+          <xs:documentation>Release on or after specific date.</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+          <xs:attribute name="release_date" type="xs:date"/>
+        </xs:complexType>
+      </xs:element>
+    </xs:choice>
+  </xs:complexType>
+
+  
   <xs:complexType name="typeSubmission"><xs:sequence>
 
     <xs:element name="Description">
@@ -90,30 +363,95 @@
               </xs:complexContent>
             </xs:complexType>
           </xs:element> <!-- closes ProcessFile -->
-          
+
+          <!-- Replacement AddFiles from ./examples/submission-comb.xsd -->
           <xs:element name="AddFiles">
-            <xs:annotation><xs:documentation>
-              Adding a group of files to the content of particular target archive in given context 
-            </xs:documentation></xs:annotation>
+            <xs:annotation>
+              <xs:documentation>
+                Adding a group of files to the content of particular target archive in given context 
+              </xs:documentation>
+            </xs:annotation>
             <xs:complexType>
               <xs:sequence>
-                <xs:element name="File" minOccurs="1" maxOccurs="unbounded"> 
+                <xs:element name="File" minOccurs="1" maxOccurs="unbounded">
                   <xs:complexType>
                     <xs:complexContent>
                       <xs:extension base="typeFile">
                         <xs:attribute name="target_db_label" use="optional">
-                          <xs:annotation><xs:documentation>
-                            File label the use of which is specific to target database. For example, for dbGaP genotype files, it can represent anonymized ids of dbGaP samples
-                          </xs:documentation></xs:annotation>
+                          <xs:annotation>
+                            <xs:documentation>
+                              File label the use of which is specific to target database. For example, for dbGaP genotype files, it can represent anonymized ids of dbGaP samples
+                            </xs:documentation>
+                          </xs:annotation>
                         </xs:attribute>
                       </xs:extension>
                     </xs:complexContent>
                   </xs:complexType>
                 </xs:element>
+                <xs:choice minOccurs="0" maxOccurs="unbounded">
+                  <xs:element name="Attribute" type="typeFileAttribute">
+                    <xs:annotation>
+                      <xs:documentation>
+                        Data attributes - a way to attribute all data under this node to BioProject, BioSample, etc.          
+                      </xs:documentation>
+                    </xs:annotation>
+                  </xs:element>
+                  <xs:element name="Meta" type="typeInlineData">
+                    <xs:annotation>
+                      <xs:documentation>File metadata in XML format.</xs:documentation>
+                    </xs:annotation>
+                  </xs:element>
+                  <xs:element name="AttributeRefId" type="typeFileAttributeRefId">
+                    <xs:annotation><xs:documentation>References to eg BioProject or BioSample</xs:documentation></xs:annotation>
+                  </xs:element>
+                  <xs:element name="SequenceData" type="typeSequenceData">
+                    <xs:annotation><xs:documentation>Data about sequences, files are related to.</xs:documentation></xs:annotation>
+                  </xs:element>
+                  <xs:element name="Publication" type="typePublication" maxOccurs="unbounded">
+                    <xs:annotation><xs:documentation> Publications, related to files.</xs:documentation></xs:annotation>
+                  </xs:element>
+                </xs:choice>
+                <xs:element name="Status" type="typeReleaseStatus" minOccurs="0" maxOccurs="1">
+                  <xs:annotation>
+                    <xs:documentation>
+                      Release status, specified by submitter. If not set, it's up to target archive.          
+                    </xs:documentation>
+                  </xs:annotation>
+                </xs:element>
+                <xs:element name="Identifier" type="typeIdentifier" minOccurs="0" maxOccurs="1">
+                  <xs:annotation><xs:documentation>Submission/User/NCBI - defined id.</xs:documentation></xs:annotation>
+                </xs:element>
               </xs:sequence>
               <xs:attributeGroup ref="attributesFileGroup"/>
             </xs:complexType>
-          </xs:element> <!-- closes AddFiles -->
+          </xs:element>
+
+
+          <!-- Original AddFiles definition
+               <xs:element name="AddFiles">
+               <xs:annotation><xs:documentation>
+               Adding a group of files to the content of particular target archive in given context 
+               </xs:documentation></xs:annotation>
+               <xs:complexType>
+               <xs:sequence>
+               <xs:element name="File" minOccurs="1" maxOccurs="unbounded"> 
+               <xs:complexType>
+               <xs:complexContent>
+               <xs:extension base="typeFile">
+               <xs:attribute name="target_db_label" use="optional">
+               <xs:annotation><xs:documentation>
+               File label the use of which is specific to target database. For example, for dbGaP genotype files, it can represent anonymized ids of dbGaP samples
+               </xs:documentation></xs:annotation>
+               </xs:attribute>
+               </xs:extension>
+               </xs:complexContent>
+               </xs:complexType>
+               </xs:element>
+               </xs:sequence>
+               <xs:attributeGroup ref="attributesFileGroup"/>
+               </xs:complexType>
+               </xs:element>
+          -->
 
           <xs:element name="AddData">
             <xs:annotation><xs:documentation>

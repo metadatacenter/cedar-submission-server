@@ -13,18 +13,24 @@ import org.apache.http.impl.client.HttpClientBuilder;
 import org.metadatacenter.submission.biosample.AIRRTemplate;
 import org.metadatacenter.submission.biosample.AMIA2016DemoBioSampleTemplate;
 import org.metadatacenter.submission.biosample.CEDARBioSampleValidationResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.datatype.DatatypeConfigurationException;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
 
 public class BioSampleValidator
 {
+  final static Logger logger = LoggerFactory.getLogger(BioSampleValidator.class);
+
   private static final String BIOSAMPLE_VALIDATION_URL = "https://www.ncbi.nlm.nih.gov/projects/biosample/validate/";
 
   private final AMIA2016DemoBioSampleTemplate2BioSampleConverter amia2016DemoBioSampleTemplate2BioSampleConverter;
@@ -111,6 +117,13 @@ public class BioSampleValidator
     String submissionXML = this.airrTemplate2BioSampleConverter
       .generateBioSampleSubmissionXMLFromAIRRInstance(airrInstance);
     StringEntity requestEntity = new StringEntity(submissionXML, ContentType.APPLICATION_XML);
+
+    // TODO Temporary for debugging of XML
+    File sraAIRRXMLSubmissionFile = File.createTempFile("AIRRSRASubmission", ".xml");
+    PrintWriter writer = new PrintWriter(sraAIRRXMLSubmissionFile);
+    writer.print(submissionXML);
+    writer.close();
+    logger.info("Generated temporary SRA submission XML file " + sraAIRRXMLSubmissionFile.toPath());
 
     post.setHeader("Accept", "application/xml");
     post.setHeader("Content-type", "application/xml");
