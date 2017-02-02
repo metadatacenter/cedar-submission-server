@@ -11,7 +11,7 @@
   <groupId>org.metadatacenter</groupId>
   <artifactId>cedar-submission-server</artifactId>
   <version>0.9.3-SNAPSHOT</version>
-  <packaging>jar</packaging>
+  <packaging>pom</packaging>
 
   <name>CEDAR Submission Server</name>
 
@@ -22,127 +22,12 @@
     <tag>HEAD</tag>
   </scm>
 
-  <dependencies>
+   <modules>
+    <module>cedar-submission-server-core</module>
+    <module>cedar-submission-server-application</module>
+  </modules>
 
-    <dependency>
-      <groupId>commons-lang</groupId>
-      <artifactId>commons-lang</artifactId>
-    </dependency>
-
-    <dependency>
-      <groupId>com.fasterxml.jackson.core</groupId>
-      <artifactId>jackson-databind</artifactId>
-    </dependency>
-
-    <dependency>
-      <groupId>com.fasterxml.jackson.core</groupId>
-      <artifactId>jackson-annotations</artifactId>
-    </dependency>
-
-    <dependency>
-      <groupId>org.apache.httpcomponents</groupId>
-      <artifactId>httpclient</artifactId>
-    </dependency>
-
-    <dependency>
-      <groupId>org.apache.httpcomponents</groupId>
-      <artifactId>httpcore</artifactId>
-    </dependency>
-
-    <!-- TODO Move overall dependency to dependency managment section of CEDAR parent POM when we figure 
-              why including this breaks some Play stuff -->
-    <dependency>
-      <groupId>io.dropwizard</groupId>
-      <artifactId>dropwizard-bom</artifactId>
-      <version>${dropwizard.version}</version>
-      <type>pom</type>
-    </dependency>
-
-    <dependency>
-      <groupId>io.dropwizard</groupId>
-      <artifactId>dropwizard-core</artifactId>
-      <version>${dropwizard.version}</version>
-    </dependency>
-
-  </dependencies>
-  
-  <build>
-    <plugins>
-
-      <plugin>
-	<groupId>org.codehaus.mojo</groupId>
-	<artifactId>exec-maven-plugin</artifactId>
-	<executions>
-	  <execution>
-	    <goals>
-	      <goal>java</goal>
-	    </goals>
-	  </execution>
-	</executions>
-	<configuration>
-	  <mainClass>org.metadatacenter.submission.biosample.CEDARBioSampleServerApplication</mainClass>
-          <arguments>
-            <argument>server</argument>
-            <argument>config.yml</argument>
-          </arguments>
-	</configuration>
-      </plugin>
-
-      <!-- jsonchema2pojo generates Java classes from JSON Schema documents -->
-      <plugin>
-        <groupId>org.jsonschema2pojo</groupId>
-        <artifactId>jsonschema2pojo-maven-plugin</artifactId>
-        <configuration>
-          <sourceDirectory>${basedir}/src/main/resources/json-schema</sourceDirectory>
-          <targetPackage>org.metadatacenter.submission.biosample</targetPackage>
-        </configuration>
-        <executions>
-          <execution>
-            <goals>
-              <goal>generate</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
-
-      <!-- JAXB generates Java classes from XML Schema documents -->
-      <plugin>
-        <groupId>org.jvnet.jaxb2.maven2</groupId>
-        <artifactId>maven-jaxb2-plugin</artifactId>
-        <configuration>
-          <schemaDirectory>${basedir}/src/main/resources/xsd</schemaDirectory>
-        </configuration>
-        <executions>
-          <execution>
-            <goals>
-              <goal>generate</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
-
-      <!-- Tell an IDE to include generated code in its compile phase. jsonschema2pojo uses ${basedir}/target/java-gen -->
-      <plugin> 
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>build-helper-maven-plugin</artifactId>
-        <executions>
-          <execution>
-            <id>test</id>
-            <phase>generate-sources</phase>
-            <goals>
-              <goal>add-source</goal>
-            </goals>
-            <configuration>
-              <sources>
-                <source>${basedir}/target/java-gen</source>
-              </sources>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-      
-    </plugins>
-
-  </build>
+  <properties>
+  </properties>
 
 </project>
