@@ -1,24 +1,21 @@
-
-# Ignore temporary Emacs files
-*~
-
-.settings
-.project
-.classpath
-.pydevproject
-.metadata
-.idea
-
+logs
+project/project
+project/target
+target
+tmp
+.history
+dist
+/.idea
 *.iml
+/out
+/.idea_modules
+/.classpath
+/.project
+*/RUNNING_PID
+/.settings
+keycloak.json
 
-# Exclude build directory
-target/*
-.
-/target
-
-*.pyc
-.DS_Store
-
-pom.xml.releaseBackup 
+pom.xml.releaseBackup
 release.properties
 pom.xml.versionsBackup
+dependency-reduced-pom.xml
