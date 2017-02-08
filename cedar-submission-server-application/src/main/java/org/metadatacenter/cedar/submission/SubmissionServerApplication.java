@@ -5,7 +5,7 @@ import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 import org.metadatacenter.bridge.CedarDataServices;
 import org.metadatacenter.cedar.submission.health.SubmissionServerHealthCheck;
-import org.metadatacenter.cedar.submission.resources.AIRRBioSampleServerResource;
+import org.metadatacenter.cedar.submission.resources.AIRRSubmissionServerResource;
 import org.metadatacenter.cedar.submission.resources.AMIA2016DemoBioSampleServerResource;
 import org.metadatacenter.cedar.submission.resources.IndexResource;
 import org.metadatacenter.cedar.util.dw.CedarDropwizardApplicationUtil;
@@ -29,7 +29,7 @@ public class SubmissionServerApplication extends Application<SubmissionServerCon
     cedarConfig = CedarConfig.getInstance();
     CedarDataServices.getInstance(cedarConfig);
 
-    CedarDropwizardApplicationUtil.setupKeycloak();
+    // TODO Temp CedarDropwizardApplicationUtil.setupKeycloak();
   }
 
   @Override
@@ -42,8 +42,8 @@ public class SubmissionServerApplication extends Application<SubmissionServerCon
     final AMIA2016DemoBioSampleServerResource amia2016DemoBioSampleServerResource = new AMIA2016DemoBioSampleServerResource();
     environment.jersey().register(amia2016DemoBioSampleServerResource);
 
-    final AIRRBioSampleServerResource airrBioSampleServerResource = new AIRRBioSampleServerResource();
-    environment.jersey().register(airrBioSampleServerResource);
+    final AIRRSubmissionServerResource airrSubmissionServerResource = new AIRRSubmissionServerResource();
+    environment.jersey().register(airrSubmissionServerResource);
 
     final SubmissionServerHealthCheck healthCheck = new SubmissionServerHealthCheck();
     environment.healthChecks().register("message", healthCheck);
