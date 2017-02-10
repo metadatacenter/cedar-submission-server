@@ -60,7 +60,7 @@ import java.util.Optional;
   @POST @Timed @Path("/submit-airr") public Response submitAIRR()
   {
 
-    Optional<FTPClient> ftpClient = createFTPClient(cedarConfig.getSubmissionConfig().getNcbi().getSraConfig().getFtp());
+    Optional<FTPClient> ftpClient = createFTPClient(cedarConfig.getSubmissionConfig().getNcbi().getSra().getFtp());
 
     try {
       if (ServletFileUpload.isMultipartContent(request)) {
