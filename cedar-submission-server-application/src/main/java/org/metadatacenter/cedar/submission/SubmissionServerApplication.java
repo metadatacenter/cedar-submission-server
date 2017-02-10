@@ -42,7 +42,7 @@ public class SubmissionServerApplication extends Application<SubmissionServerCon
     final AMIA2016DemoBioSampleServerResource amia2016DemoBioSampleServerResource = new AMIA2016DemoBioSampleServerResource();
     environment.jersey().register(amia2016DemoBioSampleServerResource);
 
-    final AIRRSubmissionServerResource airrSubmissionServerResource = new AIRRSubmissionServerResource();
+    final AIRRSubmissionServerResource airrSubmissionServerResource = new AIRRSubmissionServerResource(cedarConfig);
     environment.jersey().register(airrSubmissionServerResource);
 
     final SubmissionServerHealthCheck healthCheck = new SubmissionServerHealthCheck();

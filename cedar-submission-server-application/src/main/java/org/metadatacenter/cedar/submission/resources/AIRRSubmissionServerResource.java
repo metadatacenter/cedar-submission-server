@@ -8,6 +8,8 @@ import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPReply;
+import org.metadatacenter.config.CedarConfig;
+import org.metadatacenter.config.FTPConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,15 +50,17 @@ import java.util.Optional;
 
   protected @Context HttpServletResponse response;
 
-  public AIRRSubmissionServerResource()
+  private final CedarConfig cedarConfig;
+
+  public AIRRSubmissionServerResource(CedarConfig cedarConfig)
   {
+    this.cedarConfig = cedarConfig;
   }
 
   @POST @Timed @Path("/submit-airr") public Response submitAIRR()
   {
 
-    Optional<FTPClient> ftpClient = createFTPClient(NCBI_FTP_HOST, NCBI_FTP_USER, NCBI_FTP_PASSWORD,
-      REMOTE_SUBMISSION_DIRECTORY);
+    Optional<FTPClient> ftpClient = createFTPClient(cedarConfig.getSubmissionConfig().getNcbi().getSraConfig().getFtp());
 
     try {
       if (ServletFileUpload.isMultipartContent(request)) {
@@ -98,28 +102,28 @@ import java.util.Optional;
     }
   }
 
-  public Optional<FTPClient> createFTPClient(String ftpHost, String user, String password, String remoteDirectory)
+  public Optional<FTPClient> createFTPClient(FTPConfig ftpConfig)
   {
     FTPClient ftpClient = new FTPClient();
 
     try {
-      ftpClient.connect(ftpHost);
+      ftpClient.connect(ftpConfig.getHost());
 
-      if (!ftpClient.login(user, password)) {
+      if (!ftpClient.login(ftpConfig.getUser(), ftpConfig.getPassword())) {
         ftpClient.logout();
-        logger.warn("Failure logging in to FTP host " + ftpHost);
+        logger.warn("Failure logging in to FTP host " + ftpConfig.getHost());
         return Optional.empty();
       } else {
         int reply = ftpClient.getReplyCode();
         if (!FTPReply.isPositiveCompletion(reply)) {
           ftpClient.disconnect();
-          logger.warn("Failed to connect to FTP host " + ftpHost + ", reply = " + reply);
+          logger.warn("Failed to connect to FTP host " + ftpConfig.getHost() + ", reply = " + reply);
           return Optional.empty();
         } else {
           ftpClient.enterLocalPassiveMode();
-          ftpClient.changeWorkingDirectory(remoteDirectory);
-          logger
-            .info("Connected to FTP host " + ftpHost + "; current directory is " + ftpClient.printWorkingDirectory());
+          ftpClient.changeWorkingDirectory(ftpConfig.getSubmissionDirectory());
+          logger.info("Connected to FTP host " + ftpConfig.getHost() + "; current directory is " + ftpClient
+            .printWorkingDirectory());
           return Optional.of(ftpClient);
         }
       }
