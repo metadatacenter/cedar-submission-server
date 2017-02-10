@@ -19,7 +19,7 @@ To try an example CEDAR AIRR instance:
       -H "Content-type: application/json" \
       -H "Authorization: apiKey <CedarUserApiKey>" \
       -d @${CEDAR_HOME}/cedar-docs/repositories/AIRR/EAB2017DemoAIRRSampleInstance-Example.json \
-      "http://localhost:9010/command/validate-biosample"
+      "http://localhost:9010/command/validate-airr"
 
 Here is a success response from the server:
 

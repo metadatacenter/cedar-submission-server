@@ -42,7 +42,7 @@ import java.util.Optional;
  * <p>
  * https://docs.google.com/document/d/1tmPinCgaTwBkTsOwjitquFc0ZUN65w5xZs30q5phRkY/edit
  */
-@Path("/command") @Produces(MediaType.APPLICATION_JSON) @Consumes(MediaType.MULTIPART_FORM_DATA) public class AIRRSubmissionServerResource
+@Path("/command") @Produces(MediaType.APPLICATION_JSON) public class AIRRSubmissionServerResource
 {
   final static Logger logger = LoggerFactory.getLogger(AIRRSubmissionServerResource.class);
 
@@ -74,7 +74,8 @@ import java.util.Optional;
    * @param airrInstance An instance of an AIRR template
    * @return A validation response
    */
-  @POST @Timed @Path("/validate-airr") public Response validate(AIRRTemplate airrInstance)
+  @POST @Timed @Path("/validate-airr") @Consumes(MediaType.APPLICATION_JSON) public Response validate(
+    AIRRTemplate airrInstance)
   {
     try {
       String bioSampleSubmissionXML = this.airrTemplate2SRAConverter
@@ -90,7 +91,7 @@ import java.util.Optional;
     }
   }
 
-  @POST @Timed @Path("/submit-airr") public Response submitAIRR()
+  @POST @Timed @Path("/submit-airr") @Consumes(MediaType.MULTIPART_FORM_DATA) public Response submitAIRR()
   {
     Optional<FTPClient> ftpClient = createFTPClient(cedarConfig.getSubmissionConfig().getNcbi().getSra().getFtp());
     String ftpHost = cedarConfig.getSubmissionConfig().getNcbi().getSra().getFtp().getHost();
