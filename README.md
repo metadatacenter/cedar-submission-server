@@ -3,7 +3,7 @@
 
 The server will listen on port 9010.
 
-To try an example CEDAR BioSample instance:
+To validation an example CEDAR BioSample instance:
 
     curl -X POST \
       -H "Accept: application/json" \
@@ -12,7 +12,7 @@ To try an example CEDAR BioSample instance:
       -d @${CEDAR_HOME}/cedar-docs/repositories/BioSample/AMIA2016DemoBioSampleInstance-Example.json \
       "http://localhost:9010/command/validate-biosample"
 
-To try an example CEDAR AIRR instance:
+To validate an example CEDAR AIRR instance:
 
     curl -X POST \
       -H "Accept: application/json" \
@@ -20,6 +20,15 @@ To try an example CEDAR AIRR instance:
       -H "Authorization: apiKey <CedarUserApiKey>" \
       -d @${CEDAR_HOME}/cedar-docs/repositories/AIRR/EAB2017DemoAIRRSampleInstance-Example.json \
       "http://localhost:9010/command/validate-airr"
+
+To submit an example CEDAR AIRR instance (with no user-supplied files):
+
+    curl -X POST \
+      -H "Accept: application/json" \
+      -H "Content-Type: multipart/form-data" \
+      -H "Authorization: apiKey <CedarUserApiKey>" \
+      -F "instance=@${CEDAR_HOME}/cedar-docs/repositories/AIRR/EAB2017DemoAIRRSampleInstance-Example.json" \
+      "http://localhost:9010/command/submit-airr"
 
 Here is a success response from the server:
 

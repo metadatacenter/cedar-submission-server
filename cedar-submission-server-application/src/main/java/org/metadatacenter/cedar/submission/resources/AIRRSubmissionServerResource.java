@@ -104,19 +104,20 @@ import java.util.Optional;
 
         if (ftpClient.isPresent()) {
           for (FileItem fileItem : fileItems) {
-            String fileName = fileItem.getName();
             if (!fileItem.isFormField()) {
-              if ("instance".equals(fileName)) { // This is the AIRR instance JSON
+              String fieldName = fileItem.getFieldName();
+              if ("instance".equals(fieldName)) { // This is the AIRR instance JSON
                 InputStream is = fileItem.getInputStream();
                 AIRRTemplate airrInstance = JsonMapper.MAPPER.readValue(is, AIRRTemplate.class);
                 String bioSampleSubmissionXML = this.airrTemplate2SRAConverter
                   .generateSRASubmissionXMLFromAIRRTemplateInstance(airrInstance);
-                InputStream xmlIS = IOUtils.toInputStream(bioSampleSubmissionXML);
-                logger.info("Uploading submission XML " + fileName);
-                ftpClient.get().storeFile("submission.xml", xmlIS);
+                InputStream xmlStream = IOUtils.toInputStream(bioSampleSubmissionXML);
+                logger.info("Uploading submission XML");
+                ftpClient.get().storeFile("submission.xml", xmlStream);
                 is.close();
               } else { // The user-supplied files
                 InputStream is = fileItem.getInputStream();
+                String fileName = fileItem.getName();
                 logger.info("Uploading user-supplied data file " + fileName);
                 ftpClient.get().storeFile(fileName, is);
                 is.close();
