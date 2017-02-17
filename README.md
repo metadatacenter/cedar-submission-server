@@ -1,16 +1,34 @@
-# CEDAR BioSample Server
+# CEDAR Submission Server
 
-To run the server
 
-    mvn exec:java
+The server will listen on port 9010.
 
-The server will listen on port 9010. This port number can be changed in the `config.yml` file.
+To validation an example CEDAR BioSample instance:
 
-To try an example CEDAR BioSample instance:
+    curl -X POST \
+      -H "Accept: application/json" \
+      -H "Content-type: application/json" \
+      -H "Authorization: apiKey <CedarUserApiKey>" \
+      -d @${CEDAR_HOME}/cedar-docs/repositories/BioSample/AMIA2016DemoBioSampleInstance-Example.json \
+      "http://localhost:9010/command/validate-biosample"
 
-    curl -X POST -H "Accept: application/json" -H "Content-type: application/json" \
-         -d @./examples/AMIA2016DemoBioSampleInstance-Example.json \
-         "http://localhost:9010/validate"
+To validate an example CEDAR AIRR instance:
+
+    curl -X POST \
+      -H "Accept: application/json" \
+      -H "Content-type: application/json" \
+      -H "Authorization: apiKey <CedarUserApiKey>" \
+      -d @${CEDAR_HOME}/cedar-docs/repositories/AIRR/EAB2017DemoAIRRSampleInstance-Example.json \
+      "http://localhost:9010/command/validate-airr"
+
+To submit an example CEDAR AIRR instance (with no user-supplied files):
+
+    curl -X POST \
+      -H "Accept: application/json" \
+      -H "Content-Type: multipart/form-data" \
+      -H "Authorization: apiKey <CedarUserApiKey>" \
+      -F "instance=@${CEDAR_HOME}/cedar-docs/repositories/AIRR/EAB2017DemoAIRRSampleInstance-Example.json" \
+      "http://localhost:9010/command/submit-airr"
 
 Here is a success response from the server:
 
@@ -36,5 +54,7 @@ Here is an error response from the server:
 To validate that an example XML submission works against the BioSample REST service use the included
 example as follows: 
 
-    curl -X POST -d @./examples/Human.1.0-Example.xml "https://www.ncbi.nlm.nih.gov/projects/biosample/validate/"
-
+    curl -X POST \
+      -d @${CEDAR_HOME}/cedar-docs/repositories/BioSample/Human.1.0-Example.xml \
+      "https://www.ncbi.nlm.nih.gov/projects/biosample/validate/"
+      
