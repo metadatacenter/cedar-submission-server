@@ -31,7 +31,7 @@ public class SubmissionServerApplication extends CedarMicroserviceApplication<Su
 
     // Register resources
     final AMIA2016DemoBioSampleServerResource amia2016DemoBioSampleServerResource = new
-        AMIA2016DemoBioSampleServerResource();
+        AMIA2016DemoBioSampleServerResource(cedarConfig);
     environment.jersey().register(amia2016DemoBioSampleServerResource);
 
     final AIRRSubmissionServerResource airrSubmissionServerResource = new AIRRSubmissionServerResource(cedarConfig);
