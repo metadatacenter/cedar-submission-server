@@ -1,7 +1,7 @@
 package org.metadatacenter.cedar.submission;
 
-import io.dropwizard.Configuration;
+import org.metadatacenter.cedar.util.dw.CedarMicroserviceConfiguration;
 
-public class SubmissionServerConfiguration extends Configuration {
+public class SubmissionServerConfiguration extends CedarMicroserviceConfiguration {
 
 }
