@@ -6,13 +6,14 @@ branches:
   - develop
   - master
 notifications:
-  email:
-    recipients:
-    - cedar-core-developers@lists.stanford.edu
-    on_success: never
+  slack:
+    on_success: change
     on_failure: always
-install: '[ ${TRAVIS_PULL_REQUEST} = ''false'' ] && mvn -DskipTests=false clean deploy --settings .m2/travis-settings.xml'
-script: '[ ${TRAVIS_PULL_REQUEST} = ''false'' ] && mvn -DskipTests=true clean --settings .m2/travis-settings.xml'
+    secure: xSIYhhwtzd+DV5oHEiT3ZVVCKsVlabQ7DMjx6xrq5XZtNBlsLSq6FhHJY37rbfI//6jv2PPZS2OUgNvhmDeiCrWbN6cIXZWkOVHcizfkKLvENLwnqvY+RU4gbwRvTfYEs+WPsl7iRRIahjKHGJHNuSnPSOwQ68eMr60WCSvakRX3ZOA0NgDW6v+MwUL9oTK25ArPhd0D98q5PVuvHmPTK/nc/CHjAJKIhrxqtgMb2PXYwX1YgEnHxbVarbVUqJsJ1Wi0t5PWvf6nLGPSp97f5mt7E68G+J+i18gGh9d/LWSpz8b1qOkxqB7xZwFOmp2Z0OyCNP0PeXmEKozdXMaEa5oi1eeIbot1VjjWrX9eL8b4JGLCR7cTLwZ1Zw7mZi3vTVSyqe9UEBZgGQAkixC0Y93TBRgstsv5/wDu2M4tIn68vKtCFRBnViJmau5UikYl0EukzzLB+LuJLZ2HgkhngwTxMdNIpXVDNRvMgRXMBfKYUmIneGNEAS2DJHlm6LDkGUpD4nBVJs1JJ07lRv/w9ithypLHgfOIWWtthr3JLuq0jvjJaVT91vxGcrUhLsXYnQbcy2l5yDXOLi+PA9UY0O/51m2t2hNojsZg2Eu0dNSipH7wZgGI7peO5hqAEx4F5IqlWBopSfHVd2M3CpyRp6yMMGbvZam1zE5RSg093F0=
+install: '[ ${TRAVIS_PULL_REQUEST} = ''false'' ] && mvn -DskipTests=false clean deploy
+  --settings .m2/travis-settings.xml'
+script: '[ ${TRAVIS_PULL_REQUEST} = ''false'' ] && mvn -DskipTests=true clean --settings
+  .m2/travis-settings.xml'
 env:
   global:
   - secure: MtEIkzgnAGvXAsSUI3PR0labEyrwlmbbzaiWRxWQFnuBNFOOQgerqCbwpxHY3jb+ogpthFrxhDOZTVWZuPACjTrfcGV02PO4w92L9OI+W9uzgKOE5rMcyvw9/1FanDj0NPFqCI2yukvvbBAEEO+/+FEvEErB1Bkx49C8KVNK8rSD3cSp8Nkh1c4hSWqnqrHdqZZDTl5uueWt/3eK+4FTxHPY8BfRY3KFCJO/KNB3OA9l4dehVCcnhAItQouuPkpsNV9Tke64X2hCnWcFHdiu9p0k5rC9dGurhgf9oQyWmY51Gjq4VLTke/oIO7IkXnWdKTfUQMgVnDoLvy/hIrH8VlwGzuwfU9nahJaW0Y1YLETOih2RAqcKtcKD1Epsl44gg89QT7rVRv9aio3MjxgDxI20T01jkgBs9nxUrKOhnFw5Ow7G7wM7n5Qozt5E7ty1GKrw0GmTEjEbczqEL5Aeid3DlDQTf7f+sezovZXPjAc23TLsVWXQXHRt8OSMm4DGU28JxnuEXjD/BeUQHgBSdFbkGj0N5L9+84ltPjizWUgH4T0NBRsOb89AErLDAGY8tZ9Wl205TZcyR3YtU+7WI1f2aEmO4hkDU3G0Rv5sDu++U7lfC5pce38IWsRKEKzTUxMzLgUqMslm4OuvTXK+C3SL6j7S7jWj9rtj/xZIhMo=

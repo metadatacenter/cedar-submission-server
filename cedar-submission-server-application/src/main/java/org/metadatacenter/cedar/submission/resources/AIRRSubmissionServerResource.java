@@ -12,6 +12,9 @@ import org.apache.commons.net.ftp.FTPReply;
 import org.metadatacenter.cedar.util.dw.CedarMicroserviceResource;
 import org.metadatacenter.config.CedarConfig;
 import org.metadatacenter.config.FTPConfig;
+import org.metadatacenter.exception.CedarException;
+import org.metadatacenter.rest.context.CedarRequestContext;
+import org.metadatacenter.rest.context.CedarRequestContextFactory;
 import org.metadatacenter.submission.AIRRTemplate2SRAConverter;
 import org.metadatacenter.submission.BioSampleValidator;
 import org.metadatacenter.submission.biosample.AIRRTemplate;
@@ -34,21 +37,24 @@ import java.net.SocketException;
 import java.util.List;
 import java.util.Optional;
 
+import static org.metadatacenter.rest.assertion.GenericAssertions.LoggedIn;
+
 /**
  * See here for submission instructions to NCBI:
  * <p>
  * https://docs.google.com/document/d/1tmPinCgaTwBkTsOwjitquFc0ZUN65w5xZs30q5phRkY/edit
  */
-@Path("/command")
-@Produces(MediaType.APPLICATION_JSON)
-public class AIRRSubmissionServerResource extends CedarMicroserviceResource {
+@Path("/command") @Produces(MediaType.APPLICATION_JSON) public class AIRRSubmissionServerResource
+  extends CedarMicroserviceResource
+{
   final static Logger logger = LoggerFactory.getLogger(AIRRSubmissionServerResource.class);
 
   private final BioSampleValidator bioSampleValidator;
 
   private final AIRRTemplate2SRAConverter airrTemplate2SRAConverter;
 
-  public AIRRSubmissionServerResource(CedarConfig cedarConfig) {
+  public AIRRSubmissionServerResource(CedarConfig cedarConfig)
+  {
     super(cedarConfig);
     this.bioSampleValidator = new BioSampleValidator();
     this.airrTemplate2SRAConverter = new AIRRTemplate2SRAConverter();
@@ -63,39 +69,37 @@ public class AIRRSubmissionServerResource extends CedarMicroserviceResource {
    * @param airrInstance An instance of an AIRR template
    * @return A validation response
    */
-  @POST
-  @Timed
-  @Path("/validate-airr")
-  @Consumes(MediaType.APPLICATION_JSON)
-  public Response validate(
-      AIRRTemplate airrInstance) {
+  @POST @Timed @Path("/validate-airr") @Consumes(MediaType.APPLICATION_JSON) public Response validate(
+    AIRRTemplate airrInstance) throws CedarException
+  {
+
+    CedarRequestContext c = CedarRequestContextFactory.fromRequest(request);
+    c.must(c.user()).be(LoggedIn);
+
     try {
       String bioSampleSubmissionXML = this.airrTemplate2SRAConverter
-          .generateSRASubmissionXMLFromAIRRTemplateInstance(airrInstance);
+        .generateSRASubmissionXMLFromAIRRTemplateInstance(airrInstance);
 
       return Response.ok(this.bioSampleValidator.validateBioSampleSubmission(bioSampleSubmissionXML)).build();
-    } catch (JAXBException e) {
-      return Response.status(Response.Status.BAD_REQUEST).build();
-    } catch (IOException e) {
-      return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
-    } catch (DatatypeConfigurationException e) {
+    } catch (JAXBException | DatatypeConfigurationException e) {
       return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
     }
   }
 
-  @POST
-  @Timed
-  @Path("/submit-airr")
-  @Consumes(MediaType.MULTIPART_FORM_DATA)
-  public Response submitAIRR() {
+  @POST @Timed @Path("/submit-airr") @Consumes(MediaType.MULTIPART_FORM_DATA) public Response submitAIRR()
+    throws CedarException
+  {
     Optional<FTPClient> ftpClient = createFTPClient(cedarConfig.getSubmissionConfig().getNcbi().getSra().getFtp());
     String ftpHost = cedarConfig.getSubmissionConfig().getNcbi().getSra().getFtp().getHost();
+
+    CedarRequestContext c = CedarRequestContextFactory.fromRequest(request);
+    c.must(c.user()).be(LoggedIn);
 
     try {
       if (ServletFileUpload.isMultipartContent(request)) {
         File tempDir = Files.createTempDir();
         List<FileItem> fileItems = new ServletFileUpload(new DiskFileItemFactory(1024 * 1024, tempDir)).
-            parseRequest(request);
+          parseRequest(request);
 
         if (ftpClient.isPresent()) {
           for (FileItem fileItem : fileItems) {
@@ -105,7 +109,7 @@ public class AIRRSubmissionServerResource extends CedarMicroserviceResource {
                 InputStream is = fileItem.getInputStream();
                 AIRRTemplate airrInstance = JsonMapper.MAPPER.readValue(is, AIRRTemplate.class);
                 String bioSampleSubmissionXML = this.airrTemplate2SRAConverter
-                    .generateSRASubmissionXMLFromAIRRTemplateInstance(airrInstance);
+                  .generateSRASubmissionXMLFromAIRRTemplateInstance(airrInstance);
                 InputStream xmlStream = IOUtils.toInputStream(bioSampleSubmissionXML);
                 logger.info("Uploading submission XML");
                 ftpClient.get().storeFile("submission.xml", xmlStream);
@@ -148,7 +152,8 @@ public class AIRRSubmissionServerResource extends CedarMicroserviceResource {
     }
   }
 
-  public Optional<FTPClient> createFTPClient(FTPConfig ftpConfig) {
+  public Optional<FTPClient> createFTPClient(FTPConfig ftpConfig)
+  {
     FTPClient ftpClient = new FTPClient();
 
     try {
@@ -168,7 +173,7 @@ public class AIRRSubmissionServerResource extends CedarMicroserviceResource {
           ftpClient.enterLocalPassiveMode();
           ftpClient.changeWorkingDirectory(ftpConfig.getSubmissionDirectory());
           logger.info("Connected to FTP host " + ftpConfig.getHost() + "; current directory is " + ftpClient
-              .printWorkingDirectory());
+            .printWorkingDirectory());
           return Optional.of(ftpClient);
         }
       }
