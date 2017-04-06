@@ -7,6 +7,7 @@ import org.metadatacenter.cedar.submission.resources.AIRRSubmissionServerResourc
 import org.metadatacenter.cedar.submission.resources.AMIA2016DemoBioSampleServerResource;
 import org.metadatacenter.cedar.submission.resources.IndexResource;
 import org.metadatacenter.cedar.util.dw.CedarMicroserviceApplication;
+import org.metadatacenter.model.ServerName;
 
 public class SubmissionServerApplication extends CedarMicroserviceApplication<SubmissionServerConfiguration> {
 
@@ -15,8 +16,8 @@ public class SubmissionServerApplication extends CedarMicroserviceApplication<Su
   }
 
   @Override
-  public String getName() {
-    return "cedar-submission-server";
+  protected ServerName getServerName() {
+    return ServerName.SUBMISSION;
   }
 
   @Override
