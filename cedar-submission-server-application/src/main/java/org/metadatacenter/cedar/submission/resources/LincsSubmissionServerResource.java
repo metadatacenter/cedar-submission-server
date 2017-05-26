@@ -47,13 +47,12 @@ public class LincsSubmissionServerResource extends CedarMicroserviceResource {
 
     String payload = c.request().getRequestBody().asJsonString();
 
-    HttpResponse lincsResponse = sendPostRequest(LINCS_VALIDATION_ENDPOINT, payload);
-    Response response = createServiceResponse(lincsResponse);
-    return response;
+    HttpResponse lincsResponse = sendPostRequestToLincsServer(payload);
+    return unpackLincsResponseAndForwardIt(lincsResponse);
   }
 
-  private HttpResponse sendPostRequest(String url, String content) throws CedarProcessingException {
-    Request proxyRequest = Request.Post(url)
+  private HttpResponse sendPostRequestToLincsServer(String content) throws CedarProcessingException {
+    Request proxyRequest = Request.Post(LINCS_VALIDATION_ENDPOINT)
         .connectTimeout(HttpConnectionConstants.CONNECTION_TIMEOUT)
         .socketTimeout(HttpConnectionConstants.SOCKET_TIMEOUT)
         .bodyString(content, ContentType.APPLICATION_JSON);
@@ -65,7 +64,7 @@ public class LincsSubmissionServerResource extends CedarMicroserviceResource {
     }
   }
 
-  private Response createServiceResponse(HttpResponse httpResponse) throws CedarProcessingException {
+  private Response unpackLincsResponseAndForwardIt(HttpResponse httpResponse) throws CedarProcessingException {
     try {
       HttpEntity entity = httpResponse.getEntity();
       int statusCode = httpResponse.getStatusLine().getStatusCode();
