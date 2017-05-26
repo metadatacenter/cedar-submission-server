@@ -47,14 +47,9 @@ public class LincsSubmissionServerResource extends CedarMicroserviceResource {
 
     String payload = c.request().getRequestBody().asJsonString();
 
-    try {
-      HttpResponse lincsResponse = sendPostRequest(LINCS_VALIDATION_ENDPOINT, payload);
-      Response response = createServiceResponse(lincsResponse);
-      return response;
-    } catch (Exception e) {
-      logger.error(e.getMessage(), e);
-      throw new CedarProcessingException(e);
-    }
+    HttpResponse lincsResponse = sendPostRequest(LINCS_VALIDATION_ENDPOINT, payload);
+    Response response = createServiceResponse(lincsResponse);
+    return response;
   }
 
   private HttpResponse sendPostRequest(String url, String content) throws
@@ -71,10 +66,15 @@ public class LincsSubmissionServerResource extends CedarMicroserviceResource {
     }
   }
 
-  private Response createServiceResponse(HttpResponse httpResponse) throws IOException {
-    HttpEntity entity = httpResponse.getEntity();
-    int statusCode = httpResponse.getStatusLine().getStatusCode();
-    String mediaType = entity.getContentType().getValue();
-    return Response.status(statusCode).type(mediaType).entity(entity.getContent()).build();
+  private Response createServiceResponse(HttpResponse httpResponse) throws CedarProcessingException {
+    try {
+      HttpEntity entity = httpResponse.getEntity();
+      int statusCode = httpResponse.getStatusLine().getStatusCode();
+      String mediaType = entity.getContentType().getValue();
+      return Response.status(statusCode).type(mediaType).entity(entity.getContent()).build();
+    } catch (Exception e) {
+      logger.error(e.getMessage(), e);
+      throw new CedarProcessingException(e);
+    }
   }
 }
