@@ -52,8 +52,7 @@ public class LincsSubmissionServerResource extends CedarMicroserviceResource {
     return response;
   }
 
-  private HttpResponse sendPostRequest(String url, String content) throws
-      CedarProcessingException {
+  private HttpResponse sendPostRequest(String url, String content) throws CedarProcessingException {
     Request proxyRequest = Request.Post(url)
         .connectTimeout(HttpConnectionConstants.CONNECTION_TIMEOUT)
         .socketTimeout(HttpConnectionConstants.SOCKET_TIMEOUT)
