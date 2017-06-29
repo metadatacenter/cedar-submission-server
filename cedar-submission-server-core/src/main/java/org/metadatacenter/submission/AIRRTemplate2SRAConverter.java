@@ -279,47 +279,47 @@ public class AIRRTemplate2SRAConverter
     // Submission/Action[1]/AddFiles/Attributes/Attribute - AIRR SRA attributes
     TypeFileAttribute fileAttribute = objectFactory.createTypeFileAttribute();
     fileAttribute.setName("library_id");
-    fileAttribute.setValue(airrInstance.getAIRRSRAAttributes().getLibraryID().getValue());
+    fileAttribute.setValue(airrInstance.getSRA().getLibraryID().getValue());
     sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(fileAttribute);
 
     fileAttribute = objectFactory.createTypeFileAttribute();
     fileAttribute.setName("title");
-    fileAttribute.setValue(airrInstance.getAIRRSRAAttributes().getTitle().getValue());
+    fileAttribute.setValue(airrInstance.getSRA().getTitle().getValue());
     sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(fileAttribute);
 
     fileAttribute = objectFactory.createTypeFileAttribute();
     fileAttribute.setName("library_startegy");
-    fileAttribute.setValue(airrInstance.getAIRRSRAAttributes().getLibraryStrategy().getValue());
+    fileAttribute.setValue(airrInstance.getSRA().getLibraryStrategy().getValue());
     sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(fileAttribute);
 
     fileAttribute = objectFactory.createTypeFileAttribute();
     fileAttribute.setName("library_source");
-    fileAttribute.setValue(airrInstance.getAIRRSRAAttributes().getLibrarySource().getValue());
+    fileAttribute.setValue(airrInstance.getSRA().getLibrarySource().getValue());
     sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(fileAttribute);
 
     fileAttribute = objectFactory.createTypeFileAttribute();
     fileAttribute.setName("library_selection");
-    fileAttribute.setValue(airrInstance.getAIRRSRAAttributes().getLibrarySelection().getValue());
+    fileAttribute.setValue(airrInstance.getSRA().getLibrarySelection().getValue());
     sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(fileAttribute);
 
     fileAttribute = objectFactory.createTypeFileAttribute();
     fileAttribute.setName("library_layout");
-    fileAttribute.setValue(airrInstance.getAIRRSRAAttributes().getLibraryLayout().getValue());
+    fileAttribute.setValue(airrInstance.getSRA().getLibraryLayout().getValue());
     sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(fileAttribute);
 
     fileAttribute = objectFactory.createTypeFileAttribute();
     fileAttribute.setName("library_name");
-    fileAttribute.setValue(airrInstance.getAIRRSRAAttributes().getLibraryName().getValue());
+    fileAttribute.setValue(airrInstance.getSRA().getLibraryName().getValue());
     sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(fileAttribute);
 
     fileAttribute = objectFactory.createTypeFileAttribute();
     fileAttribute.setName("platform");
-    fileAttribute.setValue(airrInstance.getAIRRSRAAttributes().getPlatform().getValue());
+    fileAttribute.setValue(airrInstance.getSRA().getPlatform().getValue());
     sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(fileAttribute);
 
     fileAttribute = objectFactory.createTypeFileAttribute();
     fileAttribute.setName("instrument_model");
-    fileAttribute.setValue(airrInstance.getAIRRSRAAttributes().getInstrumentModel().getValue());
+    fileAttribute.setValue(airrInstance.getSRA().getInstrumentModel().getValue());
     sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(fileAttribute);
 
     // TODO The value here seems to confuse the BioSample validator
@@ -330,92 +330,93 @@ public class AIRRTemplate2SRAConverter
 
     fileAttribute = objectFactory.createTypeFileAttribute();
     fileAttribute.setName("filetype");
-    fileAttribute.setValue(airrInstance.getAIRRSRAAttributes().getFileType().getValue());
+    fileAttribute.setValue(airrInstance.getSRA().getFileType().getValue());
     sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(fileAttribute);
 
     fileAttribute = objectFactory.createTypeFileAttribute();
     fileAttribute.setName("filename");
-    fileAttribute.setValue(airrInstance.getAIRRSRAAttributes().getFileName().getValue());
+    fileAttribute.setValue(airrInstance.getSRA().getFileName().getValue());
     sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(fileAttribute);
 
     fileAttribute = objectFactory.createTypeFileAttribute();
-    fileAttribute.setName("target_substrate");
-    fileAttribute.setValue(airrInstance.getAIRRSRAAttributes().getTargetSubstrate().getValue());
+    fileAttribute.setName("target_substrate"); // TODO Check this name
+    //fileAttribute.setValue(airrInstance.getAIRRSRAAttributes().getTargetSubstrate().getValue());
+    fileAttribute.setValue(airrInstance.getSRA().getTargetSubstrateQuality().getValue());
     sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(fileAttribute);
 
     fileAttribute = objectFactory.createTypeFileAttribute();
     fileAttribute.setName("target_substrate_quality");
-    fileAttribute.setValue(airrInstance.getAIRRSRAAttributes().getTargetSubstrateQuality().getValue());
+    fileAttribute.setValue(airrInstance.getSRA().getTargetSubstrateQuality().getValue());
     sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(fileAttribute);
 
     fileAttribute = objectFactory.createTypeFileAttribute();
     fileAttribute.setName("library_generation_method");
-    fileAttribute.setValue(airrInstance.getAIRRSRAAttributes().getLibraryGenerationMethod().getValue());
+    fileAttribute.setValue(airrInstance.getSRA().getLibraryGenerationMethod().getValue());
     sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(fileAttribute);
 
     fileAttribute = objectFactory.createTypeFileAttribute();
     fileAttribute.setName("library_generation_protocol");
-    fileAttribute.setValue(airrInstance.getAIRRSRAAttributes().getLibraryGenerationProtocol().getValue());
+    fileAttribute.setValue(airrInstance.getSRA().getLibraryGenerationProtocol().getValue());
     sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(fileAttribute);
 
     fileAttribute = objectFactory.createTypeFileAttribute();
     fileAttribute.setName("target_locus_PCR");
-    fileAttribute.setValue(airrInstance.getAIRRSRAAttributes().getTargetLocusPCR().getValue());
+    fileAttribute.setValue(airrInstance.getSRA().getTargetLocusPCR().getValue());
     sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(fileAttribute);
 
     fileAttribute = objectFactory.createTypeFileAttribute();
     fileAttribute.setName("forward_PCR_primer_target_location");
-    fileAttribute.setValue(airrInstance.getAIRRSRAAttributes().getForwardPCRPrimerTargetLocation().getValue());
+    fileAttribute.setValue(airrInstance.getSRA().getForwardPCRPrimerTargetLocation().getValue());
     sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(fileAttribute);
 
     fileAttribute = objectFactory.createTypeFileAttribute();
     fileAttribute.setName("reverse_PCR_primer_target_location");
-    fileAttribute.setValue(airrInstance.getAIRRSRAAttributes().getReversePCRPrimerTargetLocation().getValue());
+    fileAttribute.setValue(airrInstance.getSRA().getReversePCRPrimerTargetLocation().getValue());
     sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(fileAttribute);
 
     fileAttribute = objectFactory.createTypeFileAttribute();
     fileAttribute.setName("whole_vs_partial_sequences");
-    fileAttribute.setValue(airrInstance.getAIRRSRAAttributes().getWholeVsPartialSequences().getValue());
+    fileAttribute.setValue(airrInstance.getSRA().getWholeVsPartialSequences().getValue());
     sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(fileAttribute);
 
     fileAttribute = objectFactory.createTypeFileAttribute();
     fileAttribute.setName("comparison_vs_heavy_light_chain_paired_chains");
-    fileAttribute.setValue(airrInstance.getAIRRSRAAttributes().getComparisonHeavyLightPairedChains().getValue());
+    fileAttribute.setValue(airrInstance.getSRA().getComparisonHeavyLightPairedChains().getValue());
     sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(fileAttribute);
 
     fileAttribute = objectFactory.createTypeFileAttribute();
     fileAttribute.setName("ng_templates");
-    fileAttribute.setValue(airrInstance.getAIRRSRAAttributes().getNGTemplate().getValue());
+    fileAttribute.setValue(airrInstance.getSRA().getNGTemplate().getValue());
     sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(fileAttribute);
 
     fileAttribute = objectFactory.createTypeFileAttribute();
     fileAttribute.setName("total_reads_passing_qc_filters");
-    fileAttribute.setValue(airrInstance.getAIRRSRAAttributes().getTotalReadsPassingQCFilter().getValue());
+    fileAttribute.setValue(airrInstance.getSRA().getTotalReadsPassingQCFilter().getValue());
     sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(fileAttribute);
 
     fileAttribute = objectFactory.createTypeFileAttribute();
     fileAttribute.setName("protocol_id");
-    fileAttribute.setValue(airrInstance.getAIRRSRAAttributes().getProtocolID().getValue());
+    fileAttribute.setValue(airrInstance.getSRA().getProtocolID().getValue());
     sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(fileAttribute);
 
     fileAttribute = objectFactory.createTypeFileAttribute();
     fileAttribute.setName("read_length");
-    fileAttribute.setValue(airrInstance.getAIRRSRAAttributes().getReadLength().getValue());
+    fileAttribute.setValue(airrInstance.getSRA().getReadLength().getValue());
     sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(fileAttribute);
 
     fileAttribute = objectFactory.createTypeFileAttribute();
     fileAttribute.setName("sequencing_facility");
-    fileAttribute.setValue(airrInstance.getAIRRSRAAttributes().getSequencingFacility().getValue());
+    fileAttribute.setValue(airrInstance.getSRA().getSequencingFacility().getValue());
     sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(fileAttribute);
 
     fileAttribute = objectFactory.createTypeFileAttribute();
     fileAttribute.setName("batch_number");
-    fileAttribute.setValue(airrInstance.getAIRRSRAAttributes().getBatchNumber().getValue());
+    fileAttribute.setValue(airrInstance.getSRA().getBatchNumber().getValue());
     sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(fileAttribute);
 
     fileAttribute = objectFactory.createTypeFileAttribute();
     fileAttribute.setName("sequencing_kit");
-    fileAttribute.setValue(airrInstance.getAIRRSRAAttributes().getSequencingKit().getValue());
+    fileAttribute.setValue(airrInstance.getSRA().getSequencingKit().getValue());
     sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(fileAttribute);
 
     StringWriter writer = new StringWriter();
