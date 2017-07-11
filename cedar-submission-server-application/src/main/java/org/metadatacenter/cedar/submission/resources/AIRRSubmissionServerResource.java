@@ -15,7 +15,6 @@ import org.metadatacenter.rest.context.CedarRequestContextFactory;
 import org.metadatacenter.submission.AIRRTemplate2SRAConverter;
 import org.metadatacenter.submission.BioSampleValidator;
 import org.metadatacenter.submission.biosample.AIRRTemplate;
-import org.metadatacenter.util.http.CedarResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -29,6 +28,7 @@ import javax.xml.bind.JAXBException;
 import javax.xml.datatype.DatatypeConfigurationException;
 import java.io.File;
 import java.io.IOException;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
@@ -82,11 +82,24 @@ import static org.metadatacenter.rest.assertion.GenericAssertions.LoggedIn;
     }
   }
 
-  private Response upload(List<File> listOfFiles) {
+  /**
+   * Upload a list of files to the NCBI server via the FTP protocol. For the NCBI submission, the files
+   * should include submission.xml and FASTQ files. All these files will be stored in a remote directory
+   * provided by the input parameter 'submissionDir'.
+   *
+   * @param submissionDir
+   *          The directory name to be created at the remote server to store all the files.
+   * @param listOfFiles
+   *          A list of files to be uploaded
+   * @throws IOException
+   *          When upload failed due to I/O difficulties.
+   * @throws UploaderCreationException
+   *          When the FTP uploader failed to be created (e.g., hostname not found or invalid credential)
+   */
+  private void upload(String submissionDir, Collection<File> listOfFiles) throws IOException, UploaderCreationException {
     FTPConfig ftpConfig = cedarConfig.getSubmissionConfig().getNcbi().getSra().getFtp();
     FileUploader uploader = null;
     try {
-      String submissionDir = generateDirectoryName();
       uploader = FtpUploader.createNewUploader(
           ftpConfig.getHost(),
           ftpConfig.getUser(),
@@ -94,31 +107,19 @@ import static org.metadatacenter.rest.assertion.GenericAssertions.LoggedIn;
           Optional.of(ftpConfig.getSubmissionDirectory()));
       uploadResourceFiles(uploader, submissionDir, listOfFiles);
       uploadSubmitReadyFile(uploader, submissionDir);
-      return CedarResponse.ok().build();
-    } catch (UploaderCreationException | IOException e) {
-      String message = String.format("Error while uploading resources to %s", ftpConfig.getHost());
-      logger.error(message + ": " + e.getMessage());
-      return CedarResponse.internalServerError()
-          .errorMessage(message)
-          .exception(e)
-          .build();
     } finally {
       if (uploader != null) {
         try {
           uploader.disconnect();
         } catch (IOException e) {
-          String message = String.format("Error while disconnecting to %s", ftpConfig.getHost());
+          String message = String.format("Error while disconnecting from %s", ftpConfig.getHost());
           logger.error(message + ": " + e.getMessage());
         }
       }
     }
   }
 
-  private static String generateDirectoryName() {
-    return Files.createTempDir().getName();
-  }
-
-  private void uploadResourceFiles(FileUploader uploader, String submissionDir, List<File> listOfFiles) throws IOException {
+  private void uploadResourceFiles(FileUploader uploader, String submissionDir, Collection<File> listOfFiles) throws IOException {
     for (File file : listOfFiles) {
       Stopwatch stopwatch = Stopwatch.createStarted();
       logger.info("Submission in progress: Uploading '{}' file...", file.getName());
