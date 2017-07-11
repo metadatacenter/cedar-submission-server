@@ -1,14 +1,11 @@
 package org.metadatacenter.cedar.submission.resources;
 
 import com.codahale.metrics.annotation.Timed;
+import com.google.common.base.Stopwatch;
 import com.google.common.io.Files;
-import org.apache.commons.fileupload.FileItem;
-import org.apache.commons.fileupload.FileUploadException;
-import org.apache.commons.fileupload.disk.DiskFileItemFactory;
-import org.apache.commons.fileupload.servlet.ServletFileUpload;
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.net.ftp.FTPClient;
-import org.apache.commons.net.ftp.FTPReply;
+import org.metadatacenter.cedar.submission.resources.uploader.FileUploader;
+import org.metadatacenter.cedar.submission.resources.uploader.FtpUploader;
+import org.metadatacenter.cedar.submission.resources.uploader.UploaderCreationException;
 import org.metadatacenter.cedar.util.dw.CedarMicroserviceResource;
 import org.metadatacenter.config.CedarConfig;
 import org.metadatacenter.config.FTPConfig;
@@ -18,7 +15,7 @@ import org.metadatacenter.rest.context.CedarRequestContextFactory;
 import org.metadatacenter.submission.AIRRTemplate2SRAConverter;
 import org.metadatacenter.submission.BioSampleValidator;
 import org.metadatacenter.submission.biosample.AIRRTemplate;
-import org.metadatacenter.util.json.JsonMapper;
+import org.metadatacenter.util.http.CedarResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,10 +29,9 @@ import javax.xml.bind.JAXBException;
 import javax.xml.datatype.DatatypeConfigurationException;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
-import java.net.SocketException;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 
 import static org.metadatacenter.rest.assertion.GenericAssertions.LoggedIn;
 
@@ -86,103 +82,66 @@ import static org.metadatacenter.rest.assertion.GenericAssertions.LoggedIn;
     }
   }
 
-  @POST @Timed @Path("/submit-airr") @Consumes(MediaType.MULTIPART_FORM_DATA) public Response submitAIRR()
-    throws CedarException
-  {
-    Optional<FTPClient> ftpClient = createFTPClient(cedarConfig.getSubmissionConfig().getNcbi().getSra().getFtp());
-    String ftpHost = cedarConfig.getSubmissionConfig().getNcbi().getSra().getFtp().getHost();
-
-    CedarRequestContext c = CedarRequestContextFactory.fromRequest(request);
-    c.must(c.user()).be(LoggedIn);
-
+  private Response upload(List<File> listOfFiles) {
+    FTPConfig ftpConfig = cedarConfig.getSubmissionConfig().getNcbi().getSra().getFtp();
+    FileUploader uploader = null;
     try {
-      if (ServletFileUpload.isMultipartContent(request)) {
-        File tempDir = Files.createTempDir();
-        List<FileItem> fileItems = new ServletFileUpload(new DiskFileItemFactory(1024 * 1024, tempDir)).
-          parseRequest(request);
-
-        if (ftpClient.isPresent()) {
-          for (FileItem fileItem : fileItems) {
-            if (!fileItem.isFormField()) {
-              String fieldName = fileItem.getFieldName();
-              if ("instance".equals(fieldName)) { // This is the AIRR instance JSON
-                InputStream is = fileItem.getInputStream();
-                AIRRTemplate airrInstance = JsonMapper.MAPPER.readValue(is, AIRRTemplate.class);
-                String bioSampleSubmissionXML = this.airrTemplate2SRAConverter
-                  .generateSRASubmissionXMLFromAIRRTemplateInstance(airrInstance);
-                InputStream xmlStream = IOUtils.toInputStream(bioSampleSubmissionXML);
-                logger.info("Uploading submission XML");
-                ftpClient.get().storeFile("submission.xml", xmlStream);
-                is.close();
-              } else { // The user-supplied files
-                InputStream is = fileItem.getInputStream();
-                String fileName = fileItem.getName();
-                logger.info("Uploading user-supplied data file " + fileName);
-                ftpClient.get().storeFile(fileName, is);
-                is.close();
-              }
-            }
-          }
-        } else {
-          logger.warn("Failed to connect to FTP host " + ftpHost);
-          return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
-        }
-      }
-      return Response.ok().build();
-    } catch (IOException e) {
-      logger.warn("IO exception connecting to host " + ftpHost + ": " + e.getMessage());
-      return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
-    } catch (FileUploadException e) {
-      logger.warn("File upload exception uploading to host " + ftpHost + ": " + e.getMessage());
-      return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
-    } catch (JAXBException e) {
-      logger.warn("JAXB exception extracting AIRR submission" + e.getMessage());
-      return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
-    } catch (DatatypeConfigurationException e) {
-      logger.warn("Datatype configuration exception extracting AIRR submission" + e.getMessage());
-      return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
+      String submissionDir = generateDirectoryName();
+      uploader = FtpUploader.createNewUploader(
+          ftpConfig.getHost(),
+          ftpConfig.getUser(),
+          ftpConfig.getPassword(),
+          Optional.of(ftpConfig.getSubmissionDirectory()));
+      uploadResourceFiles(uploader, submissionDir, listOfFiles);
+      uploadSubmitReadyFile(uploader, submissionDir);
+      return CedarResponse.ok().build();
+    } catch (UploaderCreationException | IOException e) {
+      String message = String.format("Error while uploading resources to %s", ftpConfig.getHost());
+      logger.error(message + ": " + e.getMessage());
+      return CedarResponse.internalServerError()
+          .errorMessage(message)
+          .exception(e)
+          .build();
     } finally {
-      try {
-        if (ftpClient.isPresent()) {
-          ftpClient.get().disconnect();
+      if (uploader != null) {
+        try {
+          uploader.disconnect();
+        } catch (IOException e) {
+          String message = String.format("Error while disconnecting to %s", ftpConfig.getHost());
+          logger.error(message + ": " + e.getMessage());
         }
-      } catch (IOException e) {
-        logger.warn("Exception disconnecting from FTP host " + ftpHost + ": " + e.getMessage());
       }
     }
   }
 
-  public Optional<FTPClient> createFTPClient(FTPConfig ftpConfig)
-  {
-    FTPClient ftpClient = new FTPClient();
+  private static String generateDirectoryName() {
+    return Files.createTempDir().getName();
+  }
 
-    try {
-      ftpClient.connect(ftpConfig.getHost());
-
-      if (!ftpClient.login(ftpConfig.getUser(), ftpConfig.getPassword())) {
-        ftpClient.logout();
-        logger.warn("Failure logging in to FTP host " + ftpConfig.getHost());
-        return Optional.empty();
-      } else {
-        int reply = ftpClient.getReplyCode();
-        if (!FTPReply.isPositiveCompletion(reply)) {
-          ftpClient.disconnect();
-          logger.warn("Failed to connect to FTP host " + ftpConfig.getHost() + ", reply = " + reply);
-          return Optional.empty();
-        } else {
-          ftpClient.enterLocalPassiveMode();
-          ftpClient.changeWorkingDirectory(ftpConfig.getSubmissionDirectory());
-          logger.info("Connected to FTP host " + ftpConfig.getHost() + "; current directory is " + ftpClient
-            .printWorkingDirectory());
-          return Optional.of(ftpClient);
-        }
-      }
-    } catch (SocketException e) {
-      logger.warn("Socket exception connecting to FTP host: " + e.getMessage());
-      return Optional.empty();
-    } catch (IOException e) {
-      logger.warn("IO exception connecting to FTP host: " + e.getMessage());
-      return Optional.empty();
+  private void uploadResourceFiles(FileUploader uploader, String submissionDir, List<File> listOfFiles) throws IOException {
+    for (File file : listOfFiles) {
+      Stopwatch stopwatch = Stopwatch.createStarted();
+      logger.info("Submission in progress: Uploading '{}' file...", file.getName());
+      uploader.store(submissionDir, file);
+      logger.info("... uploaded in {} s", stopwatch.elapsed(TimeUnit.SECONDS));
     }
+  }
+
+  private void uploadSubmitReadyFile(FileUploader uploader, String submissionDir) throws IOException {
+    logger.info("Submission in progress: Uploading 'submit.ready' file...");
+    File submitReady = createSubmitReadyFile();
+    try {
+      uploader.store(submissionDir, submitReady);
+    } finally {
+      if (submitReady != null) {
+        submitReady.delete(); // remove traces
+      }
+    }
+  }
+
+  private static File createSubmitReadyFile() throws IOException {
+    File submitReady = new File("submit.ready");
+    Files.touch(submitReady);
+    return submitReady;
   }
 }
