@@ -9,6 +9,8 @@ import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPReply;
+import org.metadatacenter.cedar.submission.util.fileupload.FileUploadUtil;
+import org.metadatacenter.cedar.submission.util.fileupload.FlowChunkData;
 import org.metadatacenter.cedar.util.dw.CedarMicroserviceResource;
 import org.metadatacenter.config.CedarConfig;
 import org.metadatacenter.config.FTPConfig;
@@ -30,9 +32,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.xml.bind.JAXBException;
 import javax.xml.datatype.DatatypeConfigurationException;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.net.SocketException;
 import java.util.List;
 import java.util.Optional;
@@ -44,17 +44,17 @@ import static org.metadatacenter.rest.assertion.GenericAssertions.LoggedIn;
  * <p>
  * https://docs.google.com/document/d/1tmPinCgaTwBkTsOwjitquFc0ZUN65w5xZs30q5phRkY/edit
  */
-@Path("/command") @Produces(MediaType.APPLICATION_JSON) public class AIRRSubmissionServerResource
-  extends CedarMicroserviceResource
-{
+@Path("/command")
+@Produces(MediaType.APPLICATION_JSON)
+public class AIRRSubmissionServerResource
+    extends CedarMicroserviceResource {
   final static Logger logger = LoggerFactory.getLogger(AIRRSubmissionServerResource.class);
 
   private final BioSampleValidator bioSampleValidator;
 
   private final AIRRTemplate2SRAConverter airrTemplate2SRAConverter;
 
-  public AIRRSubmissionServerResource(CedarConfig cedarConfig)
-  {
+  public AIRRSubmissionServerResource(CedarConfig cedarConfig) {
     super(cedarConfig);
     this.bioSampleValidator = new BioSampleValidator();
     this.airrTemplate2SRAConverter = new AIRRTemplate2SRAConverter();
@@ -69,16 +69,19 @@ import static org.metadatacenter.rest.assertion.GenericAssertions.LoggedIn;
    * @param airrInstance An instance of an AIRR template
    * @return A validation response
    */
-  @POST @Timed @Path("/validate-airr") @Consumes(MediaType.APPLICATION_JSON) public Response validate(
-    AIRRTemplate airrInstance) throws CedarException
-  {
+  @POST
+  @Timed
+  @Path("/validate-airr")
+  @Consumes(MediaType.APPLICATION_JSON)
+  public Response validate(
+      AIRRTemplate airrInstance) throws CedarException {
 
     CedarRequestContext c = CedarRequestContextFactory.fromRequest(request);
     c.must(c.user()).be(LoggedIn);
 
     try {
       String bioSampleSubmissionXML = this.airrTemplate2SRAConverter
-        .generateSRASubmissionXMLFromAIRRTemplateInstance(airrInstance);
+          .generateSRASubmissionXMLFromAIRRTemplateInstance(airrInstance);
 
       return Response.ok(this.bioSampleValidator.validateBioSampleSubmission(bioSampleSubmissionXML)).build();
     } catch (JAXBException | DatatypeConfigurationException e) {
@@ -86,9 +89,12 @@ import static org.metadatacenter.rest.assertion.GenericAssertions.LoggedIn;
     }
   }
 
-  @POST @Timed @Path("/submit-airr") @Consumes(MediaType.MULTIPART_FORM_DATA) public Response submitAIRR()
-    throws CedarException
-  {
+  @POST
+  @Timed
+  @Path("/submit-airr")
+  @Consumes(MediaType.MULTIPART_FORM_DATA)
+  public Response submitAIRR()
+      throws CedarException {
     Optional<FTPClient> ftpClient = createFTPClient(cedarConfig.getSubmissionConfig().getNcbi().getSra().getFtp());
     String ftpHost = cedarConfig.getSubmissionConfig().getNcbi().getSra().getFtp().getHost();
 
@@ -99,7 +105,7 @@ import static org.metadatacenter.rest.assertion.GenericAssertions.LoggedIn;
       if (ServletFileUpload.isMultipartContent(request)) {
         File tempDir = Files.createTempDir();
         List<FileItem> fileItems = new ServletFileUpload(new DiskFileItemFactory(1024 * 1024, tempDir)).
-          parseRequest(request);
+            parseRequest(request);
 
         if (ftpClient.isPresent()) {
           for (FileItem fileItem : fileItems) {
@@ -109,7 +115,7 @@ import static org.metadatacenter.rest.assertion.GenericAssertions.LoggedIn;
                 InputStream is = fileItem.getInputStream();
                 AIRRTemplate airrInstance = JsonMapper.MAPPER.readValue(is, AIRRTemplate.class);
                 String bioSampleSubmissionXML = this.airrTemplate2SRAConverter
-                  .generateSRASubmissionXMLFromAIRRTemplateInstance(airrInstance);
+                    .generateSRASubmissionXMLFromAIRRTemplateInstance(airrInstance);
                 InputStream xmlStream = IOUtils.toInputStream(bioSampleSubmissionXML);
                 logger.info("Uploading submission XML");
                 ftpClient.get().storeFile("submission.xml", xmlStream);
@@ -152,8 +158,7 @@ import static org.metadatacenter.rest.assertion.GenericAssertions.LoggedIn;
     }
   }
 
-  public Optional<FTPClient> createFTPClient(FTPConfig ftpConfig)
-  {
+  public Optional<FTPClient> createFTPClient(FTPConfig ftpConfig) {
     FTPClient ftpClient = new FTPClient();
 
     try {
@@ -173,7 +178,7 @@ import static org.metadatacenter.rest.assertion.GenericAssertions.LoggedIn;
           ftpClient.enterLocalPassiveMode();
           ftpClient.changeWorkingDirectory(ftpConfig.getSubmissionDirectory());
           logger.info("Connected to FTP host " + ftpConfig.getHost() + "; current directory is " + ftpClient
-            .printWorkingDirectory());
+              .printWorkingDirectory());
           return Optional.of(ftpClient);
         }
       }
@@ -185,4 +190,59 @@ import static org.metadatacenter.rest.assertion.GenericAssertions.LoggedIn;
       return Optional.empty();
     }
   }
+
+  /****************************************************************************************************************/
+
+  // Good info: http://commons.apache.org/proper/commons-fileupload/using.html
+  @POST
+  @Timed
+  @Path("/upload-airr-to-cedar")
+  @Consumes(MediaType.MULTIPART_FORM_DATA)
+  public Response uploadAIRRToCEDAR() throws CedarException {
+    final String UPLOAD_AIRR_TO_CEDAR_PATH = ("/Users/marcosmr/Desktop/tmp/upload-tests/uploaded/");
+    CedarRequestContext c = CedarRequestContextFactory.fromRequest(request);
+    c.must(c.user()).be(LoggedIn);
+
+    // Check that this is a file upload request
+    if (ServletFileUpload.isMultipartContent(request)) {
+
+      try {
+        List<FileItem> fileItems = new ServletFileUpload(new DiskFileItemFactory()).parseRequest(request);
+        FlowChunkData info = FileUploadUtil.getFlowChunkData(fileItems);
+
+        RandomAccessFile raf = null;
+        try {
+          raf = new RandomAccessFile(UPLOAD_AIRR_TO_CEDAR_PATH + info.flowRelativePath,
+              "rw");
+          // Seek to position
+          raf.seek((info.flowChunkNumber - 1) * info.flowChunkSize);
+          // Save to file
+          InputStream is = info.getFlowFileInputStream();
+          long readed = 0;
+          long content_length = request.getContentLength();
+          byte[] bytes = new byte[1024 * 100];
+          while (readed < content_length) {
+            int r = is.read(bytes);
+            if (r < 0) {
+              break;
+            }
+            raf.write(bytes, 0, r);
+            readed += r;
+          }
+          raf.close();
+        } catch (FileNotFoundException e) {
+          e.printStackTrace();
+        } catch (IOException e) {
+          e.printStackTrace();
+        }
+      } catch (FileUploadException e) {
+        e.printStackTrace();
+      }
+      return Response.ok().build();
+    }
+    else {
+      return Response.status(Response.Status.BAD_REQUEST).build();
+    }
+  }
+
 }
