@@ -21,8 +21,7 @@ public class SubmissionServerApplication extends CedarMicroserviceApplication<Su
   }
 
   @Override
-  public void initializeApp() {
-  }
+  public void initializeApp() {}
 
   @Override
   public void runApp(SubmissionServerConfiguration configuration, Environment environment) {

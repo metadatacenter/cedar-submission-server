@@ -1,4 +1,4 @@
-package org.metadatacenter.cedar.submission.util.fileupload;
+package org.metadatacenter.cedar.submission.util.fileupload.flow;
 
 import java.io.InputStream;
 

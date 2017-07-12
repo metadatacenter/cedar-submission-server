@@ -1,4 +1,4 @@
-package org.metadatacenter.cedar.submission.util.fileupload;
+package org.metadatacenter.cedar.submission.util.fileupload.flow;
 
 import org.apache.commons.fileupload.FileItem;
 
@@ -6,7 +6,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 
-public class FileUploadUtil {
+public class FlowUploadUtil {
 
   public static FlowChunkData getFlowChunkData(List<FileItem> fileItems) {
 
@@ -52,4 +52,19 @@ public class FileUploadUtil {
         flowTotalSize, flowIdentifier, flowFilename, flowRelativePath, flowTotalChunks, flowFileInputStream);
 
   }
+
+  // returns the file name (without the extension)
+  public static String getFileNamePrefix(String fileName) {
+    if(fileName.lastIndexOf(".") != -1 && fileName.lastIndexOf(".") != 0)
+      return fileName.substring(0, fileName.lastIndexOf("."));
+    else return fileName;
+  }
+
+  // returns the file extension
+  public static String getFileNameSuffix(String fileName) {
+    if(fileName.lastIndexOf(".") != -1 && fileName.lastIndexOf(".") != 0)
+      return fileName.substring(fileName.lastIndexOf(".") + 1);
+    else return "";
+  }
+
 }

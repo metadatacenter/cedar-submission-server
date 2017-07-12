@@ -9,8 +9,9 @@ import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPReply;
-import org.metadatacenter.cedar.submission.util.fileupload.FileUploadUtil;
-import org.metadatacenter.cedar.submission.util.fileupload.FlowChunkData;
+import org.metadatacenter.cedar.submission.util.fileupload.flow.FlowChunkData;
+import org.metadatacenter.cedar.submission.util.fileupload.flow.FlowChunkUploadManager;
+import org.metadatacenter.cedar.submission.util.fileupload.flow.FlowUploadUtil;
 import org.metadatacenter.cedar.util.dw.CedarMicroserviceResource;
 import org.metadatacenter.config.CedarConfig;
 import org.metadatacenter.config.FTPConfig;
@@ -24,6 +25,7 @@ import org.metadatacenter.util.json.JsonMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.management.InstanceNotFoundException;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -191,56 +193,86 @@ public class AIRRSubmissionServerResource
     }
   }
 
-  /****************************************************************************************************************/
-
-  // Good info: http://commons.apache.org/proper/commons-fileupload/using.html
+  /**
+   * This endpoint receives multiple chunks of a file and assemblies them. When the upload is complete, it triggers
+   * the FTP upload to the NCBI.
+   * It is based on some ideas from: https://github.com/flowjs/flow.js/blob/master/samples/java/src/resumable/js/upload/UploadServlet.java
+   * TODO: deal with multi-file submissions
+   */
   @POST
   @Timed
   @Path("/upload-airr-to-cedar")
   @Consumes(MediaType.MULTIPART_FORM_DATA)
   public Response uploadAIRRToCEDAR() throws CedarException {
-    final String UPLOAD_AIRR_TO_CEDAR_PATH = ("/Users/marcosmr/Desktop/tmp/upload-tests/uploaded/");
+
     CedarRequestContext c = CedarRequestContextFactory.fromRequest(request);
     c.must(c.user()).be(LoggedIn);
 
     // Check that this is a file upload request
     if (ServletFileUpload.isMultipartContent(request)) {
-
       try {
         List<FileItem> fileItems = new ServletFileUpload(new DiskFileItemFactory()).parseRequest(request);
-        FlowChunkData info = FileUploadUtil.getFlowChunkData(fileItems);
-
+        FlowChunkData info = FlowUploadUtil.getFlowChunkData(fileItems);
         RandomAccessFile raf = null;
         try {
-          raf = new RandomAccessFile(UPLOAD_AIRR_TO_CEDAR_PATH + info.flowRelativePath,
-              "rw");
+          File uploadedFile = File.createTempFile(FlowUploadUtil.getFileNamePrefix(info.flowFilename),
+              FlowUploadUtil.getFileNameSuffix(info.flowFilename));
+
+          // The file will be deleted when the virtual machine terminates. We will also call uploadedFile.delete() when
+          // the upload to the NCBI is complete. If for some reason the upload fails, the file will be deleted when
+          // the VM terminates.
+          uploadedFile.deleteOnExit();
+
+          raf = new RandomAccessFile(uploadedFile, "rw");
+
           // Seek to position
           raf.seek((info.flowChunkNumber - 1) * info.flowChunkSize);
           // Save to file
           InputStream is = info.getFlowFileInputStream();
-          long readed = 0;
+          long read = 0;
           long content_length = request.getContentLength();
           byte[] bytes = new byte[1024 * 100];
-          while (readed < content_length) {
+          while (read < content_length) {
             int r = is.read(bytes);
             if (r < 0) {
               break;
             }
             raf.write(bytes, 0, r);
-            readed += r;
+            read += r;
           }
           raf.close();
+
+          // Update the map
+          FlowChunkUploadManager.getInstance().increaseUploadedChunksCount(info.getFlowIdentifier(), info.getFlowTotalChunks());
+
+          // Check if the upload is complete and trigger the FTP submission to NCBI
+          if (FlowChunkUploadManager.getInstance().isUploadFinished(info.getFlowIdentifier())) {
+            FlowChunkUploadManager.getInstance().removeFlowStatus(info.getFlowIdentifier());
+            System.out.println("UPLOAD COMPLETED!: " + info.getFlowIdentifier());
+            System.out.println(FlowChunkUploadManager.getInstance().toString());
+          }
+
+          // Check if uploaded and trigger the FTP upload to the NCBI
+//          info.uploadedChunks.add(new ResumableInfo.ResumableChunkNumber(resumableChunkNumber));
+//          if (info.checkIfUploadFinished()) { //Check if all chunks uploaded, and change filename
+//            ResumableInfoStorage.getInstance().remove(info);
+//            response.getWriter().print("All finished.");
+//          } else {
+//            response.getWriter().print("Upload");
+//          }
+
         } catch (FileNotFoundException e) {
           e.printStackTrace();
         } catch (IOException e) {
+          e.printStackTrace();
+        } catch (InstanceNotFoundException e) {
           e.printStackTrace();
         }
       } catch (FileUploadException e) {
         e.printStackTrace();
       }
       return Response.ok().build();
-    }
-    else {
+    } else {
       return Response.status(Response.Status.BAD_REQUEST).build();
     }
   }
