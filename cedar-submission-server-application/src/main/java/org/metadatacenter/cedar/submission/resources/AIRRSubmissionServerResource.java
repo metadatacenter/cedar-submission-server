@@ -7,6 +7,8 @@ import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
+import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
 import org.metadatacenter.cedar.submission.resources.uploader.FileUploader;
 import org.metadatacenter.cedar.submission.resources.uploader.FtpUploader;
 import org.metadatacenter.cedar.submission.resources.uploader.UploaderCreationException;
@@ -35,6 +37,7 @@ import javax.ws.rs.core.Response;
 import javax.xml.bind.JAXBException;
 import javax.xml.datatype.DatatypeConfigurationException;
 import java.io.*;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -115,7 +118,7 @@ public class AIRRSubmissionServerResource
           ftpConfig.getPassword(),
           Optional.of(ftpConfig.getSubmissionDirectory()));
       uploadResourceFiles(uploader, submissionDir, listOfFiles);
-      uploadSubmitReadyFile(uploader, submissionDir);
+//      uploadSubmitReadyFile(uploader, submissionDir);
 
     } finally {
       if (uploader != null) {
@@ -128,7 +131,6 @@ public class AIRRSubmissionServerResource
       }
     }
   }
-
 
   private void uploadResourceFiles(FileUploader uploader, String submissionDir, Collection<File> listOfFiles) throws
       IOException {
@@ -215,24 +217,20 @@ public class AIRRSubmissionServerResource
           // Check if the upload is complete and trigger the FTP submission to NCBI
           if (FlowChunkUploadManager.getInstance().isUploadFinished(info.getFlowIdentifier())) {
             FlowChunkUploadManager.getInstance().removeFlowStatus(info.getFlowIdentifier());
-            System.out.println("UPLOAD COMPLETED!: " + info.getFlowIdentifier());
-            System.out.println(FlowChunkUploadManager.getInstance().toString());
+            logger.info("Upload completed. File: " + info.getFlowFilename());
+            String submissionDir = DateTime.now(DateTimeZone.UTC).toString().replace( ":" , "-" ) + "-test";
+            logger.info("Starting submission to the NCBI. Destination folder: " + submissionDir);
+            List<File> filesForNCBI = new ArrayList<>();
+            filesForNCBI.add(uploadedFile);
+            upload(submissionDir,filesForNCBI);
           }
-
-          // Check if uploaded and trigger the FTP upload to the NCBI
-//          info.uploadedChunks.add(new ResumableInfo.ResumableChunkNumber(resumableChunkNumber));
-//          if (info.checkIfUploadFinished()) { //Check if all chunks uploaded, and change filename
-//            ResumableInfoStorage.getInstance().remove(info);
-//            response.getWriter().print("All finished.");
-//          } else {
-//            response.getWriter().print("Upload");
-//          }
-
         } catch (FileNotFoundException e) {
           e.printStackTrace();
         } catch (IOException e) {
           e.printStackTrace();
         } catch (InstanceNotFoundException e) {
+          e.printStackTrace();
+        } catch (UploaderCreationException e) {
           e.printStackTrace();
         }
       } catch (FileUploadException e) {
