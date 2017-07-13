@@ -4,6 +4,7 @@ import io.dropwizard.setup.Environment;
 import org.metadatacenter.cedar.submission.health.SubmissionServerHealthCheck;
 import org.metadatacenter.cedar.submission.resources.AIRRSubmissionServerResource;
 import org.metadatacenter.cedar.submission.resources.AMIA2016DemoBioSampleServerResource;
+import org.metadatacenter.cedar.submission.resources.ImmPortSubmissionServerResource;
 import org.metadatacenter.cedar.submission.resources.IndexResource;
 import org.metadatacenter.cedar.submission.resources.LincsSubmissionServerResource;
 import org.metadatacenter.cedar.util.dw.CedarMicroserviceApplication;
@@ -40,6 +41,9 @@ public class SubmissionServerApplication extends CedarMicroserviceApplication<Su
 
     final LincsSubmissionServerResource lincsSubmissionServerResource = new LincsSubmissionServerResource(cedarConfig);
     environment.jersey().register(lincsSubmissionServerResource);
+
+    final ImmPortSubmissionServerResource immPortSubmissionServerResource = new ImmPortSubmissionServerResource(cedarConfig);
+    environment.jersey().register(immPortSubmissionServerResource);
 
     final SubmissionServerHealthCheck healthCheck = new SubmissionServerHealthCheck();
     environment.healthChecks().register("message", healthCheck);
