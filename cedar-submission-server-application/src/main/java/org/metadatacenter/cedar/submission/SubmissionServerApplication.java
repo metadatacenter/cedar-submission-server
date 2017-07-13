@@ -1,5 +1,6 @@
 package org.metadatacenter.cedar.submission;
 
+import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 import org.metadatacenter.cedar.submission.health.SubmissionServerHealthCheck;
 import org.metadatacenter.cedar.submission.resources.AIRRSubmissionServerResource;
@@ -18,6 +19,10 @@ public class SubmissionServerApplication extends CedarMicroserviceApplication<Su
   @Override
   protected ServerName getServerName() {
     return ServerName.SUBMISSION;
+  }
+
+  @Override
+  protected void initializeWithBootsrap(Bootstrap<SubmissionServerConfiguration> bootstrap) {
   }
 
   @Override
