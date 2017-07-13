@@ -1,6 +1,8 @@
 package org.metadatacenter.cedar.submission.util.fileupload.flow;
 
 import org.apache.commons.fileupload.FileItem;
+import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -65,6 +67,18 @@ public class FlowUploadUtil {
     if(fileName.lastIndexOf(".") != -1 && fileName.lastIndexOf(".") != 0)
       return fileName.substring(fileName.lastIndexOf(".") + 1);
     else return "";
+  }
+
+  public static String getTempFolderName(String uploadType, String userId, String uploadIdentifier) {
+    return System.getProperty("java.io.tmpdir") + uploadType + "/" + userId + "/" + uploadIdentifier;
+  }
+
+  public static String getDateBasedFolderName(DateTimeZone dateTimeZone) {
+    return DateTime.now(dateTimeZone).toString().replace(":", "-");
+  }
+
+  public static String getLastFragmentOfUrl(String url) {
+    return url.substring(url.lastIndexOf("/") + 1, url.length());
   }
 
 }

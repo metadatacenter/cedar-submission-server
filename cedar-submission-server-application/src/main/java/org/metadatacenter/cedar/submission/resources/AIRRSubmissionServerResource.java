@@ -105,7 +105,7 @@ public class AIRRSubmissionServerResource
    * @param listOfFiles   A list of files to be uploaded
    * @throws IOException               When upload failed due to I/O difficulties.
    * @throws UploaderCreationException When the FTP uploader failed to be created (e.g., hostname not found or
-   * invalid credential)
+   *                                   invalid credential)
    */
   private void upload(String submissionDir, Collection<File> listOfFiles) throws IOException,
       UploaderCreationException {
@@ -179,63 +179,66 @@ public class AIRRSubmissionServerResource
     // Check that this is a file upload request
     if (ServletFileUpload.isMultipartContent(request)) {
       try {
+
         List<FileItem> fileItems = new ServletFileUpload(new DiskFileItemFactory()).parseRequest(request);
         FlowChunkData info = FlowUploadUtil.getFlowChunkData(fileItems);
-        RandomAccessFile raf = null;
-        try {
-          File uploadedFile = File.createTempFile(FlowUploadUtil.getFileNamePrefix(info.flowFilename),
-              FlowUploadUtil.getFileNameSuffix(info.flowFilename));
 
-          // The file will be deleted when the virtual machine terminates. We will also call uploadedFile.delete() when
-          // the upload to the NCBI is complete. If for some reason the upload fails, the file will be deleted when
-          // the VM terminates.
-          uploadedFile.deleteOnExit();
+        // Create uploaded file
+        String cedarUserId = FlowUploadUtil.getLastFragmentOfUrl(c.getCedarUser().getId());
+        File tempDir = new File(FlowUploadUtil.getTempFolderName("ncbi-upload", cedarUserId, info.flowIdentifier));
+        tempDir.mkdirs();
+        File uploadedFile = new File(tempDir + "/" + info.flowFilename);
+        uploadedFile.createNewFile();
+        logger.info("File created. Path: " + uploadedFile);
 
-          raf = new RandomAccessFile(uploadedFile, "rw");
+        RandomAccessFile raf = new RandomAccessFile(uploadedFile, "rw");
 
-          // Seek to position
-          raf.seek((info.flowChunkNumber - 1) * info.flowChunkSize);
-          // Save to file
-          InputStream is = info.getFlowFileInputStream();
-          long read = 0;
-          long content_length = request.getContentLength();
-          byte[] bytes = new byte[1024 * 100];
-          while (read < content_length) {
-            int r = is.read(bytes);
-            if (r < 0) {
-              break;
-            }
-            raf.write(bytes, 0, r);
-            read += r;
+        // Seek to position
+        raf.seek((info.flowChunkNumber - 1) * info.flowChunkSize);
+        // Save to file
+        InputStream is = info.getFlowFileInputStream();
+        long read = 0;
+        long content_length = request.getContentLength();
+        byte[] bytes = new byte[1024 * 100];
+        while (read < content_length) {
+          int r = is.read(bytes);
+          if (r < 0) {
+            break;
           }
-          raf.close();
-
-          // Update the map
-          FlowChunkUploadManager.getInstance().increaseUploadedChunksCount(info.getFlowIdentifier(), info
-              .getFlowTotalChunks());
-
-          // Check if the upload is complete and trigger the FTP submission to NCBI
-          if (FlowChunkUploadManager.getInstance().isUploadFinished(info.getFlowIdentifier())) {
-            FlowChunkUploadManager.getInstance().removeFlowStatus(info.getFlowIdentifier());
-            logger.info("Upload completed. File: " + info.getFlowFilename());
-            String submissionDir = DateTime.now(DateTimeZone.UTC).toString().replace( ":" , "-" ) + "-test";
-            logger.info("Starting submission to the NCBI. Destination folder: " + submissionDir);
-            List<File> filesForNCBI = new ArrayList<>();
-            filesForNCBI.add(uploadedFile);
-            upload(submissionDir,filesForNCBI);
-          }
-        } catch (FileNotFoundException e) {
-          e.printStackTrace();
-        } catch (IOException e) {
-          e.printStackTrace();
-        } catch (InstanceNotFoundException e) {
-          e.printStackTrace();
-        } catch (UploaderCreationException e) {
-          e.printStackTrace();
+          raf.write(bytes, 0, r);
+          read += r;
         }
+        raf.close();
+
+        // Update the map
+        FlowChunkUploadManager.getInstance().increaseUploadedChunksCount(info.getFlowIdentifier(), info
+            .getFlowTotalChunks());
+
+        // Check if the upload is complete and trigger the FTP submission to NCBI
+        if (FlowChunkUploadManager.getInstance().isUploadFinished(info.getFlowIdentifier())) {
+          FlowChunkUploadManager.getInstance().removeFlowStatus(info.getFlowIdentifier());
+          logger.info("Upload completed. File: " + info.getFlowFilename());
+          String submissionDir = FlowUploadUtil.getDateBasedFolderName(DateTimeZone.UTC) + "_test";
+          logger.info("Starting submission to the NCBI. Destination folder: " + submissionDir);
+          List<File> filesForNCBI = new ArrayList<>();
+          filesForNCBI.add(uploadedFile);
+          boolean upload = false; // TODO: remove this condition
+          if (upload) {
+            upload(submissionDir, filesForNCBI);
+          }
+        }
+      } catch (FileNotFoundException e) {
+        e.printStackTrace();
+      } catch (IOException e) {
+        e.printStackTrace();
+      } catch (InstanceNotFoundException e) {
+        e.printStackTrace();
       } catch (FileUploadException e) {
         e.printStackTrace();
+      } catch (UploaderCreationException e) {
+        e.printStackTrace();
       }
+
       return Response.ok().build();
     } else {
       return Response.status(Response.Status.BAD_REQUEST).build();
