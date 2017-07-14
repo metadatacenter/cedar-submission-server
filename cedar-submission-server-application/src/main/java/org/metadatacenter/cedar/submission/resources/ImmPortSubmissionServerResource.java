@@ -47,7 +47,7 @@ import static org.metadatacenter.rest.assertion.GenericAssertions.LoggedIn;
     super(cedarConfig);
   }
 
-  @POST @Timed @Path("/submit-immport") @Consumes(MediaType.MULTIPART_FORM_DATA) public Response submitImmPort()
+  @POST @Timed @Path("/immport-submit") @Consumes(MediaType.MULTIPART_FORM_DATA) public Response submitImmPort()
     throws CedarException
   {
     CloseableHttpResponse response = null;
@@ -106,5 +106,4 @@ import static org.metadatacenter.rest.assertion.GenericAssertions.LoggedIn;
         }
     }
   }
-
 }
