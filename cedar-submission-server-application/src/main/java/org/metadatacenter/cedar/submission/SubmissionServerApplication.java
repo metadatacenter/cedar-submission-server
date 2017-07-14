@@ -22,7 +22,7 @@ public class SubmissionServerApplication extends CedarMicroserviceApplication<Su
   }
 
   @Override
-  protected void initializeWithBootsrap(Bootstrap<SubmissionServerConfiguration> bootstrap) {
+  protected void initializeWithBootstrap(Bootstrap<SubmissionServerConfiguration> bootstrap) {
   }
 
   @Override
