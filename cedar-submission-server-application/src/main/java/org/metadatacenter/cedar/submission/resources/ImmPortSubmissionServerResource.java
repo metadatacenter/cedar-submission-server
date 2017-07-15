@@ -7,12 +7,15 @@ import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.http.HttpEntity;
+import org.apache.http.NameValuePair;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.message.BasicNameValuePair;
 import org.metadatacenter.cedar.util.dw.CedarMicroserviceResource;
 import org.metadatacenter.config.CedarConfig;
 import org.metadatacenter.exception.CedarException;
@@ -30,6 +33,7 @@ import javax.ws.rs.core.Response;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.metadatacenter.rest.assertion.GenericAssertions.LoggedIn;
@@ -54,6 +58,8 @@ import static org.metadatacenter.rest.assertion.GenericAssertions.LoggedIn;
 
     CedarRequestContext c = CedarRequestContextFactory.fromRequest(request);
     c.must(c.user()).be(LoggedIn);
+
+    getImmPortToken();
 
     try {
       if (ServletFileUpload.isMultipartContent(request)) {
@@ -106,4 +112,39 @@ import static org.metadatacenter.rest.assertion.GenericAssertions.LoggedIn;
         }
     }
   }
+
+  public String getImmPortToken()
+  {
+    CloseableHttpClient client = HttpClientBuilder.create().build();
+    HttpPost post = new HttpPost(IMMPORT_TOKEN_URL);
+    CloseableHttpResponse response = null;
+
+    try {
+      List<NameValuePair> params = new ArrayList<>(2);
+      params.add(new BasicNameValuePair("username", "cedaruser"));
+      params.add(new BasicNameValuePair("password", "GoCedar2017#"));
+      post.setEntity(new UrlEncodedFormEntity(params, "UTF-8"));
+      post.setHeader("Accept", "application/json");
+
+      response = client.execute(post);
+
+      if (response.getStatusLine().getStatusCode() == 200) {
+        HttpEntity entity = response.getEntity();
+        InputStream responseStream = entity.getContent();
+        // Get ImmPortGetTokenResponse from stream
+        return null; // TODO
+      } else
+        return null; // TODO
+    } catch (IOException e) {
+      return null; //TODO
+    } finally {
+      if (response != null)
+        try {
+          response.close();
+        } catch (IOException e) {
+          logger.warn("Error closing HTTP response for ImmPort token get call");
+        }
+    }
+  }
+
 }

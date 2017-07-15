@@ -7,6 +7,9 @@
     },
     "token": {
       "type": "string"
+    },
+    "error": {
+      "type": "string"
     }
   }
 }
