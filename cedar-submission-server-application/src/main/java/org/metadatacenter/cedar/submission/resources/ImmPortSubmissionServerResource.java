@@ -47,7 +47,9 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.metadatacenter.constant.HttpConstants.CONTENT_TYPE_APPLICATION_JSON;
+import static org.metadatacenter.constant.HttpConstants.HTTP_AUTH_HEADER_BEARER_PREFIX;
 import static org.metadatacenter.constant.HttpConstants.HTTP_HEADER_ACCEPT;
+import static org.metadatacenter.constant.HttpConstants.HTTP_HEADER_AUTHORIZATION;
 import static org.metadatacenter.rest.assertion.GenericAssertions.LoggedIn;
 import static org.metadatacenter.util.json.JsonMapper.MAPPER;
 
@@ -116,6 +118,7 @@ import static org.metadatacenter.util.json.JsonMapper.MAPPER;
   @POST @Timed @Path("/immport-submit") @Consumes(MediaType.MULTIPART_FORM_DATA) public Response submitImmPort()
     throws CedarException
   {
+    CloseableHttpClient client = HttpClientBuilder.create().build();
     CloseableHttpResponse response = null;
 
     CedarRequestContext c = CedarRequestContextFactory.fromRequest(request);
@@ -156,15 +159,14 @@ import static org.metadatacenter.util.json.JsonMapper.MAPPER;
         }
 
         HttpEntity multiPartRequestEntity = builder.build();
-        CloseableHttpClient client = HttpClientBuilder.create().build();
         HttpPost post = new HttpPost(IMMPORT_SUBMISSION_URL);
         post.setEntity(multiPartRequestEntity);
-        post.setHeader("Authorization", "bearer " + token.get());
-        //post.setHeader(HTTP_HEADER_CONTENT_TYPE, ");
+        post.setHeader(HTTP_HEADER_AUTHORIZATION, HTTP_AUTH_HEADER_BEARER_PREFIX + token.get());
+        post.setHeader(HTTP_HEADER_ACCEPT, CONTENT_TYPE_APPLICATION_JSON);
         response = client.execute(post);
 
         int statusCode = response.getStatusLine().getStatusCode();
-        if (statusCode == 200) {
+        if (statusCode == Response.Status.OK.getStatusCode()) {
           return Response.ok(immPortSubmissionResponseBody2CEDARSubmissionResponse(response.getEntity())).build();
         } else if (statusCode == Response.Status.BAD_REQUEST.getStatusCode()) {
           HttpEntity entity = response.getEntity();
@@ -188,11 +190,16 @@ import static org.metadatacenter.util.json.JsonMapper.MAPPER;
       logger.warn("File upload exception uploading to host " + IMMPORT_SUBMISSION_URL + ": " + e.getMessage());
       return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
     } finally {
+      try {
+        client.close();
+      } catch (IOException e) {
+        logger.warn("Error closing HTTP client for ImmPort submission call: " + e.getMessage());
+      }
       if (response != null)
         try {
           response.close();
         } catch (IOException e) {
-          logger.warn("Error closing HTTP response for ImmPort submission");
+          logger.warn("Error closing HTTP response for ImmPort submission: " + e.getMessage());
         }
     }
   }
@@ -208,11 +215,11 @@ import static org.metadatacenter.util.json.JsonMapper.MAPPER;
       parameters.add(new BasicNameValuePair("username", IMMPORT_CEDAR_USER_NAME));
       parameters.add(new BasicNameValuePair("password", IMMPORT_CEDAR_USER_PASSWORD));
       post.setEntity(new UrlEncodedFormEntity(parameters, "UTF-8"));
-      post.setHeader("Accept", "application/json");
+      post.setHeader(HTTP_HEADER_ACCEPT, CONTENT_TYPE_APPLICATION_JSON);
 
       response = client.execute(post);
 
-      if (response.getStatusLine().getStatusCode() == 200) {
+      if (response.getStatusLine().getStatusCode() == Response.Status.OK.getStatusCode()) {
         HttpEntity entity = response.getEntity();
         // Get ImmPortGetTokenResponse from stream
         ImmPortGetTokenResponse immportGetTokenResponse = objectMapper
@@ -221,8 +228,8 @@ import static org.metadatacenter.util.json.JsonMapper.MAPPER;
         if (immportGetTokenResponse.getStatus().intValue() == 200)
           return Optional.of(immportGetTokenResponse.getToken());
         else {
-          logger.warn("Failed to get token from host " + IMMPORT_SUBMISSION_URL + "; ImmPort response code="
-            + immportGetTokenResponse.getStatus().intValue() + ", error+" + immportGetTokenResponse.getError());
+          logger.warn("Failed to get token from host " + IMMPORT_SUBMISSION_URL + "; ImmPort status code="
+            + immportGetTokenResponse.getStatus().intValue() + ", error=" + immportGetTokenResponse.getError());
           return Optional.empty();
         }
       } else {
@@ -235,11 +242,16 @@ import static org.metadatacenter.util.json.JsonMapper.MAPPER;
       logger.warn("IO error getting token from host " + IMMPORT_SUBMISSION_URL + "; error=" + e.getMessage());
       return Optional.empty();
     } finally {
+      try {
+        client.close();
+      } catch (IOException e) {
+        logger.warn("Error closing HTTP client for ImmPort token get call: " + e.getMessage());
+      }
       if (response != null)
         try {
           response.close();
         } catch (IOException e) {
-          logger.warn("Error closing HTTP response for ImmPort token get call");
+          logger.warn("Error closing HTTP response for ImmPort token get call: " + e.getMessage());
         }
     }
   }
@@ -277,6 +289,15 @@ import static org.metadatacenter.util.json.JsonMapper.MAPPER;
       cedarWorkspaceResponse.setSuccess(false);
       return cedarWorkspaceResponse;
     }
+  }
+
+  private CEDARWorkspaceResponse generateUnexpectedStatusCodeCEDARWorkspaceResponse(int statusCode)
+  {
+    CEDARWorkspaceResponse cedarWorkspaceResponse = new CEDARWorkspaceResponse();
+    cedarWorkspaceResponse.setError("Unexpected status code " + statusCode + " when calling ImmPort");
+    cedarWorkspaceResponse.setSuccess(false);
+
+    return cedarWorkspaceResponse;
   }
 
   private CEDARSubmitResponse immPortSubmissionResponseBody2CEDARSubmissionResponse(HttpEntity responseEntity)
