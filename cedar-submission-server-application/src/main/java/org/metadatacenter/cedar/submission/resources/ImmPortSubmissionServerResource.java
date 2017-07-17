@@ -45,6 +45,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 
+import static org.metadatacenter.constant.HttpConstants.HTTP_AUTH_HEADER_BEARER_PREFIX;
+import static org.metadatacenter.constant.HttpConstants.HTTP_HEADER_AUTHORIZATION;
 import static org.metadatacenter.rest.assertion.GenericAssertions.LoggedIn;
 import static org.metadatacenter.util.json.JsonMapper.MAPPER;
 
@@ -56,15 +58,14 @@ import static org.metadatacenter.util.json.JsonMapper.MAPPER;
   final static Logger logger = LoggerFactory.getLogger(ImmPortSubmissionServerResource.class);
 
   // TODO Get from environment variables
-  private static final String IMMPORT_BASE_URL = "https://auth.dev.immport.org";
   private static final String IMMPORT_CEDAR_USER_NAME = "cedaruser";
   private static final String IMMPORT_CEDAR_USER_PASSWORD = "GoCedar2017#";
 
-  private static final String IMMPORT_TOKEN_URL = IMMPORT_BASE_URL + "/auth/token";
-  private static final String IMMPORT_WORKSPACES_URL_BASE = IMMPORT_BASE_URL + "/users/";
+  private static final String IMMPORT_TOKEN_URL = "https://auth.dev.immport.org/auth/token";
+  private static final String IMMPORT_WORKSPACES_URL_BASE = "https://auth.dev.immport.org/auth/users/";
   private static final String IMMPORT_WORKSPACES_URL =
     IMMPORT_WORKSPACES_URL_BASE + IMMPORT_CEDAR_USER_NAME + "/workspaces";
-  private static final String IMMPORT_SUBMISSION_URL = IMMPORT_BASE_URL + "/data/upload";
+  private static final String IMMPORT_SUBMISSION_URL = "https://api.dev.immport.org/data/upload";
 
   public ImmPortSubmissionServerResource(CedarConfig cedarConfig)
   {
@@ -86,7 +87,7 @@ import static org.metadatacenter.util.json.JsonMapper.MAPPER;
     try {
       CloseableHttpClient client = HttpClientBuilder.create().build();
       HttpGet get = new HttpGet(IMMPORT_WORKSPACES_URL);
-      get.setHeader("Authorization", "Bearer " + token.get());
+      get.setHeader(HTTP_HEADER_AUTHORIZATION, HTTP_AUTH_HEADER_BEARER_PREFIX + token.get());
       response = client.execute(get);
 
       if (response.getStatusLine().getStatusCode() == 200) {
@@ -126,6 +127,14 @@ import static org.metadatacenter.util.json.JsonMapper.MAPPER;
       if (ServletFileUpload.isMultipartContent(request)) {
         MultipartEntityBuilder builder = MultipartEntityBuilder.create();
 
+        String workspaceID = request.getParameter("workspaceId");
+        if (workspaceID == null || workspaceID.isEmpty()) {
+          logger.warn("No workspaceId parameter specified");
+          return Response.status(Response.Status.BAD_REQUEST).build();
+        }
+        builder.addTextBody("workspaceId", workspaceID);
+        builder.addTextBody("username", IMMPORT_CEDAR_USER_NAME);
+
         File tempDir = Files.createTempDir();
         List<FileItem> fileItems = new ServletFileUpload(new DiskFileItemFactory(1024 * 1024, tempDir)).
           parseRequest(request);
@@ -136,10 +145,10 @@ import static org.metadatacenter.util.json.JsonMapper.MAPPER;
           if (!fileItem.isFormField()) {
             if ("instance".equals(fieldName)) {
               InputStream is = fileItem.getInputStream();
-              builder.addBinaryBody(fieldName, is, ContentType.APPLICATION_JSON, fileName);
+              builder.addBinaryBody("file", is, ContentType.DEFAULT_BINARY, fileName);
             } else { // The user-supplied files
               InputStream is = fileItem.getInputStream();
-              builder.addBinaryBody(fieldName, is, ContentType.DEFAULT_BINARY, fileName);
+              builder.addBinaryBody("file", is, ContentType.DEFAULT_BINARY, fileName);
             }
           }
         }
@@ -148,16 +157,28 @@ import static org.metadatacenter.util.json.JsonMapper.MAPPER;
         CloseableHttpClient client = HttpClientBuilder.create().build();
         HttpPost post = new HttpPost(IMMPORT_SUBMISSION_URL);
         post.setEntity(multiPartRequestEntity);
+        post.setHeader(HTTP_HEADER_AUTHORIZATION, HTTP_AUTH_HEADER_BEARER_PREFIX + token.get());
+        //post.setHeader(HTTP_HEADER_CONTENT_TYPE, ");
         response = client.execute(post);
 
-        if (response.getStatusLine().getStatusCode() == 200) {
+        int statusCode = response.getStatusLine().getStatusCode();
+        if (statusCode == 200) {
+          return Response.ok().build();
+        } else if (statusCode == Response.Status.BAD_REQUEST.getStatusCode()) {
           HttpEntity entity = response.getEntity();
-          InputStream responseStream = entity.getContent();
-          return null;
-        } else
-          return null; //generateUnexpectedStatusCodeSubmitResponse(response.getStatusLine().getStatusCode());
+          String responseBody = EntityUtils.toString(entity);
+          logger.warn("Unexpected status code returned from " + IMMPORT_SUBMISSION_URL + ": " + response.getStatusLine()
+            .getStatusCode() + "JSON " + responseBody);
+          return Response.status(Response.Status.BAD_REQUEST).build();
+        } else {
+          logger.warn("Unexpected status code returned from " + IMMPORT_SUBMISSION_URL + ": " + response.getStatusLine()
+            .getStatusCode());
+          return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
+        }
+      } else {
+        logger.warn("No form data supplied");
+        return Response.status(Response.Status.BAD_REQUEST).build();
       }
-      return Response.ok().build();
     } catch (IOException e) {
       logger.warn("IO exception connecting to host " + IMMPORT_SUBMISSION_URL + ": " + e.getMessage());
       return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
@@ -181,10 +202,10 @@ import static org.metadatacenter.util.json.JsonMapper.MAPPER;
     CloseableHttpResponse response = null;
 
     try {
-      List<NameValuePair> params = new ArrayList<>(2);
-      params.add(new BasicNameValuePair("username", IMMPORT_CEDAR_USER_NAME));
-      params.add(new BasicNameValuePair("password", IMMPORT_CEDAR_USER_PASSWORD));
-      post.setEntity(new UrlEncodedFormEntity(params, "UTF-8"));
+      List<NameValuePair> parameters = new ArrayList<>(2);
+      parameters.add(new BasicNameValuePair("username", IMMPORT_CEDAR_USER_NAME));
+      parameters.add(new BasicNameValuePair("password", IMMPORT_CEDAR_USER_PASSWORD));
+      post.setEntity(new UrlEncodedFormEntity(parameters, "UTF-8"));
       post.setHeader("Accept", "application/json");
 
       response = client.execute(post);
@@ -231,6 +252,7 @@ import static org.metadatacenter.util.json.JsonMapper.MAPPER;
 
       if (immPortWorkspaces.has("error")) {
         cedarWorkspaceResponse.setError(immPortWorkspaces.get("error").textValue());
+        cedarWorkspaceResponse.setSuccess(false);
         return cedarWorkspaceResponse;
       } else {
         List<Workspace> workspaces = new ArrayList<>();
@@ -245,9 +267,11 @@ import static org.metadatacenter.util.json.JsonMapper.MAPPER;
         }
         cedarWorkspaceResponse.setWorkspaces(workspaces);
       }
+      cedarWorkspaceResponse.setSuccess(true);
       return cedarWorkspaceResponse;
     } else {
       cedarWorkspaceResponse.setError("No body in ImmPort response");
+      cedarWorkspaceResponse.setSuccess(false);
       return cedarWorkspaceResponse;
     }
   }
