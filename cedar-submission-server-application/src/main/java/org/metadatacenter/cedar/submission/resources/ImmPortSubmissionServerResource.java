@@ -25,6 +25,7 @@ import org.metadatacenter.config.CedarConfig;
 import org.metadatacenter.exception.CedarException;
 import org.metadatacenter.rest.context.CedarRequestContext;
 import org.metadatacenter.rest.context.CedarRequestContextFactory;
+import org.metadatacenter.submission.biosample.CEDARSubmitResponse;
 import org.metadatacenter.submission.biosample.CEDARWorkspaceResponse;
 import org.metadatacenter.submission.biosample.ImmPortGetTokenResponse;
 import org.metadatacenter.submission.biosample.Workspace;
@@ -45,8 +46,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 
-import static org.metadatacenter.constant.HttpConstants.HTTP_AUTH_HEADER_BEARER_PREFIX;
-import static org.metadatacenter.constant.HttpConstants.HTTP_HEADER_AUTHORIZATION;
+import static org.metadatacenter.constant.HttpConstants.CONTENT_TYPE_APPLICATION_JSON;
+import static org.metadatacenter.constant.HttpConstants.HTTP_HEADER_ACCEPT;
 import static org.metadatacenter.rest.assertion.GenericAssertions.LoggedIn;
 import static org.metadatacenter.util.json.JsonMapper.MAPPER;
 
@@ -62,7 +63,7 @@ import static org.metadatacenter.util.json.JsonMapper.MAPPER;
   private static final String IMMPORT_CEDAR_USER_PASSWORD = "GoCedar2017#";
 
   private static final String IMMPORT_TOKEN_URL = "https://auth.dev.immport.org/auth/token";
-  private static final String IMMPORT_WORKSPACES_URL_BASE = "https://auth.dev.immport.org/auth/users/";
+  private static final String IMMPORT_WORKSPACES_URL_BASE = "https://api.dev.immport.org/users/";
   private static final String IMMPORT_WORKSPACES_URL =
     IMMPORT_WORKSPACES_URL_BASE + IMMPORT_CEDAR_USER_NAME + "/workspaces";
   private static final String IMMPORT_SUBMISSION_URL = "https://api.dev.immport.org/data/upload";
@@ -87,12 +88,13 @@ import static org.metadatacenter.util.json.JsonMapper.MAPPER;
     try {
       CloseableHttpClient client = HttpClientBuilder.create().build();
       HttpGet get = new HttpGet(IMMPORT_WORKSPACES_URL);
-      get.setHeader(HTTP_HEADER_AUTHORIZATION, HTTP_AUTH_HEADER_BEARER_PREFIX + token.get());
+      get.setHeader("Authorization", "bearer " + token.get());
+      get.setHeader(HTTP_HEADER_ACCEPT, CONTENT_TYPE_APPLICATION_JSON);
       response = client.execute(get);
 
       if (response.getStatusLine().getStatusCode() == 200) {
         HttpEntity entity = response.getEntity();
-        return Response.ok(immPortWorkspaces2CEDARWorkspaces(entity)).build();
+        return Response.ok(immPortWorkspacesResponseBody2CEDARWorkspaceResponse(entity)).build();
       } else {
         logger.warn("Unexpected status code calling " + IMMPORT_WORKSPACES_URL + ";status=" + response.getStatusLine()
           .getStatusCode());
@@ -157,13 +159,13 @@ import static org.metadatacenter.util.json.JsonMapper.MAPPER;
         CloseableHttpClient client = HttpClientBuilder.create().build();
         HttpPost post = new HttpPost(IMMPORT_SUBMISSION_URL);
         post.setEntity(multiPartRequestEntity);
-        post.setHeader(HTTP_HEADER_AUTHORIZATION, HTTP_AUTH_HEADER_BEARER_PREFIX + token.get());
+        post.setHeader("Authorization", "bearer " + token.get());
         //post.setHeader(HTTP_HEADER_CONTENT_TYPE, ");
         response = client.execute(post);
 
         int statusCode = response.getStatusLine().getStatusCode();
         if (statusCode == 200) {
-          return Response.ok().build();
+          return Response.ok(immPortSubmissionResponseBody2CEDARSubmissionResponse(response.getEntity())).build();
         } else if (statusCode == Response.Status.BAD_REQUEST.getStatusCode()) {
           HttpEntity entity = response.getEntity();
           String responseBody = EntityUtils.toString(entity);
@@ -242,7 +244,8 @@ import static org.metadatacenter.util.json.JsonMapper.MAPPER;
     }
   }
 
-  private CEDARWorkspaceResponse immPortWorkspaces2CEDARWorkspaces(HttpEntity responseEntity) throws IOException
+  private CEDARWorkspaceResponse immPortWorkspacesResponseBody2CEDARWorkspaceResponse(HttpEntity responseEntity)
+    throws IOException
   {
     CEDARWorkspaceResponse cedarWorkspaceResponse = new CEDARWorkspaceResponse();
 
@@ -273,6 +276,44 @@ import static org.metadatacenter.util.json.JsonMapper.MAPPER;
       cedarWorkspaceResponse.setError("No body in ImmPort response");
       cedarWorkspaceResponse.setSuccess(false);
       return cedarWorkspaceResponse;
+    }
+  }
+
+  private CEDARSubmitResponse immPortSubmissionResponseBody2CEDARSubmissionResponse(HttpEntity responseEntity)
+    throws IOException
+  {
+    CEDARSubmitResponse cedarSubmitResponse = new CEDARSubmitResponse();
+    if (responseEntity != null) {
+      String responseBody = EntityUtils.toString(responseEntity);
+      JsonNode immPortSubmissionResponseBody = MAPPER.readTree(responseBody);
+
+      if (immPortSubmissionResponseBody.has("error")) {
+        cedarSubmitResponse.setError(immPortSubmissionResponseBody.get("error").textValue());
+        cedarSubmitResponse.setSuccess(false);
+        return cedarSubmitResponse;
+      } else {
+        if (immPortSubmissionResponseBody.has("uploadTicketStatusUiUrl")) {
+          cedarSubmitResponse.setStatusURL(immPortSubmissionResponseBody.get("uploadTicketStatusUiUrl").textValue());
+          if (immPortSubmissionResponseBody.has("status")) {
+            cedarSubmitResponse.setStatus(immPortSubmissionResponseBody.get("status").textValue());
+            cedarSubmitResponse.setSuccess(true);
+            return cedarSubmitResponse;
+
+          } else {
+            cedarSubmitResponse.setError("No status field in ImmPort submit response");
+            cedarSubmitResponse.setSuccess(false);
+            return cedarSubmitResponse;
+          }
+        } else {
+          cedarSubmitResponse.setError("No uploadTickerStatusUiURL field in ImmPort submit response");
+          cedarSubmitResponse.setSuccess(false);
+          return cedarSubmitResponse;
+        }
+      }
+    } else {
+      cedarSubmitResponse.setError("No JSON in ImmPort submit response");
+      cedarSubmitResponse.setSuccess(false);
+      return cedarSubmitResponse;
     }
   }
 }
