@@ -1,5 +1,6 @@
 package org.metadatacenter.cedar.submission;
 
+import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 import org.metadatacenter.cedar.submission.health.SubmissionServerHealthCheck;
 import org.metadatacenter.cedar.submission.resources.AIRRSubmissionServerResource;
@@ -7,6 +8,7 @@ import org.metadatacenter.cedar.submission.resources.AMIA2016DemoBioSampleServer
 import org.metadatacenter.cedar.submission.resources.IndexResource;
 import org.metadatacenter.cedar.submission.resources.LincsSubmissionServerResource;
 import org.metadatacenter.cedar.util.dw.CedarMicroserviceApplication;
+import org.metadatacenter.config.CedarConfig;
 import org.metadatacenter.model.ServerName;
 
 public class SubmissionServerApplication extends CedarMicroserviceApplication<SubmissionServerConfiguration> {
@@ -21,7 +23,12 @@ public class SubmissionServerApplication extends CedarMicroserviceApplication<Su
   }
 
   @Override
-  public void initializeApp() {}
+  protected void initializeWithBootstrap(Bootstrap<SubmissionServerConfiguration> bootstrap, CedarConfig cedarConfig) {
+  }
+
+  @Override
+  public void initializeApp() {
+  }
 
   @Override
   public void runApp(SubmissionServerConfiguration configuration, Environment environment) {
