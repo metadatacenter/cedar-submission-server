@@ -2,20 +2,20 @@
   "$schema": "http://json-schema.org/draft-04/schema#",
   "type": "object",
   "properties": {
-    "success": {
-      "type": "boolean"
+    "status": {
+      "type": "integer"
+    },
+    "timestamp": {
+      "type": "integer"
     },
     "error": {
       "type": "string"
     },
-    "status": {
+    "message": {
       "type": "string"
     },
-    "submissionID": {
+    "path": {
       "type": "string"
-    },
-    "statusURL": {
-      "type": "string", "format": "url"
     }
   }
 }

@@ -25,6 +25,7 @@ import org.metadatacenter.config.CedarConfig;
 import org.metadatacenter.exception.CedarException;
 import org.metadatacenter.rest.context.CedarRequestContext;
 import org.metadatacenter.rest.context.CedarRequestContextFactory;
+import org.metadatacenter.submission.biosample.CEDARSubmissionStatus;
 import org.metadatacenter.submission.biosample.CEDARSubmitResponse;
 import org.metadatacenter.submission.biosample.CEDARWorkspaceResponse;
 import org.metadatacenter.submission.biosample.ImmPortGetTokenResponse;
@@ -65,6 +66,7 @@ import static org.metadatacenter.util.json.JsonMapper.MAPPER;
   private static final String IMMPORT_CEDAR_USER_PASSWORD = "GoCedar2017#";
 
   private static final String IMMPORT_TOKEN_URL = "https://auth.dev.immport.org/auth/token";
+  private static final String IMMPORT_STATUS_URL_BASE = "https://api.dev.immport.org/data/upload/registration/";
   private static final String IMMPORT_WORKSPACES_URL_BASE = "https://api.dev.immport.org/users/";
   private static final String IMMPORT_WORKSPACES_URL =
     IMMPORT_WORKSPACES_URL_BASE + IMMPORT_CEDAR_USER_NAME + "/workspaces";
@@ -84,8 +86,10 @@ import static org.metadatacenter.util.json.JsonMapper.MAPPER;
     c.must(c.user()).be(LoggedIn);
 
     Optional<String> token = getImmPortToken();
-    if (!token.isPresent())
+    if (!token.isPresent()) {
+      logger.warn("Could not get an ImmPort token");
       return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
+    }
 
     try {
       CloseableHttpClient client = HttpClientBuilder.create().build();
@@ -167,6 +171,8 @@ import static org.metadatacenter.util.json.JsonMapper.MAPPER;
 
         int statusCode = response.getStatusLine().getStatusCode();
         if (statusCode == Response.Status.OK.getStatusCode()) {
+          CEDARSubmitResponse todo = immPortSubmissionResponseBody2CEDARSubmissionResponse(response.getEntity());
+          getImmPortSubmissionStatus(todo.getSubmissionID());
           return Response.ok(immPortSubmissionResponseBody2CEDARSubmissionResponse(response.getEntity())).build();
         } else if (statusCode == Response.Status.BAD_REQUEST.getStatusCode()) {
           HttpEntity entity = response.getEntity();
@@ -200,6 +206,47 @@ import static org.metadatacenter.util.json.JsonMapper.MAPPER;
           response.close();
         } catch (IOException e) {
           logger.warn("Error closing HTTP response for ImmPort submission: " + e.getMessage());
+        }
+    }
+  }
+
+  private Optional<CEDARSubmissionStatus> getImmPortSubmissionStatus(String submissionID) throws CedarException
+  {
+    CloseableHttpResponse response = null;
+
+    CedarRequestContext c = CedarRequestContextFactory.fromRequest(request);
+    c.must(c.user()).be(LoggedIn);
+
+    Optional<String> token = getImmPortToken();
+    if (!token.isPresent()) {
+      logger.warn("Could not get an ImmPort token");
+      return Optional.empty();
+    }
+
+    try {
+      CloseableHttpClient client = HttpClientBuilder.create().build();
+      HttpGet get = new HttpGet(IMMPORT_STATUS_URL_BASE + submissionID + "/status");
+      get.setHeader("Authorization", "bearer " + token.get());
+      get.setHeader(HTTP_HEADER_ACCEPT, CONTENT_TYPE_APPLICATION_JSON);
+      response = client.execute(get);
+
+      if (response.getStatusLine().getStatusCode() == 200) {
+        HttpEntity entity = response.getEntity();
+        return Optional.of(immPortSubmissionStatusResponseBody2CEDARSubmissionStatusResponse(entity));
+      } else {
+        logger.warn("Unexpected status code calling " + IMMPORT_WORKSPACES_URL + ";status=" + response.getStatusLine()
+          .getStatusCode());
+        return Optional.empty();
+      }
+    } catch (IOException e) {
+      logger.warn("IO exception connecting to host " + IMMPORT_WORKSPACES_URL + ": " + e.getMessage());
+      return Optional.empty();
+    } finally {
+      if (response != null)
+        try {
+          response.close();
+        } catch (IOException e) {
+          logger.warn("Error closing HTTP response for ImmPort workspaces call");
         }
     }
   }
@@ -259,17 +306,14 @@ import static org.metadatacenter.util.json.JsonMapper.MAPPER;
   private CEDARWorkspaceResponse immPortWorkspacesResponseBody2CEDARWorkspaceResponse(HttpEntity responseEntity)
     throws IOException
   {
-    CEDARWorkspaceResponse cedarWorkspaceResponse = new CEDARWorkspaceResponse();
-
     if (responseEntity != null) {
       String responseBody = EntityUtils.toString(responseEntity);
       JsonNode immPortWorkspaces = MAPPER.readTree(responseBody);
 
-      if (immPortWorkspaces.has("error")) {
-        cedarWorkspaceResponse.setError(immPortWorkspaces.get("error").textValue());
-        cedarWorkspaceResponse.setSuccess(false);
-        return cedarWorkspaceResponse;
-      } else {
+      if (immPortWorkspaces.has("error"))
+        return createCEDARWorkspaceResponseWithError(immPortWorkspaces.get("error").textValue());
+      else {
+        CEDARWorkspaceResponse cedarWorkspaceResponse = new CEDARWorkspaceResponse();
         List<Workspace> workspaces = new ArrayList<>();
         Iterator<String> fieldNames = immPortWorkspaces.fieldNames();
         while (fieldNames.hasNext()) {
@@ -281,60 +325,85 @@ import static org.metadatacenter.util.json.JsonMapper.MAPPER;
           workspaces.add(workspace);
         }
         cedarWorkspaceResponse.setWorkspaces(workspaces);
+        cedarWorkspaceResponse.setSuccess(true);
+        return cedarWorkspaceResponse;
       }
-      cedarWorkspaceResponse.setSuccess(true);
-      return cedarWorkspaceResponse;
-    } else {
-      cedarWorkspaceResponse.setError("No body in ImmPort response");
-      cedarWorkspaceResponse.setSuccess(false);
-      return cedarWorkspaceResponse;
-    }
+    } else
+      return createCEDARWorkspaceResponseWithError("No body in ImmPort response");
   }
 
-  private CEDARWorkspaceResponse generateUnexpectedStatusCodeCEDARWorkspaceResponse(int statusCode)
+  private CEDARSubmissionStatus immPortSubmissionStatusResponseBody2CEDARSubmissionStatusResponse(HttpEntity responseEntity)
+    throws IOException
   {
-    CEDARWorkspaceResponse cedarWorkspaceResponse = new CEDARWorkspaceResponse();
-    cedarWorkspaceResponse.setError("Unexpected status code " + statusCode + " when calling ImmPort");
-    cedarWorkspaceResponse.setSuccess(false);
+    if (responseEntity != null) {
+      String responseBody = EntityUtils.toString(responseEntity);
+      JsonNode immPortSubmissionStatusResponseBody = MAPPER.readTree(responseBody);
 
-    return cedarWorkspaceResponse;
+      if (immPortSubmissionStatusResponseBody.has("error"))
+        return createCEDARSubmissionStatus("error", immPortSubmissionStatusResponseBody.get("error").textValue());
+      else {
+        CEDARSubmissionStatus cedarSubmissionStatus = new CEDARSubmissionStatus();
+        return cedarSubmissionStatus;
+      }
+    } else
+      return createCEDARSubmissionStatus("error", "no response body from ImmPort");
   }
 
   private CEDARSubmitResponse immPortSubmissionResponseBody2CEDARSubmissionResponse(HttpEntity responseEntity)
     throws IOException
   {
-    CEDARSubmitResponse cedarSubmitResponse = new CEDARSubmitResponse();
     if (responseEntity != null) {
       String responseBody = EntityUtils.toString(responseEntity);
       JsonNode immPortSubmissionResponseBody = MAPPER.readTree(responseBody);
 
-      if (immPortSubmissionResponseBody.has("error")) {
-        cedarSubmitResponse.setError(immPortSubmissionResponseBody.get("error").textValue());
-        cedarSubmitResponse.setSuccess(false);
-        return cedarSubmitResponse;
-      } else {
-        if (immPortSubmissionResponseBody.has("uploadTicketStatusUiUrl")) {
-          cedarSubmitResponse.setStatusURL(immPortSubmissionResponseBody.get("uploadTicketStatusUiUrl").textValue());
-          if (immPortSubmissionResponseBody.has("status")) {
-            cedarSubmitResponse.setStatus(immPortSubmissionResponseBody.get("status").textValue());
-            cedarSubmitResponse.setSuccess(true);
-            return cedarSubmitResponse;
+      if (immPortSubmissionResponseBody.has("error"))
+        return createCEDARSubmitResponseWithError(immPortSubmissionResponseBody.get("error").textValue());
+      else {
+        CEDARSubmitResponse cedarSubmitResponse = new CEDARSubmitResponse();
+        if (!immPortSubmissionResponseBody.has("uploadTicketStatusUiUrl"))
+          return createCEDARSubmitResponseWithError("No uploadTicketStatusUiURL field in ImmPort submit response");
+        else if (!immPortSubmissionResponseBody.has("status"))
+          return createCEDARSubmitResponseWithError("No status field in ImmPort submit response");
+        else if (!immPortSubmissionResponseBody.has("uploadTicketNumber"))
+          return createCEDARSubmitResponseWithError("No uploadTicketNumber field in ImmPort submit response");
 
-          } else {
-            cedarSubmitResponse.setError("No status field in ImmPort submit response");
-            cedarSubmitResponse.setSuccess(false);
-            return cedarSubmitResponse;
-          }
-        } else {
-          cedarSubmitResponse.setError("No uploadTickerStatusUiURL field in ImmPort submit response");
-          cedarSubmitResponse.setSuccess(false);
-          return cedarSubmitResponse;
-        }
+        cedarSubmitResponse.setStatusURL(immPortSubmissionResponseBody.get("uploadTicketStatusUiUrl").textValue());
+        cedarSubmitResponse.setStatus(immPortSubmissionResponseBody.get("status").textValue());
+        cedarSubmitResponse.setSubmissionID(immPortSubmissionResponseBody.get("uploadTicketNumber").textValue());
+        cedarSubmitResponse.setSuccess(true);
+        return cedarSubmitResponse;
       }
-    } else {
-      cedarSubmitResponse.setError("No JSON in ImmPort submit response");
-      cedarSubmitResponse.setSuccess(false);
-      return cedarSubmitResponse;
-    }
+    } else
+      return createCEDARSubmitResponseWithError("No JSON in ImmPort submit response");
+  }
+
+  private CEDARSubmitResponse createCEDARSubmitResponseWithError(String errorMessage)
+  {
+    CEDARSubmitResponse cedarSubmitResponse = new CEDARSubmitResponse();
+
+    cedarSubmitResponse.setError(errorMessage);
+    cedarSubmitResponse.setSuccess(false);
+
+    return cedarSubmitResponse;
+  }
+
+  private CEDARWorkspaceResponse createCEDARWorkspaceResponseWithError(String errorMessage)
+  {
+    CEDARWorkspaceResponse cedarWorkspaceResponse = new CEDARWorkspaceResponse();
+
+    cedarWorkspaceResponse.setError(errorMessage);
+    cedarWorkspaceResponse.setSuccess(false);
+
+    return cedarWorkspaceResponse;
+  }
+
+  private CEDARSubmissionStatus createCEDARSubmissionStatus(String status, String message)
+  {
+    CEDARSubmissionStatus cedarSubmissionStatus = new CEDARSubmissionStatus();
+
+    cedarSubmissionStatus.setStatus(status);
+    cedarSubmissionStatus.setMessage(message);
+
+    return cedarSubmissionStatus;
   }
 }
