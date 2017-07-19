@@ -1,4 +1,4 @@
-package org.metadatacenter.cedar.submission.resources.uploader;
+package org.metadatacenter.submission.ncbiairr.upload;
 
 public class UploaderCreationException extends Exception {
 

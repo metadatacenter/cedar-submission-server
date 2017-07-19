@@ -1,4 +1,4 @@
-package org.metadatacenter.cedar.submission.resources.uploader;
+package org.metadatacenter.submission.ncbiairr.upload;
 
 import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
@@ -7,7 +7,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Optional;
 
 import static com.google.common.base.Preconditions.checkNotNull;

@@ -1,4 +1,4 @@
-package org.metadatacenter.cedar.submission.resources.uploader;
+package org.metadatacenter.submission.ncbiairr.upload;
 
 import java.io.File;
 import java.io.IOException;
