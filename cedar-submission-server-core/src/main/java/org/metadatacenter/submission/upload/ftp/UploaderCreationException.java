@@ -1,4 +1,4 @@
-package org.metadatacenter.submission.ncbiairr.upload;
+package org.metadatacenter.submission.upload.ftp;
 
 public class UploaderCreationException extends Exception {
 

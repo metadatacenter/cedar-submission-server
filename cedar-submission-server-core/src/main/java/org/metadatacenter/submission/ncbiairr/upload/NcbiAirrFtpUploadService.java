@@ -3,6 +3,9 @@ package org.metadatacenter.submission.ncbiairr.upload;
 import com.google.common.base.Stopwatch;
 import com.google.common.io.Files;
 import org.metadatacenter.config.FTPConfig;
+import org.metadatacenter.submission.upload.ftp.FileUploader;
+import org.metadatacenter.submission.upload.ftp.FtpUploader;
+import org.metadatacenter.submission.upload.ftp.UploaderCreationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -12,9 +15,9 @@ import java.util.Collection;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
-public class UploadService {
+public class NcbiAirrFtpUploadService {
 
-  final static Logger logger = LoggerFactory.getLogger(UploadService.class);
+  final static Logger logger = LoggerFactory.getLogger(NcbiAirrFtpUploadService.class);
 
   /**
    * Upload a list of files to the NCBI server via the FTP protocol. For the NCBI submission, the files

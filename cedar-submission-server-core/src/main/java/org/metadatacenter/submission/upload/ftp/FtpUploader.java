@@ -1,4 +1,4 @@
-package org.metadatacenter.submission.ncbiairr.upload;
+package org.metadatacenter.submission.upload.ftp;
 
 import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;

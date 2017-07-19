@@ -1,4 +1,4 @@
-package org.metadatacenter.cedar.submission.util.fileupload.flow;
+package org.metadatacenter.submission.upload.flow;
 
 import org.apache.commons.fileupload.FileItem;
 import org.joda.time.DateTime;

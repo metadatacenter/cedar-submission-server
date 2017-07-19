@@ -1,4 +1,4 @@
-package org.metadatacenter.cedar.submission.util.fileupload.flow;
+package org.metadatacenter.submission.upload.flow;
 
 public class FlowChunkUploadStatus {
 

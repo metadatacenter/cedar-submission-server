@@ -1,4 +1,4 @@
-package org.metadatacenter.submission.ncbiairr.upload;
+package org.metadatacenter.submission.upload.ftp;
 
 import java.io.File;
 import java.io.IOException;
