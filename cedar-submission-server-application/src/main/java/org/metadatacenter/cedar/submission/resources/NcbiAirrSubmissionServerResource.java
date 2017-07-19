@@ -95,11 +95,9 @@ public class NcbiAirrSubmissionServerResource extends CedarMicroserviceResource 
   }
 
   /**
-   * This endpoint receives multiple chunks of a file and assemblies them. When the upload is complete, it triggers
-   * the FTP upload to the NCBI.
-   * It is based on some ideas from: https://github.com/flowjs/flow
-   * .js/blob/master/samples/java/src/resumable/js/upload/UploadServlet.java
-   * TODO: deal with multi-file submissions
+   * This endpoint receives multiple chunks of a submission package and assemblies them. The submission may be
+   * composed by one or multiple files. When the upload is complete, this method triggers the upload of all files that
+   * are part of the submission to the NCBI via FTP. Submissions are processed sequentially using a queue.
    */
   @POST
   @Timed
@@ -113,40 +111,28 @@ public class NcbiAirrSubmissionServerResource extends CedarMicroserviceResource 
     // Check that this is a file upload request
     if (ServletFileUpload.isMultipartContent(request)) {
       try {
+        // Extract all file or form items that were received within the multipart/form-data POST request
+        List<FileItem> items = new ServletFileUpload(new DiskFileItemFactory()).parseRequest(request);
+        FlowChunkData info = FlowUploadUtil.getFlowChunkData(items);
 
-        List<FileItem> fileItems = new ServletFileUpload(new DiskFileItemFactory()).parseRequest(request);
-        FlowChunkData info = FlowUploadUtil.getFlowChunkData(fileItems);
-
-        // Create uploaded file
+        // If the file does not exist, create it
         String cedarUserId = FlowUploadUtil.getLastFragmentOfUrl(c.getCedarUser().getId());
         File tempDir = new File(FlowUploadUtil.getTempFolderName("ncbi-upload", cedarUserId, info.flowIdentifier));
-        tempDir.mkdirs();
-        File uploadedFile = new File(tempDir + "/" + info.flowFilename);
-        uploadedFile.createNewFile();
-        logger.info("File created. Path: " + uploadedFile);
-
-        RandomAccessFile raf = new RandomAccessFile(uploadedFile, "rw");
-
-        // Seek to position
-        raf.seek((info.flowChunkNumber - 1) * info.flowChunkSize);
-        // Save to file
-        InputStream is = info.getFlowFileInputStream();
-        long read = 0;
-        long content_length = request.getContentLength();
-        byte[] bytes = new byte[1024 * 100];
-        while (read < content_length) {
-          int r = is.read(bytes);
-          if (r < 0) {
-            break;
-          }
-          raf.write(bytes, 0, r);
-          read += r;
+        if (!tempDir.exists()) {
+          tempDir.mkdirs();
         }
-        raf.close();
+        File uploadedFile = new File(tempDir + "/" + info.flowFilename);
+        if (!uploadedFile.exists()) {
+          uploadedFile.createNewFile();
+          logger.info("File created. Path: " + uploadedFile);
+        }
+
+        // Use a random access file to assemble all the file chunks
+        RandomAccessFile raf = new RandomAccessFile(uploadedFile, "rw");
+        FlowUploadUtil.writeToRandomAccessFile(raf, info, request.getContentLength());
 
         // Update the map
-        FlowChunkUploadManager.getInstance().increaseUploadedChunksCount(info.getFlowIdentifier(), info
-            .getFlowTotalChunks());
+        FlowChunkUploadManager.getInstance().increaseUploadedChunksCount(info.getFlowIdentifier(), info.getFlowTotalChunks());
 
         // Check if the upload is complete and trigger the FTP submission to NCBI
         if (FlowChunkUploadManager.getInstance().isUploadFinished(info.getFlowIdentifier())) {

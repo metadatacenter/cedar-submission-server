@@ -5,8 +5,13 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
+/**
+ * Map submissionIdentifier -> Map of flowIdentifier -> FlowChunkUploadStatus
+ */
 public class FlowChunkUploadManager {
 
+
+  private HashMap<String, HashMap<String, FlowChunkUploadStatus>> submissionMap = new HashMap<>();
   // Map flowIdentifier -> FlowChunkUploadStatus
   private HashMap<String, FlowChunkUploadStatus> statusMap = new HashMap<>();
 
