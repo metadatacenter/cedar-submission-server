@@ -3,13 +3,15 @@ package org.metadatacenter.cedar.submission;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 import org.metadatacenter.cedar.submission.health.SubmissionServerHealthCheck;
-import org.metadatacenter.cedar.submission.resources.AIRRSubmissionServerResource;
 import org.metadatacenter.cedar.submission.resources.AMIA2016DemoBioSampleServerResource;
 import org.metadatacenter.cedar.submission.resources.IndexResource;
 import org.metadatacenter.cedar.submission.resources.LincsSubmissionServerResource;
+import org.metadatacenter.cedar.submission.resources.NcbiAirrSubmissionServerResource;
 import org.metadatacenter.cedar.util.dw.CedarMicroserviceApplication;
 import org.metadatacenter.config.CedarConfig;
 import org.metadatacenter.model.ServerName;
+import org.metadatacenter.server.cache.submission.NcbiAirrSubmissionEnqueueService;
+import org.metadatacenter.server.cache.util.CacheService;
 
 public class SubmissionServerApplication extends CedarMicroserviceApplication<SubmissionServerConfiguration> {
 
@@ -28,6 +30,12 @@ public class SubmissionServerApplication extends CedarMicroserviceApplication<Su
 
   @Override
   public void initializeApp() {
+
+    NcbiAirrSubmissionEnqueueService searchPermissionEnqueueService = new NcbiAirrSubmissionEnqueueService(
+        new CacheService(cedarConfig.getCacheConfig().getPersistent()));
+
+    NcbiAirrSubmissionServerResource.injectServices(searchPermissionEnqueueService);
+
   }
 
   @Override
@@ -41,7 +49,7 @@ public class SubmissionServerApplication extends CedarMicroserviceApplication<Su
         AMIA2016DemoBioSampleServerResource(cedarConfig);
     environment.jersey().register(amia2016DemoBioSampleServerResource);
 
-    final AIRRSubmissionServerResource airrSubmissionServerResource = new AIRRSubmissionServerResource(cedarConfig);
+    final NcbiAirrSubmissionServerResource airrSubmissionServerResource = new NcbiAirrSubmissionServerResource(cedarConfig);
     environment.jersey().register(airrSubmissionServerResource);
 
     final LincsSubmissionServerResource lincsSubmissionServerResource = new LincsSubmissionServerResource(cedarConfig);

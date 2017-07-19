@@ -1,13 +1,15 @@
 package org.metadatacenter.cedar.submission.resources;
 
 import com.codahale.metrics.annotation.Timed;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Stopwatch;
 import com.google.common.io.Files;
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
-import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.metadatacenter.cedar.submission.resources.uploader.FileUploader;
 import org.metadatacenter.cedar.submission.resources.uploader.FtpUploader;
@@ -21,8 +23,10 @@ import org.metadatacenter.config.FTPConfig;
 import org.metadatacenter.exception.CedarException;
 import org.metadatacenter.rest.context.CedarRequestContext;
 import org.metadatacenter.rest.context.CedarRequestContextFactory;
+import org.metadatacenter.server.cache.submission.NcbiAirrSubmissionEnqueueService;
 import org.metadatacenter.submission.AIRRTemplate2SRAConverter;
 import org.metadatacenter.submission.BioSampleValidator;
+import org.metadatacenter.submission.NcbiAirrSubmission;
 import org.metadatacenter.submission.biosample.AIRRTemplate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,10 +41,7 @@ import javax.ws.rs.core.Response;
 import javax.xml.bind.JAXBException;
 import javax.xml.datatype.DatatypeConfigurationException;
 import java.io.*;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 import static org.metadatacenter.rest.assertion.GenericAssertions.LoggedIn;
@@ -52,18 +53,24 @@ import static org.metadatacenter.rest.assertion.GenericAssertions.LoggedIn;
  */
 @Path("/command")
 @Produces(MediaType.APPLICATION_JSON)
-public class AIRRSubmissionServerResource
-    extends CedarMicroserviceResource {
-  final static Logger logger = LoggerFactory.getLogger(AIRRSubmissionServerResource.class);
+public class NcbiAirrSubmissionServerResource extends CedarMicroserviceResource {
+
+  final static Logger logger = LoggerFactory.getLogger(NcbiAirrSubmissionServerResource.class);
 
   private final BioSampleValidator bioSampleValidator;
 
   private final AIRRTemplate2SRAConverter airrTemplate2SRAConverter;
 
-  public AIRRSubmissionServerResource(CedarConfig cedarConfig) {
+  private static NcbiAirrSubmissionEnqueueService ncbiAirrSubmissionEnqueueService;
+
+  public NcbiAirrSubmissionServerResource(CedarConfig cedarConfig) {
     super(cedarConfig);
     this.bioSampleValidator = new BioSampleValidator();
     this.airrTemplate2SRAConverter = new AIRRTemplate2SRAConverter();
+  }
+
+  public static void injectServices(NcbiAirrSubmissionEnqueueService ncbiAirrSubmissionEnqueueService) {
+    NcbiAirrSubmissionServerResource.ncbiAirrSubmissionEnqueueService = ncbiAirrSubmissionEnqueueService;
   }
 
   /**
@@ -93,71 +100,6 @@ public class AIRRSubmissionServerResource
     } catch (JAXBException | DatatypeConfigurationException e) {
       return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
     }
-  }
-
-
-  /**
-   * Upload a list of files to the NCBI server via the FTP protocol. For the NCBI submission, the files
-   * should include submission.xml and FASTQ files. All these files will be stored in a remote directory
-   * provided by the input parameter 'submissionDir'.
-   *
-   * @param submissionDir The directory name to be created at the remote server to store all the files.
-   * @param listOfFiles   A list of files to be uploaded
-   * @throws IOException               When upload failed due to I/O difficulties.
-   * @throws UploaderCreationException When the FTP uploader failed to be created (e.g., hostname not found or
-   *                                   invalid credential)
-   */
-  private void upload(String submissionDir, Collection<File> listOfFiles) throws IOException,
-      UploaderCreationException {
-    FTPConfig ftpConfig = cedarConfig.getSubmissionConfig().getNcbi().getSra().getFtp();
-    FileUploader uploader = null;
-    try {
-      uploader = FtpUploader.createNewUploader(
-          ftpConfig.getHost(),
-          ftpConfig.getUser(),
-          ftpConfig.getPassword(),
-          Optional.of(ftpConfig.getSubmissionDirectory()));
-      uploadResourceFiles(uploader, submissionDir, listOfFiles);
-//      uploadSubmitReadyFile(uploader, submissionDir);
-
-    } finally {
-      if (uploader != null) {
-        try {
-          uploader.disconnect();
-        } catch (IOException e) {
-          String message = String.format("Error while disconnecting from %s", ftpConfig.getHost());
-          logger.error(message + ": " + e.getMessage());
-        }
-      }
-    }
-  }
-
-  private void uploadResourceFiles(FileUploader uploader, String submissionDir, Collection<File> listOfFiles) throws
-      IOException {
-    for (File file : listOfFiles) {
-      Stopwatch stopwatch = Stopwatch.createStarted();
-      logger.info("Submission in progress: Uploading '{}' file...", file.getName());
-      uploader.store(submissionDir, file);
-      logger.info("... uploaded in {} s", stopwatch.elapsed(TimeUnit.SECONDS));
-    }
-  }
-
-  private void uploadSubmitReadyFile(FileUploader uploader, String submissionDir) throws IOException {
-    logger.info("Submission in progress: Uploading 'submit.ready' file...");
-    File submitReady = createSubmitReadyFile();
-    try {
-      uploader.store(submissionDir, submitReady);
-    } finally {
-      if (submitReady != null) {
-        submitReady.delete(); // remove traces
-      }
-    }
-  }
-
-  private static File createSubmitReadyFile() throws IOException {
-    File submitReady = new File("submit.ready");
-    Files.touch(submitReady);
-    return submitReady;
   }
 
   /**
@@ -220,12 +162,21 @@ public class AIRRSubmissionServerResource
           logger.info("Upload completed. File: " + info.getFlowFilename());
           String submissionDir = FlowUploadUtil.getDateBasedFolderName(DateTimeZone.UTC) + "_test";
           logger.info("Starting submission to the NCBI. Destination folder: " + submissionDir);
-          List<File> filesForNCBI = new ArrayList<>();
-          filesForNCBI.add(uploadedFile);
-          boolean upload = false; // TODO: remove this condition
-          if (upload) {
-            upload(submissionDir, filesForNCBI);
-          }
+
+          // Enqueue submission
+          logger.info("Enqueuing submission");
+          String submissionId = UUID.randomUUID().toString();
+          List<String> localFilePaths = new ArrayList<>();
+          localFilePaths.add(uploadedFile.getAbsolutePath());
+          NcbiAirrSubmission submission = new NcbiAirrSubmission(submissionId, cedarUserId, localFilePaths, submissionDir);
+          ncbiAirrSubmissionEnqueueService.enqueueSubmission(submission);
+
+//          List<File> filesForNCBI = new ArrayList<>();
+//          filesForNCBI.add(uploadedFile);
+//          boolean upload = false; // TODO: remove this condition
+//          if (upload) {
+//            upload(submissionDir, filesForNCBI);
+//          }
         }
       } catch (FileNotFoundException e) {
         e.printStackTrace();
@@ -235,14 +186,114 @@ public class AIRRSubmissionServerResource
         e.printStackTrace();
       } catch (FileUploadException e) {
         e.printStackTrace();
-      } catch (UploaderCreationException e) {
-        e.printStackTrace();
+//      } catch (UploaderCreationException e) {
+//        e.printStackTrace();
       }
 
       return Response.ok().build();
     } else {
       return Response.status(Response.Status.BAD_REQUEST).build();
     }
+  }
+
+  /**
+   * This endpoint triggers the submission to the NCBI of files previously uploaded to CEDAR using the "/upload-airr-to-cedar" endpoint
+   */
+  @POST
+  @Timed
+  @Path("/submit-to-ncbi")
+  @Consumes(MediaType.APPLICATION_JSON)
+  public Response submit() throws CedarException {
+
+    logger.info("*** Submitting to NCBI...");
+
+    CedarRequestContext c = CedarRequestContextFactory.fromRequest(request);
+    c.must(c.user()).be(LoggedIn);
+
+    JsonNode submissionJson = c.request().getRequestBody().asJson();
+    ObjectMapper mapper = new ObjectMapper();
+    try {
+      NcbiAirrSubmission submission = mapper.treeToValue(submissionJson, NcbiAirrSubmission.class);
+      List<File> filesToSubmit = new ArrayList<>();
+      for (String filePath : submission.getLocalFilePaths()) {
+        filesToSubmit.add(new File(filePath));
+      }
+      logger.info("Uploading to NCBI... (simulation)");
+      Thread.sleep(60000);
+      logger.info("Submission successful!!!! (simulation). Submission id: " + submission.getId() + "; No. files: " + submission.getLocalFilePaths().size());
+      //uploadToNcbi(submission.getSubmissionFolder(), filesToSubmit);
+    } catch (JsonProcessingException e) {
+      return Response.status(Response.Status.BAD_REQUEST).build();
+    }
+    catch (Exception e) {
+      // TODO: improve error messages
+      return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
+    }
+    return Response.ok().build();
+  }
+
+  /**
+   * Upload a list of files to the NCBI server via the FTP protocol. For the NCBI submission, the files
+   * should include submission.xml and FASTQ files. All these files will be stored in a remote directory
+   * provided by the input parameter 'submissionDir'.
+   *
+   * @param submissionDir The directory name to be created at the remote server to store all the files.
+   * @param listOfFiles   A list of files to be uploaded
+   * @throws IOException               When upload failed due to I/O difficulties.
+   * @throws UploaderCreationException When the FTP uploader failed to be created (e.g., hostname not found or
+   *                                   invalid credential)
+   */
+  private void uploadToNcbi(String submissionDir, Collection<File> listOfFiles) throws IOException,
+      UploaderCreationException {
+    FTPConfig ftpConfig = cedarConfig.getSubmissionConfig().getNcbi().getSra().getFtp();
+    FileUploader uploader = null;
+    try {
+      uploader = FtpUploader.createNewUploader(
+          ftpConfig.getHost(),
+          ftpConfig.getUser(),
+          ftpConfig.getPassword(),
+          Optional.of(ftpConfig.getSubmissionDirectory()));
+      uploadResourceFiles(uploader, submissionDir, listOfFiles);
+//      uploadSubmitReadyFile(uploader, submissionDir);
+
+    } finally {
+      if (uploader != null) {
+        try {
+          uploader.disconnect();
+        } catch (IOException e) {
+          String message = String.format("Error while disconnecting from %s", ftpConfig.getHost());
+          logger.error(message + ": " + e.getMessage());
+        }
+      }
+    }
+  }
+
+  private void uploadResourceFiles(FileUploader uploader, String submissionDir, Collection<File> listOfFiles) throws
+      IOException {
+    for (File file : listOfFiles) {
+      Stopwatch stopwatch = Stopwatch.createStarted();
+      logger.info("Submission in progress: Uploading '{}' file...", file.getName());
+      uploader.store(submissionDir, file);
+      logger.info("... uploaded in {} s", stopwatch.elapsed(TimeUnit.SECONDS));
+    }
+  }
+
+  private void uploadSubmitReadyFile(FileUploader uploader, String submissionDir) throws IOException {
+    logger.info("Submission in progress: Uploading 'submit.ready' file...");
+    File submitReady = createSubmitReadyFile();
+    try {
+      uploader.store(submissionDir, submitReady);
+    } finally {
+      if (submitReady != null) {
+        submitReady.delete(); // remove traces
+      }
+    }
+  }
+
+  private static File createSubmitReadyFile() throws IOException {
+    File submitReady = new File("submit.ready");
+    Files.touch(submitReady);
+    return submitReady;
   }
 
 }
