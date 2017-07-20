@@ -42,7 +42,7 @@ public class SubmissionServerApplication extends CedarMicroserviceApplication<Su
 
     NcbiAirrSubmissionServerResource.injectServices(ncbiAirrSubmissionQueueService);
 
-    ncbiAirrSubmissionExecutorService = new NcbiAirrSubmissionExecutorService();
+    ncbiAirrSubmissionExecutorService = new NcbiAirrSubmissionExecutorService(cedarConfig);
   }
 
   @Override

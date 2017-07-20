@@ -3,7 +3,10 @@ package org.metadatacenter.submission.upload.flow;
 import sun.jvm.hotspot.oops.Instance;
 
 import javax.management.InstanceNotFoundException;
+import java.io.File;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -28,7 +31,7 @@ public class SubmissionUploadManager {
   }
 
   // Updates the upload status with the latest file chunk that has been uploaded
-  public synchronized void updateStatus(FlowData data) {
+  public synchronized void updateStatus(FlowData data, String fileLocalPath) {
 
     String submissionId = data.getSubmissionId();
     String fileId = data.getFlowIdentifier();
@@ -45,7 +48,7 @@ public class SubmissionUploadManager {
 
     // If the file does not exist in the submission, create it
     if (!submissionUploadStatus.getFilesUploadStatus().containsKey(fileId)) {
-      FileUploadStatus fileUploadStatus = new FileUploadStatus(fileTotalChunks, 0);
+      FileUploadStatus fileUploadStatus = new FileUploadStatus(fileTotalChunks, 0, fileLocalPath);
       submissionUploadStatus.getFilesUploadStatus().put(fileId, fileUploadStatus);
     }
 
@@ -63,10 +66,10 @@ public class SubmissionUploadManager {
   }
 
   private boolean isFileUploadComplete(FileUploadStatus fileUploadStatus)  {
-    if (fileUploadStatus.fileUploadedChunks == fileUploadStatus.fileTotalChunks) {
+    if (fileUploadStatus.getFileUploadedChunks() == fileUploadStatus.getFileTotalChunks()) {
       return true;
     }
-    else if (fileUploadStatus.fileUploadedChunks > fileUploadStatus.fileTotalChunks) {
+    else if (fileUploadStatus.getFileUploadedChunks() > fileUploadStatus.getFileTotalChunks()) {
       throw new InternalError("Uploaded file chunks is higher than total file chunks");
     }
     else {
@@ -96,4 +99,19 @@ public class SubmissionUploadManager {
     submissionsUploadStatus.remove(submissionId);
   }
 
+  // Returns local file paths
+  public List<String> getSubmissionFilePaths(String submissionId) throws InstanceNotFoundException {
+    List<String> filePaths = new ArrayList<>();
+    if (!submissionsUploadStatus.containsKey(submissionId)) {
+      throw new InstanceNotFoundException("Submission not found (submissionId = " + submissionId);
+    }
+    if (!isSubmissionUploadComplete(submissionId)) {
+      throw new InternalError("The submission upload is not complete (submissionId = " + submissionId);
+    }
+    SubmissionUploadStatus submissionUploadStatus = submissionsUploadStatus.get(submissionId);
+    for (Map.Entry<String, FileUploadStatus> entry : submissionUploadStatus.getFilesUploadStatus().entrySet()) {
+      filePaths.add(entry.getValue().getFileLocalPath());
+    }
+    return filePaths;
+  }
 }

@@ -11,7 +11,7 @@ import java.util.List;
 
 public class FlowUploadUtil {
 
-  public static FlowData getFlowData(List<FileItem> fileItems) {
+  public static FlowData getFlowData(List<FileItem> fileItems) throws IllegalAccessException {
 
     String submissionId = null;
     long numberOfFiles = -1;
@@ -56,8 +56,46 @@ public class FlowUploadUtil {
         }
       }
     }
+
+    // Throw an exception if any of the expected fields is missing
+    if (submissionId == null) {
+      throw new InternalError("Missing field: submissionId");
+    } else if (numberOfFiles == -1) {
+      throw new InternalError("Missing field: numberOfFiles");
+    } else if (flowChunkNumber == -1) {
+      throw new InternalError("Missing field: flowChunkNumber");
+    } else if (flowChunkSize == -1) {
+      throw new InternalError("Missing field: flowChunkSize");
+    } else if (flowCurrentChunkSize == -1) {
+      throw new InternalError("Missing field: flowCurrentChunkSize");
+    } else if (flowTotalSize == -1) {
+      throw new InternalError("Missing field: flowTotalSize");
+    } else if (flowIdentifier == null) {
+      throw new InternalError("Missing field: flowIdentifier");
+    } else if (flowFilename == null) {
+      throw new InternalError("Missing field: flowFilename");
+    } else if (flowRelativePath == null) {
+      throw new InternalError("Missing field: flowRelativePath");
+    } else if (flowTotalChunks == -1) {
+      throw new InternalError("Missing field: flowTotalChunks");
+    }
+
     return new FlowData(submissionId, numberOfFiles, flowChunkNumber, flowChunkSize, flowCurrentChunkSize,
         flowTotalSize, flowIdentifier, flowFilename, flowRelativePath, flowTotalChunks, flowFileInputStream);
+
+    // Throw an exception if any of the expected fields is missing
+//    for (Field f : data.getClass().getFields()) {
+//      f.setAccessible(true);
+//      if (!f.getType().isPrimitive()) {
+//        if (f.get(data) == null) {
+//          throw new InternalError("Missing field: " + f.getName());
+//        }
+//      } else {
+//        if (((Number) f.get(data)).longValue() == -1) {
+//          throw new InternalError("Missing field: " + f.getName());
+//        }
+//      }
+//    }
 
   }
 
@@ -80,10 +118,8 @@ public class FlowUploadUtil {
     raf.close();
   }
 
-  public static String getTempFolderName(String uploadType, String userId, String submissionId, String
-      uploadIdentifier) {
-    return System.getProperty("java.io.tmpdir") + uploadType + "/user_" + userId + "/submission_" + submissionId +
-        "/file_" + uploadIdentifier;
+  public static String getTempFolderName(String uploadType, String userId, String submissionId) {
+    return System.getProperty("java.io.tmpdir") + uploadType + "/user_" + userId + "/submission_" + submissionId;
   }
 
   public static String getDateBasedFolderName(DateTimeZone dateTimeZone) {

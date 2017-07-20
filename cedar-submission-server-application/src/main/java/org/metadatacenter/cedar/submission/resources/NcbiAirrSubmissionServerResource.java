@@ -120,26 +120,26 @@ public class NcbiAirrSubmissionServerResource extends CedarMicroserviceResource 
 
         // If the file does not exist, create it
         String cedarUserId = FlowUploadUtil.getLastFragmentOfUrl(c.getCedarUser().getId());
-        File tempDir = new File(FlowUploadUtil.getTempFolderName("ncbi-airr-upload", cedarUserId, data.getSubmissionId(), data.flowIdentifier));
-        if (!tempDir.exists()) {
-          tempDir.mkdirs();
+        File submissionTempDir = new File(FlowUploadUtil.getTempFolderName("ncbi-airr-upload", cedarUserId, data.getSubmissionId()));
+        if (!submissionTempDir.exists()) {
+          submissionTempDir.mkdirs();
         }
-        File uploadedFile = new File(tempDir + "/" + data.flowFilename);
-        if (!uploadedFile.exists()) {
-          uploadedFile.createNewFile();
-          logger.info("File created. Path: " + uploadedFile);
+        File f = new File(submissionTempDir + "/" + data.flowFilename);
+        if (!f.exists()) {
+          f.createNewFile();
+          logger.info("File created. Path: " + f);
         }
+        String filePath = f.getAbsolutePath();
 
         // Use a random access file to assemble all the file chunks
-        RandomAccessFile raf = new RandomAccessFile(uploadedFile, "rw");
+        RandomAccessFile raf = new RandomAccessFile(f, "rw");
         FlowUploadUtil.writeToRandomAccessFile(raf, data, request.getContentLength());
 
         // Updates the submission upload status
-        SubmissionUploadManager.getInstance().updateStatus(data);
+        SubmissionUploadManager.getInstance().updateStatus(data, filePath);
 
         // Check if the upload is complete and trigger the FTP submission to NCBI
         if (SubmissionUploadManager.getInstance().isSubmissionUploadComplete(data.getSubmissionId())) {
-          SubmissionUploadManager.getInstance().removeSubmissionStatus(data.getSubmissionId());
           logger.info("Upload completed. Submission id: " + data.getSubmissionId());
 
           // Submit the files to the NCBI
@@ -147,20 +147,27 @@ public class NcbiAirrSubmissionServerResource extends CedarMicroserviceResource 
           logger.info("Starting submission to the NCBI. Destination folder: " + submissionDir);
           // Enqueue submission
           logger.info("Enqueuing submission");
-          String submissionId = UUID.randomUUID().toString();
-          List<String> localFilePaths = new ArrayList<>();
-          localFilePaths.add(uploadedFile.getAbsolutePath());
-          NcbiAirrSubmission submission = new NcbiAirrSubmission(submissionId, cedarUserId, localFilePaths, submissionDir);
+          List<String> localFilePaths = SubmissionUploadManager.getInstance().getSubmissionFilePaths(data.getSubmissionId());
+          NcbiAirrSubmission submission = new NcbiAirrSubmission(data.getSubmissionId(), cedarUserId, localFilePaths, submissionDir);
           ncbiAirrSubmissionQueueService.enqueueSubmission(submission);
+          // Remove the submission from status map
+          SubmissionUploadManager.getInstance().removeSubmissionStatus(data.getSubmissionId());
         }
       } catch (FileNotFoundException e) {
-        e.printStackTrace();
+        logger.info(e.getMessage());
+        return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
       } catch (IOException e) {
-        e.printStackTrace();
+        logger.info(e.getMessage());
+        return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
       } catch (InstanceNotFoundException e) {
-        e.printStackTrace();
+        logger.info(e.getMessage());
+        return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
       } catch (FileUploadException e) {
-        e.printStackTrace();
+        logger.info(e.getMessage());
+        return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
+      } catch (IllegalAccessException e) {
+        logger.info(e.getMessage());
+        return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
       }
 
       return Response.ok().build();
@@ -168,44 +175,6 @@ public class NcbiAirrSubmissionServerResource extends CedarMicroserviceResource 
       return Response.status(Response.Status.BAD_REQUEST).build();
     }
   }
-
-  /**
-   * This endpoint triggers the submission to the NCBI of files previously uploaded to CEDAR using the "/upload-airr-to-cedar" endpoint
-   */
-//  @POST
-//  @Timed
-//  @Path("/submit-to-ncbi")
-//  @Consumes(MediaType.APPLICATION_JSON)
-//  public Response submit() throws CedarException {
-//
-//    logger.info("*** Submitting to NCBI...");
-//
-//    CedarRequestContext c = CedarRequestContextFactory.fromRequest(request);
-//    c.must(c.user()).be(LoggedIn);
-//
-//    JsonNode submissionJson = c.request().getRequestBody().asJson();
-//    ObjectMapper mapper = new ObjectMapper();
-//    try {
-//      NcbiAirrSubmission submission = mapper.treeToValue(submissionJson, NcbiAirrSubmission.class);
-//      List<File> filesToSubmit = new ArrayList<>();
-//      for (String filePath : submission.getLocalFilePaths()) {
-//        filesToSubmit.add(new File(filePath));
-//      }
-//      logger.info("Uploading to NCBI... (simulation)");
-//      Thread.sleep(60000);
-//      logger.info("Submission successful!!!! (simulation). Submission id: " + submission.getId() + "; No. files: " + submission.getLocalFilePaths().size());
-//      UploadService.uploadToNcbi(submission.getSubmissionFolder(), filesToSubmit, cedarConfig.getSubmissionConfig().getNcbi().getSra().getFtp());
-//    } catch (JsonProcessingException e) {
-//      return Response.status(Response.Status.BAD_REQUEST).build();
-//    }
-//    catch (Exception e) {
-//      // TODO: improve error messages
-//      return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
-//    }
-//    return Response.ok().build();
-//  }
-
-
 
 }
 

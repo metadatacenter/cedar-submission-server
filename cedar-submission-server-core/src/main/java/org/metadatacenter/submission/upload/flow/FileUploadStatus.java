@@ -2,12 +2,14 @@ package org.metadatacenter.submission.upload.flow;
 
 public class FileUploadStatus {
 
-  public long fileTotalChunks;
-  public long fileUploadedChunks;
+  private long fileTotalChunks;
+  private long fileUploadedChunks;
+  private String fileLocalPath;
 
-  public FileUploadStatus(long flowTotalChunks, long flowUploadedChunks) {
-    this.fileTotalChunks = flowTotalChunks;
-    this.fileUploadedChunks = flowUploadedChunks;
+  public FileUploadStatus(long fileTotalChunks, long fileUploadedChunks, String fileLocalPath) {
+    this.fileTotalChunks = fileTotalChunks;
+    this.fileUploadedChunks = fileUploadedChunks;
+    this.fileLocalPath = fileLocalPath;
   }
 
   public long getFileTotalChunks() {
@@ -24,5 +26,13 @@ public class FileUploadStatus {
 
   public void setFileUploadedChunks(long fileUploadedChunks) {
     this.fileUploadedChunks = fileUploadedChunks;
+  }
+
+  public String getFileLocalPath() {
+    return fileLocalPath;
+  }
+
+  public void setFileLocalPath(String fileLocalPath) {
+    this.fileLocalPath = fileLocalPath;
   }
 }
