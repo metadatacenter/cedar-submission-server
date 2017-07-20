@@ -6,10 +6,10 @@ import java.io.InputStream;
  * Object that represents a chunk of data uploaded to the server using the Flow.js library
  * See: https://github.com/flowjs/flow.js
  */
-public class FlowChunkData {
+public class FlowData {
 
   public String submissionId;
-  public int numberOfFiles;
+  public long totalFilesCount;
   public long flowChunkNumber;
   public long flowChunkSize;
   public long flowCurrentChunkSize;
@@ -20,11 +20,11 @@ public class FlowChunkData {
   public long flowTotalChunks;
   public InputStream flowFileInputStream;
 
-  public FlowChunkData(String submissionId, int numberOfFiles, long flowChunkNumber, long flowChunkSize, long
+  public FlowData(String submissionId, long totalFilesCount, long flowChunkNumber, long flowChunkSize, long
       flowCurrentChunkSize, long flowTotalSize, String flowIdentifier, String flowFilename, String flowRelativePath,
                        long flowTotalChunks, InputStream flowFileInputStream) {
     this.submissionId = submissionId;
-    this.numberOfFiles = numberOfFiles;
+    this.totalFilesCount = totalFilesCount;
     this.flowChunkNumber = flowChunkNumber;
     this.flowChunkSize = flowChunkSize;
     this.flowCurrentChunkSize = flowCurrentChunkSize;
@@ -40,8 +40,8 @@ public class FlowChunkData {
     return submissionId;
   }
 
-  public int getNumberOfFiles() {
-    return numberOfFiles;
+  public long getTotalFilesCount() {
+    return totalFilesCount;
   }
 
   public long getFlowChunkNumber() {

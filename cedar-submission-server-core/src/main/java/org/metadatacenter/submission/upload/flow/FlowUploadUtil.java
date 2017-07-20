@@ -11,10 +11,10 @@ import java.util.List;
 
 public class FlowUploadUtil {
 
-  public static FlowChunkData getFlowChunkData(List<FileItem> fileItems) {
+  public static FlowData getFlowData(List<FileItem> fileItems) {
 
     String submissionId = null;
-    int numberOfFiles = -1;
+    long numberOfFiles = -1;
     long flowChunkNumber = -1;
     long flowChunkSize = -1;
     long flowCurrentChunkSize = -1;
@@ -30,7 +30,7 @@ public class FlowUploadUtil {
         if (item.getFieldName().equals("submissionId")) {
           submissionId = item.getString();
         } else if (item.getFieldName().equals("numberOfFiles")) {
-          numberOfFiles = Integer.parseInt(item.getString());
+          numberOfFiles = Long.parseLong(item.getString());
         } else if (item.getFieldName().equals("flowChunkNumber")) {
           flowChunkNumber = Long.parseLong(item.getString());
         } else if (item.getFieldName().equals("flowChunkSize")) {
@@ -56,26 +56,13 @@ public class FlowUploadUtil {
         }
       }
     }
-    return new FlowChunkData(submissionId, numberOfFiles, flowChunkNumber, flowChunkSize, flowCurrentChunkSize,
+    return new FlowData(submissionId, numberOfFiles, flowChunkNumber, flowChunkSize, flowCurrentChunkSize,
         flowTotalSize, flowIdentifier, flowFilename, flowRelativePath, flowTotalChunks, flowFileInputStream);
 
   }
 
-//  // returns the file name (without the extension)
-//  public static String getFileNamePrefix(String fileName) {
-//    if(fileName.lastIndexOf(".") != -1 && fileName.lastIndexOf(".") != 0)
-//      return fileName.substring(0, fileName.lastIndexOf("."));
-//    else return fileName;
-//  }
-//
-//  // returns the file extension
-//  public static String getFileNameSuffix(String fileName) {
-//    if(fileName.lastIndexOf(".") != -1 && fileName.lastIndexOf(".") != 0)
-//      return fileName.substring(fileName.lastIndexOf(".") + 1);
-//    else return "";
-//  }
-
-  public static void writeToRandomAccessFile(RandomAccessFile raf, FlowChunkData data, long contentLength) throws IOException {
+  public static void writeToRandomAccessFile(RandomAccessFile raf, FlowData data, long contentLength) throws
+      IOException {
     // Seek to position
     raf.seek((data.flowChunkNumber - 1) * data.flowChunkSize);
     // Save to file
@@ -93,8 +80,10 @@ public class FlowUploadUtil {
     raf.close();
   }
 
-  public static String getTempFolderName(String uploadType, String userId, String uploadIdentifier) {
-    return System.getProperty("java.io.tmpdir") + uploadType + "/" + userId + "/" + uploadIdentifier;
+  public static String getTempFolderName(String uploadType, String userId, String submissionId, String
+      uploadIdentifier) {
+    return System.getProperty("java.io.tmpdir") + uploadType + "/user_" + userId + "/submission_" + submissionId +
+        "/file_" + uploadIdentifier;
   }
 
   public static String getDateBasedFolderName(DateTimeZone dateTimeZone) {

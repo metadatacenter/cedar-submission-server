@@ -6,9 +6,6 @@ import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.joda.time.DateTimeZone;
-import org.metadatacenter.submission.upload.flow.FlowChunkData;
-import org.metadatacenter.submission.upload.flow.FlowChunkUploadManager;
-import org.metadatacenter.submission.upload.flow.FlowUploadUtil;
 import org.metadatacenter.cedar.util.dw.CedarMicroserviceResource;
 import org.metadatacenter.config.CedarConfig;
 import org.metadatacenter.exception.CedarException;
@@ -19,6 +16,9 @@ import org.metadatacenter.submission.BioSampleValidator;
 import org.metadatacenter.submission.biosample.AIRRTemplate;
 import org.metadatacenter.submission.ncbiairr.NcbiAirrSubmission;
 import org.metadatacenter.submission.ncbiairr.queue.NcbiAirrSubmissionQueueService;
+import org.metadatacenter.submission.upload.flow.FlowData;
+import org.metadatacenter.submission.upload.flow.FlowUploadUtil;
+import org.metadatacenter.submission.upload.flow.SubmissionUploadManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,7 +31,10 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.xml.bind.JAXBException;
 import javax.xml.datatype.DatatypeConfigurationException;
-import java.io.*;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.RandomAccessFile;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -113,15 +116,15 @@ public class NcbiAirrSubmissionServerResource extends CedarMicroserviceResource 
       try {
         // Extract all file or form items that were received within the multipart/form-data POST request
         List<FileItem> items = new ServletFileUpload(new DiskFileItemFactory()).parseRequest(request);
-        FlowChunkData info = FlowUploadUtil.getFlowChunkData(items);
+        FlowData data = FlowUploadUtil.getFlowData(items);
 
         // If the file does not exist, create it
         String cedarUserId = FlowUploadUtil.getLastFragmentOfUrl(c.getCedarUser().getId());
-        File tempDir = new File(FlowUploadUtil.getTempFolderName("ncbi-upload", cedarUserId, info.flowIdentifier));
+        File tempDir = new File(FlowUploadUtil.getTempFolderName("ncbi-airr-upload", cedarUserId, data.getSubmissionId(), data.flowIdentifier));
         if (!tempDir.exists()) {
           tempDir.mkdirs();
         }
-        File uploadedFile = new File(tempDir + "/" + info.flowFilename);
+        File uploadedFile = new File(tempDir + "/" + data.flowFilename);
         if (!uploadedFile.exists()) {
           uploadedFile.createNewFile();
           logger.info("File created. Path: " + uploadedFile);
@@ -129,18 +132,19 @@ public class NcbiAirrSubmissionServerResource extends CedarMicroserviceResource 
 
         // Use a random access file to assemble all the file chunks
         RandomAccessFile raf = new RandomAccessFile(uploadedFile, "rw");
-        FlowUploadUtil.writeToRandomAccessFile(raf, info, request.getContentLength());
+        FlowUploadUtil.writeToRandomAccessFile(raf, data, request.getContentLength());
 
-        // Update the map
-        FlowChunkUploadManager.getInstance().increaseUploadedChunksCount(info.getFlowIdentifier(), info.getFlowTotalChunks());
+        // Updates the submission upload status
+        SubmissionUploadManager.getInstance().updateStatus(data);
 
         // Check if the upload is complete and trigger the FTP submission to NCBI
-        if (FlowChunkUploadManager.getInstance().isUploadFinished(info.getFlowIdentifier())) {
-          FlowChunkUploadManager.getInstance().removeFlowStatus(info.getFlowIdentifier());
-          logger.info("Upload completed. File: " + info.getFlowFilename());
+        if (SubmissionUploadManager.getInstance().isSubmissionUploadComplete(data.getSubmissionId())) {
+          SubmissionUploadManager.getInstance().removeSubmissionStatus(data.getSubmissionId());
+          logger.info("Upload completed. Submission id: " + data.getSubmissionId());
+
+          // Submit the files to the NCBI
           String submissionDir = FlowUploadUtil.getDateBasedFolderName(DateTimeZone.UTC) + "_test";
           logger.info("Starting submission to the NCBI. Destination folder: " + submissionDir);
-
           // Enqueue submission
           logger.info("Enqueuing submission");
           String submissionId = UUID.randomUUID().toString();
