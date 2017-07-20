@@ -1,4 +1,4 @@
-package org.metadatacenter.cedar.submission.core;
+package org.metadatacenter.cedar.submission.status;
 
 import java.util.concurrent.Callable;
 

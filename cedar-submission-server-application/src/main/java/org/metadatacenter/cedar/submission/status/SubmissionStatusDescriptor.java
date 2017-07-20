@@ -1,6 +1,6 @@
-package org.metadatacenter.cedar.submission.core;
+package org.metadatacenter.cedar.submission.status;
 
-public class SubmissionStatusTaskDescriptor
+public class SubmissionStatusDescriptor
 {
   private final String submissionID;
   private final String userID;
@@ -8,7 +8,7 @@ public class SubmissionStatusTaskDescriptor
   private final SubmissionStatus submissionStatus;
   private final SubmissionStatusTask submissionStatusTask;
 
-  public SubmissionStatusTaskDescriptor(String submissionID, String userID, String statusURL,
+  public SubmissionStatusDescriptor(String submissionID, String userID, String statusURL,
     SubmissionStatus submissionStatus, SubmissionStatusTask submissionStatusTask)
   {
     this.submissionID = submissionID;
