@@ -1,9 +1,17 @@
 package org.metadatacenter.submission.upload.flow;
 
 import org.apache.commons.fileupload.FileItem;
+import org.apache.commons.fileupload.FileUploadException;
+import org.apache.commons.fileupload.disk.DiskFileItemFactory;
+import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
+import org.metadatacenter.submission.BioSampleValidator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import javax.servlet.http.HttpServletRequest;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.RandomAccessFile;
@@ -11,7 +19,12 @@ import java.util.List;
 
 public class FlowUploadUtil {
 
-  public static FlowData getFlowData(List<FileItem> fileItems) throws IllegalAccessException {
+  final static Logger logger = LoggerFactory.getLogger(FlowUploadUtil.class);
+
+  public static FlowData getFlowData(HttpServletRequest request) throws IllegalAccessException, FileUploadException {
+
+    // Extract all the files or form items that were received within the multipart/form-data POST request
+    List<FileItem> fileItems = new ServletFileUpload(new DiskFileItemFactory()).parseRequest(request);
 
     String submissionId = null;
     long numberOfFiles = -1;
@@ -83,20 +96,25 @@ public class FlowUploadUtil {
     return new FlowData(submissionId, numberOfFiles, flowChunkNumber, flowChunkSize, flowCurrentChunkSize,
         flowTotalSize, flowIdentifier, flowFilename, flowRelativePath, flowTotalChunks, flowFileInputStream);
 
-    // Throw an exception if any of the expected fields is missing
-//    for (Field f : data.getClass().getFields()) {
-//      f.setAccessible(true);
-//      if (!f.getType().isPrimitive()) {
-//        if (f.get(data) == null) {
-//          throw new InternalError("Missing field: " + f.getName());
-//        }
-//      } else {
-//        if (((Number) f.get(data)).longValue() == -1) {
-//          throw new InternalError("Missing field: " + f.getName());
-//        }
-//      }
-//    }
+  }
 
+  public static String saveToLocalFile(FlowData data, String userId, int contentLength) throws IOException {
+    // If the file does not exist, create it
+    String submissionTmpFolderPath =
+        FlowUploadUtil.getSubmissionTmpFolderPath("ncbi-airr-upload", userId, data.getSubmissionId());
+    File submissionTmpFolder = new File(submissionTmpFolderPath);
+    if (!submissionTmpFolder.exists()) {
+      submissionTmpFolder.mkdirs();
+    }
+    String fileTmpFolderPath = FlowUploadUtil.getFileTmpFolderPath(submissionTmpFolderPath, data.flowFilename);
+    File fileTmp = new File(fileTmpFolderPath);
+    if (!fileTmp.exists()) {
+      fileTmp.createNewFile();
+    }
+    // Use a random access file to assemble all the file chunks
+    RandomAccessFile raf = new RandomAccessFile(fileTmp, "rw");
+    FlowUploadUtil.writeToRandomAccessFile(raf, data, contentLength);
+    return fileTmp.getAbsolutePath();
   }
 
   public static void writeToRandomAccessFile(RandomAccessFile raf, FlowData data, long contentLength) throws
@@ -118,8 +136,12 @@ public class FlowUploadUtil {
     raf.close();
   }
 
-  public static String getTempFolderName(String uploadType, String userId, String submissionId) {
-    return System.getProperty("java.io.tmpdir") + uploadType + "/user_" + userId + "/submission_" + submissionId;
+  public static String getSubmissionTmpFolderPath(String baseFolderName, String userId, String submissionId) {
+    return System.getProperty("java.io.tmpdir") + baseFolderName + "/user_" + userId + "/submission_" + submissionId;
+  }
+
+  public static String getFileTmpFolderPath(String submissionTmpFolderPath, String fileName) {
+    return submissionTmpFolderPath + "/" + fileName;
   }
 
   public static String getDateBasedFolderName(DateTimeZone dateTimeZone) {

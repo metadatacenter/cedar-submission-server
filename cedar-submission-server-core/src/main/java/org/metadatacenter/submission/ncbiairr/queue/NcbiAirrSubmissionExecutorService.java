@@ -1,6 +1,7 @@
 package org.metadatacenter.submission.ncbiairr.queue;
 
 import org.metadatacenter.config.CedarConfig;
+import org.metadatacenter.submission.Constants;
 import org.metadatacenter.submission.ncbiairr.NcbiAirrSubmission;
 import org.metadatacenter.submission.ncbiairr.upload.NcbiAirrFtpUploadService;
 import org.metadatacenter.submission.upload.ftp.UploaderCreationException;
@@ -20,8 +21,6 @@ public class NcbiAirrSubmissionExecutorService {
     this.cedarConfig = cedarConfig;
   }
 
-  private final boolean TEST_MODE = true;
-
   private static final Logger logger = LoggerFactory.getLogger(NcbiAirrSubmissionExecutorService.class);
 
   // Main entry point
@@ -38,15 +37,14 @@ public class NcbiAirrSubmissionExecutorService {
       }
 
       logger.info("Uploading to NCBI...");
-      if (!TEST_MODE) {
+      if (!Constants.NCBI_AIRR_SIMULATION_MODE) { // real submission
         // TODO: check response and send notification to the user
         NcbiAirrFtpUploadService.uploadToNcbi(submission.getSubmissionFolder(),
-            filesToSubmit, cedarConfig.getSubmissionConfig().getNcbi().getSra().getFtp());
+            filesToSubmit, cedarConfig.getSubmissionConfig().getNcbi().getSra().getFtp(), submission.getUploadSubmitReadyFile());
       }
-      else {
-        Thread.sleep(30000);
+      else { // simulation mode
+        Thread.sleep(Constants.NCBI_AIRR_SIMULATION_MODE_TIMEOUT);
       }
-
       logger.info("Submission successful!!!!. Submission id: " + submission.getId() + "; No. files: " +
           submission.getLocalFilePaths().size());
 

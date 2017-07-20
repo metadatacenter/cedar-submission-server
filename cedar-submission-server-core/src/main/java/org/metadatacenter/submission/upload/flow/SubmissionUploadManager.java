@@ -1,19 +1,12 @@
 package org.metadatacenter.submission.upload.flow;
 
-import sun.jvm.hotspot.oops.Instance;
-
 import javax.management.InstanceNotFoundException;
-import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-/**
- * Map submissionIdentifier -> Map of flowIdentifier -> FlowUploadStatus
- */
 public class SubmissionUploadManager {
-
 
   private Map<String, SubmissionUploadStatus> submissionsUploadStatus = new HashMap<>();
 
@@ -31,7 +24,7 @@ public class SubmissionUploadManager {
   }
 
   // Updates the upload status with the latest file chunk that has been uploaded
-  public synchronized void updateStatus(FlowData data, String fileLocalPath) {
+  public synchronized void updateStatus(FlowData data, String submissionFolderPath) {
 
     String submissionId = data.getSubmissionId();
     String fileId = data.getFlowIdentifier();
@@ -41,13 +34,15 @@ public class SubmissionUploadManager {
     // If the submission does not exist in the map, create it
     if (!submissionsUploadStatus.containsKey(submissionId)) {
       Map<String, FileUploadStatus> filesUploadStatus = new HashMap<>();
-      SubmissionUploadStatus submissionUploadStatus = new SubmissionUploadStatus(totalFilesCount, 0, filesUploadStatus);
+      SubmissionUploadStatus submissionUploadStatus =
+          new SubmissionUploadStatus(totalFilesCount, 0, filesUploadStatus, submissionFolderPath);
       submissionsUploadStatus.put(submissionId, submissionUploadStatus);
     }
     SubmissionUploadStatus submissionUploadStatus = submissionsUploadStatus.get(submissionId);
 
     // If the file does not exist in the submission, create it
     if (!submissionUploadStatus.getFilesUploadStatus().containsKey(fileId)) {
+      String fileLocalPath = FlowUploadUtil.getFileTmpFolderPath(submissionFolderPath, data.flowFilename);
       FileUploadStatus fileUploadStatus = new FileUploadStatus(fileTotalChunks, 0, fileLocalPath);
       submissionUploadStatus.getFilesUploadStatus().put(fileId, fileUploadStatus);
     }
@@ -92,7 +87,6 @@ public class SubmissionUploadManager {
     else {
       return false;
     }
-
   }
 
   public void removeSubmissionStatus(String submissionId) {

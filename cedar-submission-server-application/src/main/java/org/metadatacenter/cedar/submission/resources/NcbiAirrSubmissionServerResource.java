@@ -1,9 +1,7 @@
 package org.metadatacenter.cedar.submission.resources;
 
 import com.codahale.metrics.annotation.Timed;
-import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.FileUploadException;
-import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.joda.time.DateTimeZone;
 import org.metadatacenter.cedar.util.dw.CedarMicroserviceResource;
@@ -13,6 +11,7 @@ import org.metadatacenter.rest.context.CedarRequestContext;
 import org.metadatacenter.rest.context.CedarRequestContextFactory;
 import org.metadatacenter.submission.AIRRTemplate2SRAConverter;
 import org.metadatacenter.submission.BioSampleValidator;
+import org.metadatacenter.submission.Constants;
 import org.metadatacenter.submission.biosample.AIRRTemplate;
 import org.metadatacenter.submission.ncbiairr.NcbiAirrSubmission;
 import org.metadatacenter.submission.ncbiairr.queue.NcbiAirrSubmissionQueueService;
@@ -31,13 +30,9 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.xml.bind.JAXBException;
 import javax.xml.datatype.DatatypeConfigurationException;
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.RandomAccessFile;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 import static org.metadatacenter.rest.assertion.GenericAssertions.LoggedIn;
 
@@ -113,46 +108,38 @@ public class NcbiAirrSubmissionServerResource extends CedarMicroserviceResource 
 
     // Check that this is a file upload request
     if (ServletFileUpload.isMultipartContent(request)) {
+
       try {
-        // Extract all file or form items that were received within the multipart/form-data POST request
-        List<FileItem> items = new ServletFileUpload(new DiskFileItemFactory()).parseRequest(request);
-        FlowData data = FlowUploadUtil.getFlowData(items);
+        String userId = FlowUploadUtil.getLastFragmentOfUrl(c.getCedarUser().getId());
+        // Extract data from the request
+        FlowData data = FlowUploadUtil.getFlowData(request);
+        // Save the file to a local temporary folder and get the file path
+        String filePath = FlowUploadUtil.saveToLocalFile(data,  userId, request.getContentLength());
+        logger.info("File created. Path: " + filePath);
+        // Update the submission upload status
+        String submissionTmpFolderPath =
+            FlowUploadUtil.getSubmissionTmpFolderPath(Constants.NCBI_AIRR_TMP_FOLDER_NAME, userId, data.getSubmissionId());
+        SubmissionUploadManager.getInstance().updateStatus(data, submissionTmpFolderPath);
 
-        // If the file does not exist, create it
-        String cedarUserId = FlowUploadUtil.getLastFragmentOfUrl(c.getCedarUser().getId());
-        File submissionTempDir = new File(FlowUploadUtil.getTempFolderName("ncbi-airr-upload", cedarUserId, data.getSubmissionId()));
-        if (!submissionTempDir.exists()) {
-          submissionTempDir.mkdirs();
-        }
-        File f = new File(submissionTempDir + "/" + data.flowFilename);
-        if (!f.exists()) {
-          f.createNewFile();
-          logger.info("File created. Path: " + f);
-        }
-        String filePath = f.getAbsolutePath();
-
-        // Use a random access file to assemble all the file chunks
-        RandomAccessFile raf = new RandomAccessFile(f, "rw");
-        FlowUploadUtil.writeToRandomAccessFile(raf, data, request.getContentLength());
-
-        // Updates the submission upload status
-        SubmissionUploadManager.getInstance().updateStatus(data, filePath);
-
-        // Check if the upload is complete and trigger the FTP submission to NCBI
+        // If the submission upload is complete, trigger the FTP submission to the NCBI servers
         if (SubmissionUploadManager.getInstance().isSubmissionUploadComplete(data.getSubmissionId())) {
-          logger.info("Upload completed. Submission id: " + data.getSubmissionId());
-
+          logger.info("Submission successfully uploaded to CEDAR: ");
+          logger.info("  submission id: " + data.getSubmissionId());
+          logger.info("  submission folder: " + submissionTmpFolderPath);
+          logger.info("  no. files: " + data.getTotalFilesCount());
           // Submit the files to the NCBI
-          String submissionDir = FlowUploadUtil.getDateBasedFolderName(DateTimeZone.UTC) + "_test";
-          logger.info("Starting submission to the NCBI. Destination folder: " + submissionDir);
+          String ncbiFolderName = FlowUploadUtil.getDateBasedFolderName(DateTimeZone.UTC) + "_test";
+          logger.info("Starting submission to the NCBI. Destination folder: " + ncbiFolderName);
           // Enqueue submission
           logger.info("Enqueuing submission");
           List<String> localFilePaths = SubmissionUploadManager.getInstance().getSubmissionFilePaths(data.getSubmissionId());
-          NcbiAirrSubmission submission = new NcbiAirrSubmission(data.getSubmissionId(), cedarUserId, localFilePaths, submissionDir);
+          NcbiAirrSubmission submission =
+              new NcbiAirrSubmission(data.getSubmissionId(), userId, localFilePaths, ncbiFolderName, Constants.NCBI_AIRR_UPLOAD_SUBMIT_READY_FILE);
           ncbiAirrSubmissionQueueService.enqueueSubmission(submission);
           // Remove the submission from status map
           SubmissionUploadManager.getInstance().removeSubmissionStatus(data.getSubmissionId());
         }
+
       } catch (FileNotFoundException e) {
         logger.info(e.getMessage());
         return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
