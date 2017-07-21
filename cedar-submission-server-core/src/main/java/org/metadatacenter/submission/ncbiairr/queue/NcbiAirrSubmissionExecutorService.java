@@ -37,23 +37,26 @@ public class NcbiAirrSubmissionExecutorService {
       }
 
       logger.info("Uploading to NCBI...");
-      if (!Constants.NCBI_AIRR_SIMULATION_MODE) { // real submission
-        // TODO: check response and send notification to the user
+      if (Constants.NCBI_AIRR_SUBMIT) { // real submission
         NcbiAirrFtpUploadService.uploadToNcbi(submission.getSubmissionFolder(),
             filesToSubmit, cedarConfig.getSubmissionConfig().getNcbi().getSra().getFtp(), submission.getUploadSubmitReadyFile());
       }
-      else { // simulation mode
+      else { // simulated submission
         Thread.sleep(Constants.NCBI_AIRR_SIMULATION_MODE_TIMEOUT);
       }
-      logger.info("Submission successful!!!!. Submission id: " + submission.getId() + "; No. files: " +
+      // TODO: Send notification to the user
+      logger.info("Submission to the NCBI completed! Submission id: " + submission.getId() + "; No. files: " +
           submission.getLocalFilePaths().size());
 
     } catch (IOException e) {
-      e.printStackTrace();
+      logger.error("Error submitting the data to the NCBI.");
+      logger.error(e.getMessage());
     } catch (UploaderCreationException e) {
-      e.printStackTrace();
+      logger.error("Error submitting the data to the NCBI.");
+      logger.error(e.getMessage());
     } catch (InterruptedException e) {
-      e.printStackTrace();
+      logger.error("Error submitting the data to the NCBI.");
+      logger.error(e.getMessage());
     }
 
   }

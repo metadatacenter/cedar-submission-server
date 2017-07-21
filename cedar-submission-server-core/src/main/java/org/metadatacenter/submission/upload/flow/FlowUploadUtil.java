@@ -6,7 +6,7 @@ import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
-import org.metadatacenter.submission.BioSampleValidator;
+import org.metadatacenter.submission.Constants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -15,6 +15,8 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.RandomAccessFile;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class FlowUploadUtil {
@@ -28,6 +30,7 @@ public class FlowUploadUtil {
 
     String submissionId = null;
     long numberOfFiles = -1;
+    List<String> metadataFiles = null;
     long flowChunkNumber = -1;
     long flowChunkSize = -1;
     long flowCurrentChunkSize = -1;
@@ -44,6 +47,8 @@ public class FlowUploadUtil {
           submissionId = item.getString();
         } else if (item.getFieldName().equals("numberOfFiles")) {
           numberOfFiles = Long.parseLong(item.getString());
+        } else if (item.getFieldName().equals("metadataFiles")) {
+          metadataFiles = commaSeparatedStringToList(item.getString());
         } else if (item.getFieldName().equals("flowChunkNumber")) {
           flowChunkNumber = Long.parseLong(item.getString());
         } else if (item.getFieldName().equals("flowChunkSize")) {
@@ -77,6 +82,8 @@ public class FlowUploadUtil {
       throw new InternalError("Missing field: numberOfFiles");
     } else if (flowChunkNumber == -1) {
       throw new InternalError("Missing field: flowChunkNumber");
+    } else if (metadataFiles == null) {
+      throw new InternalError("Missing field: metadataFiles");
     } else if (flowChunkSize == -1) {
       throw new InternalError("Missing field: flowChunkSize");
     } else if (flowCurrentChunkSize == -1) {
@@ -93,28 +100,28 @@ public class FlowUploadUtil {
       throw new InternalError("Missing field: flowTotalChunks");
     }
 
-    return new FlowData(submissionId, numberOfFiles, flowChunkNumber, flowChunkSize, flowCurrentChunkSize,
+    return new FlowData(submissionId, numberOfFiles, metadataFiles, flowChunkNumber, flowChunkSize, flowCurrentChunkSize,
         flowTotalSize, flowIdentifier, flowFilename, flowRelativePath, flowTotalChunks, flowFileInputStream);
 
   }
 
   public static String saveToLocalFile(FlowData data, String userId, int contentLength) throws IOException {
     // If the file does not exist, create it
-    String submissionTmpFolderPath =
-        FlowUploadUtil.getSubmissionTmpFolderPath("ncbi-airr-upload", userId, data.getSubmissionId());
-    File submissionTmpFolder = new File(submissionTmpFolderPath);
-    if (!submissionTmpFolder.exists()) {
-      submissionTmpFolder.mkdirs();
+    String submissionLocalFolderPath =
+        FlowUploadUtil.getSubmissionLocalFolderPath(Constants.NCBI_AIRR_LOCAL_FOLDER_NAME, userId, data.getSubmissionId());
+    File submissionLocalFolder = new File(submissionLocalFolderPath);
+    if (!submissionLocalFolder.exists()) {
+      submissionLocalFolder.mkdirs();
     }
-    String fileTmpFolderPath = FlowUploadUtil.getFileTmpFolderPath(submissionTmpFolderPath, data.flowFilename);
-    File fileTmp = new File(fileTmpFolderPath);
-    if (!fileTmp.exists()) {
-      fileTmp.createNewFile();
+    String fileLocalFolderPath = FlowUploadUtil.getFileLocalFolderPath(submissionLocalFolderPath, data.flowFilename);
+    File file = new File(fileLocalFolderPath);
+    if (!file.exists()) {
+      file.createNewFile();
     }
     // Use a random access file to assemble all the file chunks
-    RandomAccessFile raf = new RandomAccessFile(fileTmp, "rw");
+    RandomAccessFile raf = new RandomAccessFile(file, "rw");
     FlowUploadUtil.writeToRandomAccessFile(raf, data, contentLength);
-    return fileTmp.getAbsolutePath();
+    return file.getAbsolutePath();
   }
 
   public static void writeToRandomAccessFile(RandomAccessFile raf, FlowData data, long contentLength) throws
@@ -136,13 +143,25 @@ public class FlowUploadUtil {
     raf.close();
   }
 
-  public static String getSubmissionTmpFolderPath(String baseFolderName, String userId, String submissionId) {
+  public static String getSubmissionLocalFolderPath(String baseFolderName, String userId, String submissionId) {
     return System.getProperty("java.io.tmpdir") + baseFolderName + "/user_" + userId + "/submission_" + submissionId;
   }
 
-  public static String getFileTmpFolderPath(String submissionTmpFolderPath, String fileName) {
-    return submissionTmpFolderPath + "/" + fileName;
+  public static String getFileLocalFolderPath(String submissionLocalFolderPath, String fileName) {
+    return submissionLocalFolderPath + "/" + fileName;
   }
+
+//  public static List<String> getLocalPathsOfMetadataFiles(String submissionId) {
+//    List<String> paths = new ArrayList<>();
+//    Map<String, FileUploadStatus> filesUploadStatus = SubmissionUploadManager.getInstance()
+//        .getSubmissionsUploadStatus(submissionId).getFilesUploadStatus();
+//    for (Map.Entry<String, FileUploadStatus> entry : filesUploadStatus.entrySet()) {
+//      if (entry.getValue().isMetadataFile()) {
+//        paths.add(entry.getValue().getFileLocalPath());
+//      }
+//    }
+//    return paths;
+//  }
 
   public static String getDateBasedFolderName(DateTimeZone dateTimeZone) {
     return DateTime.now(dateTimeZone).toString().replace(":", "-");
@@ -150,6 +169,25 @@ public class FlowUploadUtil {
 
   public static String getLastFragmentOfUrl(String url) {
     return url.substring(url.lastIndexOf("/") + 1, url.length());
+  }
+
+  public static List<String> commaSeparatedStringToList(String string) {
+    if (string.trim().length() == 0) {
+      return new ArrayList<>();
+    }
+    else {
+      //Remove whitespaces and split by comma
+      return Arrays.asList(string.split("\\s*,\\s*"));
+    }
+  }
+
+  public static boolean isMetadataFile(FlowData data) {
+    if (data.getMetadataFiles().contains(data.getFlowFilename())) {
+      return true;
+    }
+    else {
+      return false;
+    }
   }
 
 }

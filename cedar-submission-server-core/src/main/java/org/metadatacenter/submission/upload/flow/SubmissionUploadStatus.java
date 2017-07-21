@@ -6,7 +6,6 @@ public class SubmissionUploadStatus {
 
   private long totalFilesCount;
   private long uploadedFilesCount;
-  // Map flowIdentifier -> FileUploadStatus
   private Map<String, FileUploadStatus> filesUploadStatus;
   private String submissionLocalPath;
 
