@@ -1,4 +1,4 @@
-package org.metadatacenter.cedar.submission.status;
+package org.metadatacenter.submission.status;
 
 public class SubmissionStatusDescriptor
 {

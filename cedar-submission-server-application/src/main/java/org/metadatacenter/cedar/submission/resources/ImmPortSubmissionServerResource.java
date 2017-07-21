@@ -25,6 +25,7 @@ import org.metadatacenter.rest.context.CedarRequestContextFactory;
 import org.metadatacenter.submission.biosample.CEDARSubmitResponse;
 import org.metadatacenter.submission.biosample.CEDARWorkspaceResponse;
 import org.metadatacenter.submission.biosample.Workspace;
+import org.metadatacenter.submission.status.SubmissionStatusManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -54,9 +55,13 @@ import static org.metadatacenter.util.json.JsonMapper.MAPPER;
 {
   final static Logger logger = LoggerFactory.getLogger(ImmPortSubmissionServerResource.class);
 
+  private final SubmissionStatusManager submissionStatusManager;
+
   public ImmPortSubmissionServerResource(CedarConfig cedarConfig)
   {
     super(cedarConfig);
+    this.submissionStatusManager = new SubmissionStatusManager();
+    this.submissionStatusManager.start();
   }
 
   @POST @Timed @Path("/immport-workspaces") @Consumes(MediaType.MULTIPART_FORM_DATA) public Response immPortWorkspaces()
@@ -105,15 +110,15 @@ import static org.metadatacenter.util.json.JsonMapper.MAPPER;
   @POST @Timed @Path("/immport-submit") @Consumes(MediaType.MULTIPART_FORM_DATA) public Response submitImmPort()
     throws CedarException
   {
-    CloseableHttpClient client = HttpClientBuilder.create().build();
-    CloseableHttpResponse response = null;
-
     CedarRequestContext c = CedarRequestContextFactory.fromRequest(request);
     c.must(c.user()).be(LoggedIn);
 
     Optional<String> token = ImmPortUtil.getImmPortToken();
     if (!token.isPresent())
       return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build(); // TODO CEDAR error response
+
+    CloseableHttpClient client = HttpClientBuilder.create().build();
+    CloseableHttpResponse response = null;
 
     try {
       if (ServletFileUpload.isMultipartContent(request)) {
@@ -122,7 +127,7 @@ import static org.metadatacenter.util.json.JsonMapper.MAPPER;
         String workspaceID = request.getParameter("workspaceId");
         if (workspaceID == null || workspaceID.isEmpty()) {
           logger.warn("No workspaceId parameter specified");
-          return Response.status(Response.Status.BAD_REQUEST).build();
+          return Response.status(Response.Status.BAD_REQUEST).build();  // TODO CEDAR error response
         }
         builder.addTextBody("workspaceId", workspaceID);
         builder.addTextBody("username", ImmPortUtil.IMMPORT_CEDAR_USER_NAME);
@@ -155,7 +160,10 @@ import static org.metadatacenter.util.json.JsonMapper.MAPPER;
         int statusCode = response.getStatusLine().getStatusCode();
         if (statusCode == Response.Status.OK.getStatusCode()) {
           CEDARSubmitResponse todo = immPortSubmissionResponseBody2CEDARSubmissionResponse(response.getEntity());
-          // Create monitoring task
+          // TODO Create monitoring task here
+//          submissionStatusManager.addSubmission(String userID, String statusURL,
+//            new ImmPortSubmissionStatusTask(submissionID, userID, statudURL));
+
           return Response.ok(immPortSubmissionResponseBody2CEDARSubmissionResponse(response.getEntity())).build();
         } else if (statusCode == Response.Status.BAD_REQUEST.getStatusCode()) {
           HttpEntity entity = response.getEntity();
@@ -180,17 +188,17 @@ import static org.metadatacenter.util.json.JsonMapper.MAPPER;
         .warn("File upload exception uploading to host " + ImmPortUtil.IMMPORT_SUBMISSION_URL + ": " + e.getMessage());
       return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build(); // TODO CEDAR error response
     } finally {
-      try {
-        client.close();
-      } catch (IOException e) {
-        logger.warn("Error closing HTTP client for ImmPort submission call: " + e.getMessage());
-      }
       if (response != null)
         try {
           response.close();
         } catch (IOException e) {
           logger.warn("Error closing HTTP response for ImmPort submission: " + e.getMessage());
         }
+      try {
+        client.close();
+      } catch (IOException e) {
+        logger.warn("Error closing HTTP client for ImmPort submission call: " + e.getMessage());
+      }
     }
   }
 
