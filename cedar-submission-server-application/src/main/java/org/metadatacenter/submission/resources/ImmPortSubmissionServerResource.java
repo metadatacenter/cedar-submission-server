@@ -17,7 +17,6 @@ import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
-import org.jetbrains.annotations.NotNull;
 import org.metadatacenter.cedar.util.dw.CedarMicroserviceResource;
 import org.metadatacenter.config.CedarConfig;
 import org.metadatacenter.exception.CedarException;
@@ -55,7 +54,7 @@ import static org.metadatacenter.util.json.JsonMapper.MAPPER;
 @Path("/command") @Produces(MediaType.APPLICATION_JSON) public class ImmPortSubmissionServerResource
   extends CedarMicroserviceResource
 {
-  final static Logger logger = LoggerFactory.getLogger(ImmPortSubmissionServerResource.class);
+  private final static Logger logger = LoggerFactory.getLogger(ImmPortSubmissionServerResource.class);
 
   private final SubmissionStatusManager submissionStatusManager;
 
@@ -72,8 +71,8 @@ import static org.metadatacenter.util.json.JsonMapper.MAPPER;
     CedarRequestContext c = CedarRequestContextFactory.fromRequest(request);
     c.must(c.user()).be(LoggedIn);
 
-    Optional<String> token = ImmPortUtil.getImmPortToken();
-    if (!token.isPresent()) {
+    Optional<String> immPortBearerToken = ImmPortUtil.getImmPortBearerToken();
+    if (!immPortBearerToken.isPresent()) {
       logger.warn("Could not get an ImmPort token");
       return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();  // TODO CEDAR error response
     }
@@ -83,7 +82,7 @@ import static org.metadatacenter.util.json.JsonMapper.MAPPER;
 
     try {
       HttpGet get = new HttpGet(ImmPortUtil.IMMPORT_WORKSPACES_URL);
-      get.setHeader(HTTP_HEADER_AUTHORIZATION, HTTP_AUTH_HEADER_BEARER_PREFIX + token.get());
+      get.setHeader(HTTP_HEADER_AUTHORIZATION, HTTP_AUTH_HEADER_BEARER_PREFIX + immPortBearerToken.get());
       get.setHeader(HTTP_HEADER_ACCEPT, CONTENT_TYPE_APPLICATION_JSON);
       client = HttpClientBuilder.create().build();
       response = client.execute(get);
@@ -92,9 +91,8 @@ import static org.metadatacenter.util.json.JsonMapper.MAPPER;
         HttpEntity entity = response.getEntity();
         return Response.ok(immPortWorkspacesResponseBody2CEDARWorkspaceResponse(entity)).build();
       } else {
-        logger.warn(
-          "Unexpected status code calling " + ImmPortUtil.IMMPORT_WORKSPACES_URL + ";status=" + response.getStatusLine()
-            .getStatusCode());
+        logger.warn("Unexpected status code calling " + ImmPortUtil.IMMPORT_WORKSPACES_URL + "; status=" + response
+          .getStatusLine().getStatusCode());
         return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build(); // TODO CEDAR error response
       }
     } catch (IOException e) {
@@ -112,14 +110,14 @@ import static org.metadatacenter.util.json.JsonMapper.MAPPER;
     CedarRequestContext c = CedarRequestContextFactory.fromRequest(request);
     c.must(c.user()).be(LoggedIn);
 
-    String workspaceID = request.getParameter("workspaceId");
+    String workspaceID = request.getParameter("workspaceId"); // TODO Constant for parameter
     if (workspaceID == null || workspaceID.isEmpty()) {
       logger.warn("No workspaceId parameter specified");
       return Response.status(Response.Status.BAD_REQUEST).build();  // TODO CEDAR error response
     }
 
-    Optional<String> token = ImmPortUtil.getImmPortToken();
-    if (!token.isPresent()) {
+    Optional<String> immPortBearerToken = ImmPortUtil.getImmPortBearerToken();
+    if (!immPortBearerToken.isPresent()) {
       logger.warn("No ImmPort token found");
       return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build(); // TODO CEDAR error response
     }
@@ -134,22 +132,24 @@ import static org.metadatacenter.util.json.JsonMapper.MAPPER;
 
         HttpPost post = new HttpPost(ImmPortUtil.IMMPORT_SUBMISSION_URL);
         post.setEntity(multiPartEntity);
-        post.setHeader(HTTP_HEADER_AUTHORIZATION, HTTP_AUTH_HEADER_BEARER_PREFIX + token.get());
+        post.setHeader(HTTP_HEADER_AUTHORIZATION, HTTP_AUTH_HEADER_BEARER_PREFIX + immPortBearerToken.get());
         post.setHeader(HTTP_HEADER_ACCEPT, CONTENT_TYPE_APPLICATION_JSON);
         response = client.execute(post);
 
         int statusCode = response.getStatusLine().getStatusCode();
         if (statusCode == Response.Status.OK.getStatusCode()) {
           CEDARSubmitResponse todo = immPortSubmissionResponseBody2CEDARSubmissionResponse(response.getEntity());
-          //  TODO      submissionStatusManager.addSubmission(String userID, String statusURL,
-          //  TODO      new ImmPortSubmissionStatusTask(submissionID, userID, statusURL));
-          return Response.ok(immPortSubmissionResponseBody2CEDARSubmissionResponse(response.getEntity())).build();
+          CEDARSubmitResponse cedarSubmitResponse = immPortSubmissionResponseBody2CEDARSubmissionResponse(
+            response.getEntity());
+          String submissionID = cedarSubmitResponse.getSubmissionID();
+          String userID = c.getCedarUser().getId();
+          String statusURL = cedarSubmitResponse.getStatusURL();
+          //  TODO  submissionStatusManager.addSubmission(new ImmPortSubmissionStatusTask(submissionID, userID, statusURL));
+          return Response.ok(cedarSubmitResponse).build();
         } else if (statusCode == Response.Status.BAD_REQUEST.getStatusCode()) {
-          HttpEntity entity = response.getEntity();
-          String responseBody = EntityUtils.toString(entity);
           logger.warn("Unexpected status code returned from " + ImmPortUtil.IMMPORT_SUBMISSION_URL + ": " + response
-            .getStatusLine().getStatusCode() + "JSON " + responseBody);
-          return Response.status(Response.Status.BAD_REQUEST).build();
+            .getStatusLine().getStatusCode());
+          return Response.status(Response.Status.BAD_REQUEST).build(); // TODO CEDAR error response
         } else {
           logger.warn("Unexpected status code returned from " + ImmPortUtil.IMMPORT_SUBMISSION_URL + ": " + response
             .getStatusLine().getStatusCode());
@@ -172,8 +172,7 @@ import static org.metadatacenter.util.json.JsonMapper.MAPPER;
     }
   }
 
-  @NotNull private HttpEntity getMultipartContentFromRequest(String workspaceID)
-    throws FileUploadException, IOException
+  private HttpEntity getMultipartContentFromRequest(String workspaceID) throws FileUploadException, IOException
   {
     MultipartEntityBuilder builder = MultipartEntityBuilder.create();
 

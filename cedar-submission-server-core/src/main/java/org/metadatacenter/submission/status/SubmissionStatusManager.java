@@ -5,7 +5,6 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Collections;
 import java.util.Map;
-import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -44,12 +43,12 @@ public class SubmissionStatusManager
     }
   }
 
-  public String addSubmission(String userID, String statusURL, SubmissionStatusTask submissionStatusTask)
+  public String addSubmission(SubmissionStatusTask submissionStatusTask)
   {
-    String submissionID = UUID.randomUUID().toString();
+    String submissionID = submissionStatusTask.getSubmissionID();
     SubmissionStatus submissionStatus = new SubmissionStatus(submissionID, SubmissionState.IN_PROGRESS, "");
-    SubmissionStatusDescriptor submissionStatusDescriptor = new SubmissionStatusDescriptor(submissionID, userID,
-      statusURL, submissionStatus, submissionStatusTask);
+    SubmissionStatusDescriptor submissionStatusDescriptor = new SubmissionStatusDescriptor(submissionID,
+      submissionStatusTask.getUserID(), submissionStatusTask.getStatusURL(), submissionStatus, submissionStatusTask);
 
     this.submissions.put(submissionID, submissionStatusDescriptor);
     notifyUser(submissionStatusDescriptor);

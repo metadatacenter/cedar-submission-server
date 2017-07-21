@@ -51,7 +51,7 @@ public class ImmPortUtil
     CloseableHttpResponse response = null;
     CloseableHttpClient client = null;
 
-    Optional<String> token = getImmPortToken();
+    Optional<String> token = getImmPortBearerToken();
     if (!token.isPresent()) {
       logger.warn("Could not get an ImmPort token");
       return new SubmissionStatus(submissionID, SubmissionState.ERROR, "Could not get an ImmPort token");
@@ -84,7 +84,7 @@ public class ImmPortUtil
     }
   }
 
-  static public Optional<String> getImmPortToken()
+  static public Optional<String> getImmPortBearerToken()
   {
     CloseableHttpClient client = HttpClientBuilder.create().build();
     HttpPost post = new HttpPost(IMMPORT_TOKEN_URL);
