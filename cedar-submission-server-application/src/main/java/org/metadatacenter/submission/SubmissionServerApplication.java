@@ -1,13 +1,13 @@
-package org.metadatacenter.cedar.submission;
+package org.metadatacenter.submission;
 
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
-import org.metadatacenter.cedar.submission.health.SubmissionServerHealthCheck;
-import org.metadatacenter.cedar.submission.resources.AMIA2016DemoBioSampleServerResource;
-import org.metadatacenter.cedar.submission.resources.ImmPortSubmissionServerResource;
-import org.metadatacenter.cedar.submission.resources.IndexResource;
-import org.metadatacenter.cedar.submission.resources.LincsSubmissionServerResource;
-import org.metadatacenter.cedar.submission.resources.NcbiAirrSubmissionServerResource;
+import org.metadatacenter.submission.health.SubmissionServerHealthCheck;
+import org.metadatacenter.submission.resources.AMIA2016DemoBioSampleServerResource;
+import org.metadatacenter.submission.resources.ImmPortSubmissionServerResource;
+import org.metadatacenter.submission.resources.IndexResource;
+import org.metadatacenter.submission.resources.LincsSubmissionServerResource;
+import org.metadatacenter.submission.resources.NcbiAirrSubmissionServerResource;
 import org.metadatacenter.cedar.util.dw.CedarMicroserviceApplication;
 import org.metadatacenter.config.CedarConfig;
 import org.metadatacenter.model.ServerName;

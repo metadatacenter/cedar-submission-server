@@ -1,4 +1,4 @@
-package org.metadatacenter.cedar.submission;
+package org.metadatacenter.submission;
 
 import org.metadatacenter.cedar.util.dw.CedarMicroserviceConfiguration;
 

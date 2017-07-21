@@ -1,4 +1,4 @@
-package org.metadatacenter.cedar.submission.health;
+package org.metadatacenter.submission.health;
 
 import com.codahale.metrics.health.HealthCheck;
 

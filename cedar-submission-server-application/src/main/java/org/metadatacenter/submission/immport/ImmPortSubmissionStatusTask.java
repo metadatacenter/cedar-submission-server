@@ -1,4 +1,4 @@
-package org.metadatacenter.cedar.submission.immport;
+package org.metadatacenter.submission.immport;
 
 import org.metadatacenter.submission.status.SubmissionStatus;
 import org.metadatacenter.submission.status.SubmissionStatusTask;

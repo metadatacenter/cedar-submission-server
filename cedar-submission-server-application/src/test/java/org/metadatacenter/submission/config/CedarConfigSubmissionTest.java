@@ -1,4 +1,4 @@
-package org.metadatacenter.cedar.submission.config;
+package org.metadatacenter.submission.config;
 
 import org.junit.Assert;
 import org.junit.Before;

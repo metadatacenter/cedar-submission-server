@@ -1,4 +1,4 @@
-package org.metadatacenter.cedar.submission.resources;
+package org.metadatacenter.submission.resources;
 
 import com.codahale.metrics.annotation.Timed;
 import org.apache.commons.fileupload.FileUploadException;
@@ -33,7 +33,6 @@ import javax.xml.bind.JAXBException;
 import javax.xml.datatype.DatatypeConfigurationException;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.List;
 
 import static org.metadatacenter.rest.assertion.GenericAssertions.LoggedIn;
 

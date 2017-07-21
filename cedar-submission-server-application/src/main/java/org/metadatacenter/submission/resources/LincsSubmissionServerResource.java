@@ -1,4 +1,4 @@
-package org.metadatacenter.cedar.submission.resources;
+package org.metadatacenter.submission.resources;
 
 import com.codahale.metrics.annotation.Timed;
 import org.apache.commons.io.IOUtils;

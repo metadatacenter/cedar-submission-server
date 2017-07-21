@@ -1,4 +1,4 @@
-package org.metadatacenter.cedar.submission.immport;
+package org.metadatacenter.submission.immport;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import org.apache.http.HttpEntity;

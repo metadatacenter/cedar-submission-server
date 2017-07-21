@@ -1,4 +1,4 @@
-package org.metadatacenter.cedar.submission.resources;
+package org.metadatacenter.submission.resources;
 
 import com.codahale.metrics.annotation.Timed;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -16,7 +16,7 @@ import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
-import org.metadatacenter.cedar.submission.immport.ImmPortUtil;
+import org.metadatacenter.submission.immport.ImmPortUtil;
 import org.metadatacenter.cedar.util.dw.CedarMicroserviceResource;
 import org.metadatacenter.config.CedarConfig;
 import org.metadatacenter.exception.CedarException;
