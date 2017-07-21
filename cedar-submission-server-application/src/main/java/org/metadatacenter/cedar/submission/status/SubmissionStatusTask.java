@@ -18,11 +18,25 @@ public abstract class SubmissionStatusTask implements Callable<SubmissionStatus>
     this.statusURL = statusURL;
   }
 
-  @Override public SubmissionStatus call()
+  public String getSubmissionID()
   {
-    return callSubmissionStatusEndpoint(this.submissionID, this.userID, this.statusURL);
+    return submissionID;
   }
 
-  abstract protected SubmissionStatus callSubmissionStatusEndpoint(String submissionID, String userID,
-    String statusURL);
+  public String getUserID()
+  {
+    return userID;
+  }
+
+  public String getStatusURL()
+  {
+    return statusURL;
+  }
+
+  @Override public SubmissionStatus call()
+  {
+    return callSubmissionStatusEndpoint();
+  }
+
+  abstract protected SubmissionStatus callSubmissionStatusEndpoint();
 }
