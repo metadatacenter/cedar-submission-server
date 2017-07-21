@@ -3,16 +3,23 @@ package org.metadatacenter.cedar.submission;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 import org.metadatacenter.cedar.submission.health.SubmissionServerHealthCheck;
-import org.metadatacenter.cedar.submission.resources.AIRRSubmissionServerResource;
 import org.metadatacenter.cedar.submission.resources.AMIA2016DemoBioSampleServerResource;
 import org.metadatacenter.cedar.submission.resources.ImmPortSubmissionServerResource;
 import org.metadatacenter.cedar.submission.resources.IndexResource;
 import org.metadatacenter.cedar.submission.resources.LincsSubmissionServerResource;
+import org.metadatacenter.cedar.submission.resources.NcbiAirrSubmissionServerResource;
 import org.metadatacenter.cedar.util.dw.CedarMicroserviceApplication;
 import org.metadatacenter.config.CedarConfig;
 import org.metadatacenter.model.ServerName;
+import org.metadatacenter.server.cache.util.CacheService;
+import org.metadatacenter.submission.ncbiairr.queue.NcbiAirrSubmissionExecutorService;
+import org.metadatacenter.submission.ncbiairr.queue.NcbiAirrSubmissionQueueProcessor;
+import org.metadatacenter.submission.ncbiairr.queue.NcbiAirrSubmissionQueueService;
 
 public class SubmissionServerApplication extends CedarMicroserviceApplication<SubmissionServerConfiguration> {
+
+  private static NcbiAirrSubmissionExecutorService ncbiAirrSubmissionExecutorService;
+  private static CacheService cacheService;
 
   public static void main(String[] args) throws Exception {
     new SubmissionServerApplication().run(args);
@@ -29,6 +36,14 @@ public class SubmissionServerApplication extends CedarMicroserviceApplication<Su
 
   @Override
   public void initializeApp() {
+    cacheService = new CacheService(cedarConfig.getCacheConfig().getPersistent());
+
+    NcbiAirrSubmissionQueueService ncbiAirrSubmissionQueueService =
+        new NcbiAirrSubmissionQueueService(cedarConfig.getCacheConfig().getPersistent());
+
+    NcbiAirrSubmissionServerResource.injectServices(ncbiAirrSubmissionQueueService);
+
+    ncbiAirrSubmissionExecutorService = new NcbiAirrSubmissionExecutorService(cedarConfig);
   }
 
   @Override
@@ -42,7 +57,8 @@ public class SubmissionServerApplication extends CedarMicroserviceApplication<Su
         AMIA2016DemoBioSampleServerResource(cedarConfig);
     environment.jersey().register(amia2016DemoBioSampleServerResource);
 
-    final AIRRSubmissionServerResource airrSubmissionServerResource = new AIRRSubmissionServerResource(cedarConfig);
+    final NcbiAirrSubmissionServerResource airrSubmissionServerResource =
+        new NcbiAirrSubmissionServerResource(cedarConfig);
     environment.jersey().register(airrSubmissionServerResource);
 
     final LincsSubmissionServerResource lincsSubmissionServerResource = new LincsSubmissionServerResource(cedarConfig);
@@ -53,5 +69,10 @@ public class SubmissionServerApplication extends CedarMicroserviceApplication<Su
 
     final SubmissionServerHealthCheck healthCheck = new SubmissionServerHealthCheck();
     environment.healthChecks().register("message", healthCheck);
+
+    // Submission processor
+    NcbiAirrSubmissionQueueProcessor ncbiAirrSubmissionProcessor = new NcbiAirrSubmissionQueueProcessor(cacheService,
+        cedarConfig.getCacheConfig().getPersistent(), ncbiAirrSubmissionExecutorService);
+    environment.lifecycle().manage(ncbiAirrSubmissionProcessor);
   }
 }

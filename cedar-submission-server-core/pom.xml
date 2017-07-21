@@ -17,6 +17,16 @@
   <dependencies>
 
     <dependency>
+      <groupId>org.metadatacenter</groupId>
+      <artifactId>cedar-server-globals</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.metadatacenter</groupId>
+      <artifactId>cedar-cache-operations</artifactId>
+    </dependency>
+
+    <dependency>
       <groupId>commons-lang</groupId>
       <artifactId>commons-lang</artifactId>
     </dependency>
@@ -59,6 +69,11 @@
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-api</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.metadatacenter</groupId>
+      <artifactId>cedar-server-rest</artifactId>
     </dependency>
 
   </dependencies>
