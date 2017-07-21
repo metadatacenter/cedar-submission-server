@@ -17,6 +17,7 @@ import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
+import org.jetbrains.annotations.NotNull;
 import org.metadatacenter.cedar.util.dw.CedarMicroserviceResource;
 import org.metadatacenter.config.CedarConfig;
 import org.metadatacenter.exception.CedarException;
@@ -111,46 +112,28 @@ import static org.metadatacenter.util.json.JsonMapper.MAPPER;
     CedarRequestContext c = CedarRequestContextFactory.fromRequest(request);
     c.must(c.user()).be(LoggedIn);
 
+    String workspaceID = request.getParameter("workspaceId");
+    if (workspaceID == null || workspaceID.isEmpty()) {
+      logger.warn("No workspaceId parameter specified");
+      return Response.status(Response.Status.BAD_REQUEST).build();  // TODO CEDAR error response
+    }
+
     Optional<String> token = ImmPortUtil.getImmPortToken();
-    if (!token.isPresent())
+    if (!token.isPresent()) {
+      logger.warn("No ImmPort token found");
       return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build(); // TODO CEDAR error response
+    }
 
     CloseableHttpClient client = HttpClientBuilder.create().build();
     CloseableHttpResponse response = null;
 
     try {
       if (ServletFileUpload.isMultipartContent(request)) {
-        MultipartEntityBuilder builder = MultipartEntityBuilder.create();
 
-        String workspaceID = request.getParameter("workspaceId");
-        if (workspaceID == null || workspaceID.isEmpty()) {
-          logger.warn("No workspaceId parameter specified");
-          return Response.status(Response.Status.BAD_REQUEST).build();  // TODO CEDAR error response
-        }
-        builder.addTextBody("workspaceId", workspaceID);
-        builder.addTextBody("username", ImmPortUtil.IMMPORT_CEDAR_USER_NAME);
+        HttpEntity multiPartEntity = getMultipartContentFromRequest(workspaceID);
 
-        File tempDir = Files.createTempDir();
-        List<FileItem> fileItems = new ServletFileUpload(new DiskFileItemFactory(1024 * 1024, tempDir)).
-          parseRequest(request);
-
-        for (FileItem fileItem : fileItems) {
-          String fileName = fileItem.getName();
-          String fieldName = fileItem.getFieldName();
-          if (!fileItem.isFormField()) {
-            if ("instance".equals(fieldName)) {
-              InputStream is = fileItem.getInputStream();
-              builder.addBinaryBody("file", is, ContentType.DEFAULT_BINARY, fileName);
-            } else { // The user-supplied files
-              InputStream is = fileItem.getInputStream();
-              builder.addBinaryBody("file", is, ContentType.DEFAULT_BINARY, fileName);
-            }
-          }
-        }
-
-        HttpEntity multiPartRequestEntity = builder.build();
         HttpPost post = new HttpPost(ImmPortUtil.IMMPORT_SUBMISSION_URL);
-        post.setEntity(multiPartRequestEntity);
+        post.setEntity(multiPartEntity);
         post.setHeader(HTTP_HEADER_AUTHORIZATION, HTTP_AUTH_HEADER_BEARER_PREFIX + token.get());
         post.setHeader(HTTP_HEADER_ACCEPT, CONTENT_TYPE_APPLICATION_JSON);
         response = client.execute(post);
@@ -158,8 +141,8 @@ import static org.metadatacenter.util.json.JsonMapper.MAPPER;
         int statusCode = response.getStatusLine().getStatusCode();
         if (statusCode == Response.Status.OK.getStatusCode()) {
           CEDARSubmitResponse todo = immPortSubmissionResponseBody2CEDARSubmissionResponse(response.getEntity());
-//  TODO      submissionStatusManager.addSubmission(String userID, String statusURL,
-//  TODO      new ImmPortSubmissionStatusTask(submissionID, userID, statusURL));
+          //  TODO      submissionStatusManager.addSubmission(String userID, String statusURL,
+          //  TODO      new ImmPortSubmissionStatusTask(submissionID, userID, statusURL));
           return Response.ok(immPortSubmissionResponseBody2CEDARSubmissionResponse(response.getEntity())).build();
         } else if (statusCode == Response.Status.BAD_REQUEST.getStatusCode()) {
           HttpEntity entity = response.getEntity();
@@ -187,6 +170,34 @@ import static org.metadatacenter.util.json.JsonMapper.MAPPER;
       HttpClientUtils.closeQuietly(response);
       HttpClientUtils.closeQuietly(client);
     }
+  }
+
+  @NotNull private HttpEntity getMultipartContentFromRequest(String workspaceID)
+    throws FileUploadException, IOException
+  {
+    MultipartEntityBuilder builder = MultipartEntityBuilder.create();
+
+    builder.addTextBody("workspaceId", workspaceID);
+    builder.addTextBody("username", ImmPortUtil.IMMPORT_CEDAR_USER_NAME);
+
+    File tempDir = Files.createTempDir();
+    List<FileItem> fileItems = new ServletFileUpload(new DiskFileItemFactory(1024 * 1024, tempDir)).
+      parseRequest(request);
+
+    for (FileItem fileItem : fileItems) {
+      String fileName = fileItem.getName();
+      String fieldName = fileItem.getFieldName();
+      if (!fileItem.isFormField()) {
+        if ("instance".equals(fieldName)) {
+          InputStream is = fileItem.getInputStream();
+          builder.addBinaryBody("file", is, ContentType.DEFAULT_BINARY, fileName);
+        } else { // The user-supplied files
+          InputStream is = fileItem.getInputStream();
+          builder.addBinaryBody("file", is, ContentType.DEFAULT_BINARY, fileName);
+        }
+      }
+    }
+    return builder.build();
   }
 
   private CEDARWorkspaceResponse immPortWorkspacesResponseBody2CEDARWorkspaceResponse(HttpEntity responseEntity)
