@@ -7,6 +7,7 @@ import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.utils.HttpClientUtils;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.message.BasicNameValuePair;
@@ -26,6 +27,8 @@ import java.util.Optional;
 
 import static org.metadatacenter.constant.HttpConstants.CONTENT_TYPE_APPLICATION_JSON;
 import static org.metadatacenter.constant.HttpConstants.HTTP_HEADER_ACCEPT;
+import static org.metadatacenter.constant.HttpConstants.HTTP_HEADER_AUTHORIZATION;
+import static org.metadatacenter.constant.HttpConstants.HTTP_AUTH_HEADER_BEARER_PREFIX;
 import static org.metadatacenter.util.json.JsonMapper.MAPPER;
 
 public class ImmPortUtil
@@ -46,6 +49,7 @@ public class ImmPortUtil
   static public SubmissionStatus getImmPortSubmissionStatus(String submissionID)
   {
     CloseableHttpResponse response = null;
+    CloseableHttpClient client = null;
 
     Optional<String> token = getImmPortToken();
     if (!token.isPresent()) {
@@ -54,10 +58,10 @@ public class ImmPortUtil
     }
 
     try {
-      CloseableHttpClient client = HttpClientBuilder.create().build();
       HttpGet get = new HttpGet(IMMPORT_STATUS_URL_BASE + submissionID + "/status");
-      get.setHeader("Authorization", "bearer " + token.get());
+      get.setHeader(HTTP_HEADER_AUTHORIZATION, HTTP_AUTH_HEADER_BEARER_PREFIX + token.get());
       get.setHeader(HTTP_HEADER_ACCEPT, CONTENT_TYPE_APPLICATION_JSON);
+      client = HttpClientBuilder.create().build();
       response = client.execute(get);
 
       if (response.getStatusLine().getStatusCode() == 200) {
@@ -65,7 +69,7 @@ public class ImmPortUtil
         return immPortSubmissionResponseBody2SubmissionStatus(submissionID, entity);
       } else {
         String errorMessage =
-          "Unexpected status code calling " + IMMPORT_WORKSPACES_URL + ";status=" + response.getStatusLine()
+          "Unexpected status code calling " + IMMPORT_WORKSPACES_URL + "; status=" + response.getStatusLine()
             .getStatusCode();
         logger.warn(errorMessage);
         return new SubmissionStatus(submissionID, SubmissionState.ERROR, errorMessage);
@@ -75,12 +79,8 @@ public class ImmPortUtil
       logger.warn(errorMessage);
       return new SubmissionStatus(submissionID, SubmissionState.ERROR, errorMessage);
     } finally {
-      if (response != null)
-        try {
-          response.close();
-        } catch (IOException e) {
-          logger.warn("Error closing HTTP response for ImmPort workspaces call");
-        }
+      HttpClientUtils.closeQuietly(response);
+      HttpClientUtils.closeQuietly(client);
     }
   }
 
@@ -122,21 +122,12 @@ public class ImmPortUtil
       logger.warn("IO error getting token from host " + IMMPORT_SUBMISSION_URL + "; error=" + e.getMessage());
       return Optional.empty();
     } finally {
-      try {
-        client.close();
-      } catch (IOException e) {
-        logger.warn("Error closing HTTP client for ImmPort token get call: " + e.getMessage());
-      }
-      if (response != null)
-        try {
-          response.close();
-        } catch (IOException e) {
-          logger.warn("Error closing HTTP response for ImmPort token get call: " + e.getMessage());
-        }
+      HttpClientUtils.closeQuietly(response);
+      HttpClientUtils.closeQuietly(client);
     }
   }
 
-  static public SubmissionStatus immPortSubmissionResponseBody2SubmissionStatus(String submissionID,
+  static private SubmissionStatus immPortSubmissionResponseBody2SubmissionStatus(String submissionID,
     HttpEntity responseEntity) throws IOException
   {
     if (responseEntity != null) {
@@ -172,7 +163,7 @@ public class ImmPortUtil
       return new SubmissionStatus(submissionID, SubmissionState.ERROR, "No JSON in ImmPort status response");
   }
 
-  static public Optional<SubmissionState> immPortSubmissionStatus2SubmissionState(String submissionID,
+  static private Optional<SubmissionState> immPortSubmissionStatus2SubmissionState(String submissionID,
     String immPortSubmisionStatus)
   {
     if ("pending".equals(immPortSubmisionStatus))
