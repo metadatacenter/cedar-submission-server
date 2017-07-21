@@ -2,6 +2,9 @@ package org.metadatacenter.cedar.submission.status;
 
 import java.util.concurrent.Callable;
 
+/**
+ * Subclasses must specialize this call to implement a submission status call.
+ */
 public abstract class SubmissionStatusTask implements Callable<SubmissionStatus>
 {
   private final String submissionID;

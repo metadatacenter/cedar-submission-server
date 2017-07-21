@@ -19,9 +19,9 @@ public class SubmissionStatusManagerRunnable implements Runnable
 {
   final static Logger logger = LoggerFactory.getLogger(SubmissionStatusManagerRunnable.class);
 
-  private final SubmissionStatusManager submissionStatusManager;
-
   private static final int NUMBER_OF_THREADS = 10;
+
+  private final SubmissionStatusManager submissionStatusManager;
 
   public SubmissionStatusManagerRunnable(SubmissionStatusManager submissionStatusManager)
   {
@@ -36,7 +36,6 @@ public class SubmissionStatusManagerRunnable implements Runnable
 
     while (true) {
       try {
-
         Map<String, SubmissionStatusDescriptor> currentSubmissions = submissionStatusManager.getCurrentSubmissions();
 
         if (!currentSubmissions.isEmpty()) {
@@ -44,6 +43,7 @@ public class SubmissionStatusManagerRunnable implements Runnable
           for (SubmissionStatusDescriptor submissionStatusDescriptor : currentSubmissions.values()) {
             SubmissionStatusTask submissionStatusTask = submissionStatusDescriptor.getSubmissionStatusTask();
             Future<SubmissionStatus> submissionStatusFuture = pool.submit(submissionStatusTask);
+
             futures.put(submissionStatusDescriptor.getSubmissionID(), submissionStatusFuture);
           }
 
@@ -52,7 +52,7 @@ public class SubmissionStatusManagerRunnable implements Runnable
             String submissionID = submissionStatus.getSubmissionID();
 
             futures.remove(submissionID);
-            submissionStatusManager.updateSubmission(submissionStatus);
+            this.submissionStatusManager.updateSubmission(submissionStatus);
           }
         } else
           Thread.sleep(1000);
