@@ -122,8 +122,8 @@ import static org.metadatacenter.util.json.JsonMapper.MAPPER;
       return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build(); // TODO CEDAR error response
     }
 
-    CloseableHttpClient client = HttpClientBuilder.create().build();
     CloseableHttpResponse response = null;
+    CloseableHttpClient client = null;
 
     try {
       if (ServletFileUpload.isMultipartContent(request)) {
@@ -131,14 +131,15 @@ import static org.metadatacenter.util.json.JsonMapper.MAPPER;
         HttpEntity multiPartEntity = getMultipartContentFromRequest(workspaceID);
 
         HttpPost post = new HttpPost(ImmPortUtil.IMMPORT_SUBMISSION_URL);
-        post.setEntity(multiPartEntity);
         post.setHeader(HTTP_HEADER_AUTHORIZATION, HTTP_AUTH_HEADER_BEARER_PREFIX + immPortBearerToken.get());
         post.setHeader(HTTP_HEADER_ACCEPT, CONTENT_TYPE_APPLICATION_JSON);
+        post.setEntity(multiPartEntity);
+        client = HttpClientBuilder.create().build();
         response = client.execute(post);
 
         int statusCode = response.getStatusLine().getStatusCode();
+
         if (statusCode == Response.Status.OK.getStatusCode()) {
-          CEDARSubmitResponse todo = immPortSubmissionResponseBody2CEDARSubmissionResponse(response.getEntity());
           CEDARSubmitResponse cedarSubmitResponse = immPortSubmissionResponseBody2CEDARSubmissionResponse(
             response.getEntity());
           String submissionID = cedarSubmitResponse.getSubmissionID();
@@ -146,10 +147,6 @@ import static org.metadatacenter.util.json.JsonMapper.MAPPER;
           String statusURL = cedarSubmitResponse.getStatusURL();
           //  TODO  submissionStatusManager.addSubmission(new ImmPortSubmissionStatusTask(submissionID, userID, statusURL));
           return Response.ok(cedarSubmitResponse).build();
-        } else if (statusCode == Response.Status.BAD_REQUEST.getStatusCode()) {
-          logger.warn("Unexpected status code returned from " + ImmPortUtil.IMMPORT_SUBMISSION_URL + ": " + response
-            .getStatusLine().getStatusCode());
-          return Response.status(Response.Status.BAD_REQUEST).build(); // TODO CEDAR error response
         } else {
           logger.warn("Unexpected status code returned from " + ImmPortUtil.IMMPORT_SUBMISSION_URL + ": " + response
             .getStatusLine().getStatusCode());
