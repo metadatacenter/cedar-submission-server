@@ -12,10 +12,9 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
+import org.metadatacenter.submission.biosample.ImmPortGetTokenResponse;
 import org.metadatacenter.submission.status.SubmissionState;
 import org.metadatacenter.submission.status.SubmissionStatus;
-import org.metadatacenter.submission.biosample.CEDARSubmitResponse;
-import org.metadatacenter.submission.biosample.ImmPortGetTokenResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,9 +25,9 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.metadatacenter.constant.HttpConstants.CONTENT_TYPE_APPLICATION_JSON;
+import static org.metadatacenter.constant.HttpConstants.HTTP_AUTH_HEADER_BEARER_PREFIX;
 import static org.metadatacenter.constant.HttpConstants.HTTP_HEADER_ACCEPT;
 import static org.metadatacenter.constant.HttpConstants.HTTP_HEADER_AUTHORIZATION;
-import static org.metadatacenter.constant.HttpConstants.HTTP_AUTH_HEADER_BEARER_PREFIX;
 import static org.metadatacenter.util.json.JsonMapper.MAPPER;
 
 public class ImmPortUtil
@@ -134,30 +133,41 @@ public class ImmPortUtil
       String responseBody = EntityUtils.toString(responseEntity);
       JsonNode immPortSubmissionResponseBody = MAPPER.readTree(responseBody);
 
+      System.err.println("XXX " + immPortSubmissionResponseBody);
+
       if (immPortSubmissionResponseBody.has("error"))
         return new SubmissionStatus(submissionID, SubmissionState.ERROR,
           immPortSubmissionResponseBody.get("error").textValue());
       else {
-        CEDARSubmitResponse cedarSubmitResponse = new CEDARSubmitResponse();
-        if (!immPortSubmissionResponseBody.has("uploadTicketStatusUiUrl"))
+        if (!immPortSubmissionResponseBody.has("status"))
           return new SubmissionStatus(submissionID, SubmissionState.ERROR,
-            "No uploadTicketStatusUiURL field in ImmPort submit response");
-        else if (!immPortSubmissionResponseBody.has("status"))
-          return new SubmissionStatus(submissionID, SubmissionState.ERROR,
-            "No status field in ImmPort submit response");
-        else if (!immPortSubmissionResponseBody.has("uploadTicketNumber"))
-          return new SubmissionStatus(submissionID, SubmissionState.ERROR,
-            "No uploadTicketNumber field in ImmPort submit response");
+            "No status field in ImmPort submit status response");
 
         String immPortSubmissionStatus = immPortSubmissionResponseBody.get("status").asText();
-        Optional<SubmissionState> submissionState = immPortSubmissionStatus2SubmissionState(submissionID,
-          immPortSubmissionStatus);
 
-        if (submissionState.isPresent())
-          return new SubmissionStatus(submissionID, submissionState.get(), "Submission has completed");
-        else
-          return new SubmissionStatus(submissionID, SubmissionState.ERROR,
-            "Unknown ImmPort submission status " + immPortSubmissionStatus);
+        if ("Completed".equals(immPortSubmissionStatus)) {
+          if (!immPortSubmissionResponseBody.has("uploadTicketStatusUiUrl"))
+            return new SubmissionStatus(submissionID, SubmissionState.COMPLETED,
+              "Submission " + submissionID + " completed; no status URL found");
+          else {
+            String immPortStatusURL = immPortSubmissionResponseBody.get("uploadTicketStatusUiUrl").asText();
+            return new SubmissionStatus(submissionID, SubmissionState.COMPLETED,
+              "Submission " + submissionID + " completed; status URL = " + immPortStatusURL);
+          }
+          //          if (!immPortSubmissionResponseBody.has("uploadTicketNumber"))
+          //            return new SubmissionStatus(submissionID, SubmissionState.ERROR,
+          //              "No uploadTicketNumber field in ImmPort submit response");
+        } else {
+
+          Optional<SubmissionState> submissionState = immPortSubmissionStatus2SubmissionState(submissionID,
+            immPortSubmissionStatus);
+
+          if (submissionState.isPresent())
+            return new SubmissionStatus(submissionID, submissionState.get(), "");
+          else
+            return new SubmissionStatus(submissionID, SubmissionState.ERROR,
+              "Unknown ImmPort submission status " + immPortSubmissionStatus);
+        }
       }
     } else
       return new SubmissionStatus(submissionID, SubmissionState.ERROR, "No JSON in ImmPort status response");
@@ -166,11 +176,11 @@ public class ImmPortUtil
   static private Optional<SubmissionState> immPortSubmissionStatus2SubmissionState(String submissionID,
     String immPortSubmisionStatus)
   {
-    if ("pending".equals(immPortSubmisionStatus))
+    if ("Pending".equals(immPortSubmisionStatus))
       return Optional.of(SubmissionState.IN_PROGRESS);
-    else if ("completed".equals(immPortSubmisionStatus))
+    else if ("Completed".equals(immPortSubmisionStatus))
       return Optional.of(SubmissionState.COMPLETED);
-    else if ("error".equals(immPortSubmisionStatus))
+    else if ("Error".equals(immPortSubmisionStatus))
       return Optional.of(SubmissionState.ERROR);
     else {
       logger.warn("Unexpected ImmPort status " + immPortSubmisionStatus + " returned for submission " + submissionID);

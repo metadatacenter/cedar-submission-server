@@ -25,6 +25,7 @@ import org.metadatacenter.rest.context.CedarRequestContextFactory;
 import org.metadatacenter.submission.biosample.CEDARSubmitResponse;
 import org.metadatacenter.submission.biosample.CEDARWorkspaceResponse;
 import org.metadatacenter.submission.biosample.Workspace;
+import org.metadatacenter.submission.immport.ImmPortSubmissionStatusTask;
 import org.metadatacenter.submission.immport.ImmPortUtil;
 import org.metadatacenter.submission.status.SubmissionStatusManager;
 import org.slf4j.Logger;
@@ -145,7 +146,7 @@ import static org.metadatacenter.util.json.JsonMapper.MAPPER;
           String submissionID = cedarSubmitResponse.getSubmissionID();
           String userID = c.getCedarUser().getId();
           String statusURL = cedarSubmitResponse.getStatusURL();
-          //  TODO  submissionStatusManager.addSubmission(new ImmPortSubmissionStatusTask(submissionID, userID, statusURL));
+          submissionStatusManager.addSubmission(new ImmPortSubmissionStatusTask(submissionID, userID, statusURL));
           return Response.ok(cedarSubmitResponse).build();
         } else {
           logger.warn("Unexpected status code returned from " + ImmPortUtil.IMMPORT_SUBMISSION_URL + ": " + response

@@ -71,6 +71,9 @@ public class SubmissionStatusManager
       notifyUser(newSubmissionStatusDescriptor);
 
       this.submissions.put(submissionID, newSubmissionStatusDescriptor);
+
+      if (submissionStatus.getSubmissionState() == SubmissionState.COMPLETED)
+        removeSubmission(submissionID);
     }
   }
 
@@ -83,6 +86,8 @@ public class SubmissionStatusManager
 
       if (submissionStatusDescriptor.getSubmissionStatus().getSubmissionState() != SubmissionState.COMPLETED)
         logger.warn("Removing incomplete submission " + submissionID);
+
+      logger.info("Removing submission " + submissionID);
 
       this.submissions.remove(submissionID);
     }
@@ -98,6 +103,8 @@ public class SubmissionStatusManager
   private void notifyUser(SubmissionStatusDescriptor submissionStatusDescriptor)
   {
     // TODO
-    logger.info("Notifying user");
+    logger.info("Notifying user for submission " + submissionStatusDescriptor.getSubmissionID() + "; status = "
+      + submissionStatusDescriptor.getSubmissionStatus().getSubmissionState() + ", message = "
+      + submissionStatusDescriptor.getSubmissionStatus().getStatusMessage());
   }
 }
