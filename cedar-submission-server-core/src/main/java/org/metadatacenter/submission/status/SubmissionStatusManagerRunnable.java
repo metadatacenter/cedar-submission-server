@@ -68,7 +68,6 @@ public class SubmissionStatusManagerRunnable implements Runnable
         for (String submissionID : futures.keySet()) {
           Future<SubmissionStatus> future = futures.get(submissionID);
           future.cancel(true); // Cancel tasks that did not complete in time
-          submissionStatusManager.removeSubmission(submissionID);
           logger.warn("Status call for submission " + submissionID + " did not complete; cancelling");
         }
         futures.clear();
