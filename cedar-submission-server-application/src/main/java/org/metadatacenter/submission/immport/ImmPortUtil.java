@@ -38,6 +38,10 @@ public class ImmPortUtil
   public static final String IMMPORT_CEDAR_USER_NAME = "cedaruser";
   public static final String IMMPORT_CEDAR_USER_PASSWORD = "GoCedar2017#";
 
+  public static final String IMMPORT_USERNAME_FIELD = "username";
+  public static final String IMMPORT_PASSWORD_FIELD = "passsword";
+  public static final String IMMPORT_WORKSPACE_ID_FIELD = "workspaceId";
+
   public static final String IMMPORT_TOKEN_URL = "https://auth.dev.immport.org/auth/token";
   public static final String IMMPORT_STATUS_URL_BASE = "https://api.dev.immport.org/data/upload/registration/";
   public static final String IMMPORT_WORKSPACES_URL_BASE = "https://api.dev.immport.org/users/";
@@ -46,6 +50,16 @@ public class ImmPortUtil
   public static final String IMMPORT_SUBMISSION_URL = "https://api.dev.immport.org/data/upload";
 
   public static String IMMPORT_LOCAL_FOLDER_NAME = "immport-upload";
+
+  private static final String IMMPORT_SUBMIT_STATE_PENDING = "Pending";
+  private static final String IMMPORT_SUBMIT_STATE_STARTED = "Started";
+  private static final String IMMPORT_SUBMIT_STATE_COMPLETED = "Completed";
+  private static final String IMMPORT_SUBMIT_STATE_REJECTED = "Rejected";
+  private static final String IMMPORT_SUBMIT_STATE_ERROR = "Error";
+
+  private static final String IMMPORT_RESPONSE_STATUS_FIELD = "status";
+  private static final String IMMPORT_RESPONSE_STATUS_URL_FIELD = "uploadTicketStatusUiUrl";
+  private static final String IMMPORT_RESPONSE_ERROR_FIELD = "error";
 
   static public SubmissionStatus getImmPortSubmissionStatus(String submissionID)
   {
@@ -93,8 +107,8 @@ public class ImmPortUtil
 
     try {
       List<NameValuePair> parameters = new ArrayList<>(2);
-      parameters.add(new BasicNameValuePair("username", IMMPORT_CEDAR_USER_NAME));
-      parameters.add(new BasicNameValuePair("password", IMMPORT_CEDAR_USER_PASSWORD));
+      parameters.add(new BasicNameValuePair(IMMPORT_USERNAME_FIELD, IMMPORT_CEDAR_USER_NAME));
+      parameters.add(new BasicNameValuePair(IMMPORT_PASSWORD_FIELD, IMMPORT_CEDAR_USER_PASSWORD));
       post.setEntity(new UrlEncodedFormEntity(parameters, "UTF-8"));
       post.setHeader(HTTP_HEADER_ACCEPT, CONTENT_TYPE_APPLICATION_JSON);
 
@@ -103,14 +117,14 @@ public class ImmPortUtil
       if (response.getStatusLine().getStatusCode() == Response.Status.OK.getStatusCode()) {
         HttpEntity entity = response.getEntity();
         // Get ImmPortGetTokenResponse from stream
-        ImmPortGetTokenResponse immportGetTokenResponse = MAPPER
+        ImmPortGetTokenResponse immPortGetTokenResponse = MAPPER
           .readValue(entity.getContent(), ImmPortGetTokenResponse.class);
 
-        if (immportGetTokenResponse.getStatus().intValue() == 200)
-          return Optional.of(immportGetTokenResponse.getToken());
+        if (immPortGetTokenResponse.getStatus().intValue() == 200)
+          return Optional.of(immPortGetTokenResponse.getToken());
         else {
           logger.warn("Failed to get token from host " + IMMPORT_SUBMISSION_URL + "; ImmPort status code="
-            + immportGetTokenResponse.getStatus().intValue() + ", error=" + immportGetTokenResponse.getError());
+            + immPortGetTokenResponse.getStatus().intValue() + ", error=" + immPortGetTokenResponse.getError());
           return Optional.empty();
         }
       } else {
@@ -137,28 +151,25 @@ public class ImmPortUtil
 
       System.err.println("ImmPort response JSON " + immPortSubmissionResponseBody);
 
-      if (immPortSubmissionResponseBody.has("error"))
+      if (immPortSubmissionResponseBody.has(IMMPORT_RESPONSE_ERROR_FIELD))
         return new SubmissionStatus(submissionID, SubmissionState.ERROR,
-          immPortSubmissionResponseBody.get("error").textValue());
+          immPortSubmissionResponseBody.get(IMMPORT_RESPONSE_ERROR_FIELD).textValue());
       else {
-        if (!immPortSubmissionResponseBody.has("status"))
+        if (!immPortSubmissionResponseBody.has(IMMPORT_RESPONSE_STATUS_FIELD))
           return new SubmissionStatus(submissionID, SubmissionState.ERROR,
-            "No status field in ImmPort submit status response");
+            "No " + IMMPORT_RESPONSE_STATUS_FIELD + " field in ImmPort submit status response");
 
-        String immPortSubmissionStatus = immPortSubmissionResponseBody.get("status").asText();
+        String immPortSubmissionStatus = immPortSubmissionResponseBody.get(IMMPORT_RESPONSE_STATUS_FIELD).asText();
 
         if ("Completed".equals(immPortSubmissionStatus)) {
-          if (!immPortSubmissionResponseBody.has("uploadTicketStatusUiUrl"))
+          if (!immPortSubmissionResponseBody.has(IMMPORT_RESPONSE_STATUS_URL_FIELD))
             return new SubmissionStatus(submissionID, SubmissionState.COMPLETED,
               "Submission " + submissionID + " completed; no status URL found");
           else {
-            String immPortStatusURL = immPortSubmissionResponseBody.get("uploadTicketStatusUiUrl").asText();
+            String immPortStatusURL = immPortSubmissionResponseBody.get(IMMPORT_RESPONSE_STATUS_URL_FIELD).asText();
             return new SubmissionStatus(submissionID, SubmissionState.COMPLETED,
               "Submission " + submissionID + " completed; status URL = " + immPortStatusURL);
           }
-          //          if (!immPortSubmissionResponseBody.has("uploadTicketNumber"))
-          //            return new SubmissionStatus(submissionID, SubmissionState.ERROR,
-          //              "No uploadTicketNumber field in ImmPort submit response");
         } else {
 
           Optional<SubmissionState> submissionState = immPortSubmissionStatus2SubmissionState(submissionID,
@@ -176,22 +187,21 @@ public class ImmPortUtil
   }
 
   static private Optional<SubmissionState> immPortSubmissionStatus2SubmissionState(String submissionID,
-    String immPortSubmisionStatus)
+    String immPortSubmissionStatus)
   {
-    if ("Pending".equals(immPortSubmisionStatus))
+    if (IMMPORT_SUBMIT_STATE_PENDING.equals(immPortSubmissionStatus))
       return Optional.of(SubmissionState.SUBMITTED);
-    else if ("Started".equals(immPortSubmisionStatus))
+    else if (IMMPORT_SUBMIT_STATE_STARTED.equals(immPortSubmissionStatus))
       return Optional.of(SubmissionState.STARTED);
-    else if ("Completed".equals(immPortSubmisionStatus))
+    else if (IMMPORT_SUBMIT_STATE_COMPLETED.equals(immPortSubmissionStatus))
       return Optional.of(SubmissionState.COMPLETED);
-    else if ("Rejected".equals(immPortSubmisionStatus))
+    else if (IMMPORT_SUBMIT_STATE_REJECTED.equals(immPortSubmissionStatus))
       return Optional.of(SubmissionState.REJECTED);
-    else if ("Error".equals(immPortSubmisionStatus))
+    else if (IMMPORT_SUBMIT_STATE_ERROR.equals(immPortSubmissionStatus))
       return Optional.of(SubmissionState.ERROR);
     else {
-      logger.warn("Unexpected ImmPort status " + immPortSubmisionStatus + " returned for submission " + submissionID);
+      logger.warn("Unknown ImmPort status " + immPortSubmissionStatus + " returned for submission " + submissionID);
       return Optional.empty();
     }
   }
-
 }

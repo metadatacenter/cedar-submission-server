@@ -176,6 +176,7 @@ import static org.metadatacenter.util.json.JsonMapper.MAPPER;
     }
   }
 
+  // Original implementation with single multipart form upload. Keep for the moment for command line testing.
   @POST @Timed @Path("/immport-submit-old") @Consumes(MediaType.MULTIPART_FORM_DATA) public Response submitImmPortOld()
     throws CedarException
   {
@@ -217,7 +218,8 @@ import static org.metadatacenter.util.json.JsonMapper.MAPPER;
           String submissionID = cedarSubmitResponse.getSubmissionID();
           String userID = c.getCedarUser().getId();
           String statusURL = cedarSubmitResponse.getStatusURL();
-          SubmissionStatusManager.getInstance().addSubmission(new ImmPortSubmissionStatusTask(submissionID, userID, statusURL));
+          SubmissionStatusManager.getInstance()
+            .addSubmission(new ImmPortSubmissionStatusTask(submissionID, userID, statusURL));
           return Response.ok(cedarSubmitResponse).build();
         } else {
           logger.warn("Unexpected status code returned from " + ImmPortUtil.IMMPORT_SUBMISSION_URL + ": " + response
@@ -241,8 +243,8 @@ import static org.metadatacenter.util.json.JsonMapper.MAPPER;
   {
     MultipartEntityBuilder builder = MultipartEntityBuilder.create();
 
-    builder.addTextBody("workspaceId", workspaceID);
-    builder.addTextBody("username", ImmPortUtil.IMMPORT_CEDAR_USER_NAME);
+    builder.addTextBody(ImmPortUtil.IMMPORT_WORKSPACE_ID_FIELD, workspaceID);
+    builder.addTextBody(ImmPortUtil.IMMPORT_USERNAME_FIELD, ImmPortUtil.IMMPORT_CEDAR_USER_NAME);
 
     File tempDir = Files.createTempDir();
     List<FileItem> fileItems = new ServletFileUpload(new DiskFileItemFactory(1024 * 1024, tempDir)).
@@ -270,9 +272,11 @@ import static org.metadatacenter.util.json.JsonMapper.MAPPER;
     List<String> submissionFilePaths = getSubmissionFilePaths(submissionID);
     MultipartEntityBuilder builder = MultipartEntityBuilder.create();
 
-    builder.addTextBody("workspaceId", workspaceID); // TODO constant
-    builder.addTextBody("username", ImmPortUtil.IMMPORT_CEDAR_USER_NAME); // TODO constant
+    builder.addTextBody(ImmPortUtil.IMMPORT_WORKSPACE_ID_FIELD, workspaceID);
+    builder.addTextBody(ImmPortUtil.IMMPORT_USERNAME_FIELD, ImmPortUtil.IMMPORT_CEDAR_USER_NAME);
 
+    // TODO What are the 'file' fields called here? How do we distinguish
+    // TODO We need to translate metadata files from JSON-LD to JSON
     for (String submissionFilePath : submissionFilePaths) {
       File submissionFile = new File(submissionFilePath);
       InputStream submissionFileInputStream = new FileInputStream(submissionFile);
