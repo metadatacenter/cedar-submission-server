@@ -39,7 +39,7 @@ public class ImmPortUtil
   public static final String IMMPORT_CEDAR_USER_PASSWORD = "GoCedar2017#";
 
   public static final String IMMPORT_USERNAME_FIELD = "username";
-  public static final String IMMPORT_PASSWORD_FIELD = "passsword";
+  public static final String IMMPORT_PASSWORD_FIELD = "password";
   public static final String IMMPORT_WORKSPACE_ID_FIELD = "workspaceId";
 
   public static final String IMMPORT_TOKEN_URL = "https://auth.dev.immport.org/auth/token";
