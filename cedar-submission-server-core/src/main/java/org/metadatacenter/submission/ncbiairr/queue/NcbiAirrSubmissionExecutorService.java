@@ -1,10 +1,11 @@
 package org.metadatacenter.submission.ncbiairr.queue;
 
-import org.apache.commons.io.FileUtils;
 import org.metadatacenter.config.CedarConfig;
 import org.metadatacenter.submission.Constants;
 import org.metadatacenter.submission.ncbiairr.NcbiAirrSubmission;
+import org.metadatacenter.submission.ncbiairr.status.NcbiAirrSubmissionStatusTask;
 import org.metadatacenter.submission.ncbiairr.upload.NcbiAirrFtpUploadService;
+import org.metadatacenter.submission.status.SubmissionStatusManager;
 import org.metadatacenter.submission.upload.ftp.UploaderCreationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,7 +46,12 @@ public class NcbiAirrSubmissionExecutorService {
       else { // simulated submission
         Thread.sleep(Constants.NCBI_AIRR_SIMULATION_MODE_TIMEOUT);
       }
-      // TODO: Send notification to the user
+
+      // Track the submission status
+      NcbiAirrSubmissionStatusTask submissionStatusTask = new NcbiAirrSubmissionStatusTask(submission.getId(),
+          submission.getCedarUserId(), null, cedarConfig.getSubmissionConfig().getNcbi().getSra().getFtp());
+      SubmissionStatusManager.getInstance().addSubmission(submissionStatusTask);
+
       logger.info("Submission to the NCBI completed! Submission id: " + submission.getId() + "; No. files: " +
           submission.getLocalFilePaths().size());
       logger.info("Deleting the submission local folder: " + submission.getSubmissionFolder());
