@@ -37,6 +37,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.management.InstanceNotFoundException;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
@@ -71,7 +72,7 @@ import static org.metadatacenter.util.json.JsonMapper.MAPPER;
     super(cedarConfig);
   }
 
-  @POST @Timed @Path("/immport-workspaces") @Consumes(MediaType.MULTIPART_FORM_DATA) public Response immPortWorkspaces()
+  @GET @Timed @Path("/immport-workspaces") @Consumes(MediaType.MULTIPART_FORM_DATA) public Response immPortWorkspaces()
     throws CedarException
   {
     CedarRequestContext c = CedarRequestContextFactory.fromRequest(request);
