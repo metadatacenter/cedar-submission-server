@@ -290,11 +290,14 @@ import static org.metadatacenter.util.json.JsonMapper.MAPPER;
   {
     List<String> submissionFilePaths = new ArrayList<>();
 
-    Map<String, FileUploadStatus> filesUploadStatus = SubmissionUploadManager.getInstance()
+    Map<String, FileUploadStatus> submissionUploadStatus = SubmissionUploadManager.getInstance()
       .getSubmissionsUploadStatus(submissionId).getFilesUploadStatus();
 
-    for (Map.Entry<String, FileUploadStatus> entry : filesUploadStatus.entrySet()) {
+    for (Map.Entry<String, FileUploadStatus> entry : submissionUploadStatus.entrySet()) {
       FileUploadStatus fileUploadStatus = entry.getValue();
+      if (fileUploadStatus.isMetadataFile()) {
+        // TODO so somethong
+      }
       submissionFilePaths.add(fileUploadStatus.getFileLocalPath());
     }
     return submissionFilePaths;

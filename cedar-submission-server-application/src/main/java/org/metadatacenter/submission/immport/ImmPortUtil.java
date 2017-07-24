@@ -73,7 +73,8 @@ public class ImmPortUtil
     }
 
     try {
-      HttpGet get = new HttpGet(IMMPORT_STATUS_URL_BASE + submissionID + "/status");
+      String immPortStatusURL = IMMPORT_STATUS_URL_BASE + submissionID + "/status";
+      HttpGet get = new HttpGet(immPortStatusURL);
       get.setHeader(HTTP_HEADER_AUTHORIZATION, HTTP_AUTH_HEADER_BEARER_PREFIX + token.get());
       get.setHeader(HTTP_HEADER_ACCEPT, CONTENT_TYPE_APPLICATION_JSON);
       client = HttpClientBuilder.create().build();
@@ -84,13 +85,12 @@ public class ImmPortUtil
         return immPortSubmissionResponseBody2SubmissionStatus(submissionID, entity);
       } else {
         String errorMessage =
-          "Unexpected status code calling " + IMMPORT_WORKSPACES_URL + "; status=" + response.getStatusLine()
-            .getStatusCode();
+          "Unexpected status code calling " + immPortStatusURL + "; status=" + response.getStatusLine().getStatusCode();
         logger.warn(errorMessage);
         return new SubmissionStatus(submissionID, SubmissionState.ERROR, errorMessage);
       }
     } catch (IOException e) {
-      String errorMessage = "IO exception connecting to host " + IMMPORT_WORKSPACES_URL + ": " + e.getMessage();
+      String errorMessage = "IO exception calling import status endpoint: " + e.getMessage();
       logger.warn(errorMessage);
       return new SubmissionStatus(submissionID, SubmissionState.ERROR, errorMessage);
     } finally {
