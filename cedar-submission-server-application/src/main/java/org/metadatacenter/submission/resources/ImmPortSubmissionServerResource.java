@@ -11,12 +11,12 @@ import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.utils.HttpClientUtils;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
-import org.metadatacenter.submission.immport.ImmPortUtil;
 import org.metadatacenter.cedar.util.dw.CedarMicroserviceResource;
 import org.metadatacenter.config.CedarConfig;
 import org.metadatacenter.exception.CedarException;
@@ -25,22 +25,34 @@ import org.metadatacenter.rest.context.CedarRequestContextFactory;
 import org.metadatacenter.submission.biosample.CEDARSubmitResponse;
 import org.metadatacenter.submission.biosample.CEDARWorkspaceResponse;
 import org.metadatacenter.submission.biosample.Workspace;
+import org.metadatacenter.submission.immport.ImmPortSubmissionStatusTask;
+import org.metadatacenter.submission.immport.ImmPortUtil;
 import org.metadatacenter.submission.status.SubmissionStatusManager;
+import org.metadatacenter.submission.upload.flow.FileUploadStatus;
+import org.metadatacenter.submission.upload.flow.FlowData;
+import org.metadatacenter.submission.upload.flow.FlowUploadUtil;
+import org.metadatacenter.submission.upload.flow.SubmissionUploadManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.management.InstanceNotFoundException;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.xml.bind.JAXBException;
+import javax.xml.datatype.DatatypeConfigurationException;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import static org.metadatacenter.constant.HttpConstants.CONTENT_TYPE_APPLICATION_JSON;
@@ -53,57 +65,49 @@ import static org.metadatacenter.util.json.JsonMapper.MAPPER;
 @Path("/command") @Produces(MediaType.APPLICATION_JSON) public class ImmPortSubmissionServerResource
   extends CedarMicroserviceResource
 {
-  final static Logger logger = LoggerFactory.getLogger(ImmPortSubmissionServerResource.class);
-
-  private final SubmissionStatusManager submissionStatusManager;
+  private final static Logger logger = LoggerFactory.getLogger(ImmPortSubmissionServerResource.class);
 
   public ImmPortSubmissionServerResource(CedarConfig cedarConfig)
   {
     super(cedarConfig);
-    this.submissionStatusManager = new SubmissionStatusManager();
-    this.submissionStatusManager.start();
   }
 
-  @POST @Timed @Path("/immport-workspaces") @Consumes(MediaType.MULTIPART_FORM_DATA) public Response immPortWorkspaces()
+  @GET @Timed @Path("/immport-workspaces") @Consumes(MediaType.MULTIPART_FORM_DATA) public Response immPortWorkspaces()
     throws CedarException
   {
     CedarRequestContext c = CedarRequestContextFactory.fromRequest(request);
     c.must(c.user()).be(LoggedIn);
 
-    Optional<String> token = ImmPortUtil.getImmPortToken();
-    if (!token.isPresent()) {
+    Optional<String> immPortBearerToken = ImmPortUtil.getImmPortBearerToken();
+    if (!immPortBearerToken.isPresent()) {
       logger.warn("Could not get an ImmPort token");
       return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();  // TODO CEDAR error response
     }
 
     CloseableHttpResponse response = null;
+    CloseableHttpClient client = null;
 
     try {
-      CloseableHttpClient client = HttpClientBuilder.create().build();
       HttpGet get = new HttpGet(ImmPortUtil.IMMPORT_WORKSPACES_URL);
-      get.setHeader(HTTP_HEADER_AUTHORIZATION, HTTP_AUTH_HEADER_BEARER_PREFIX + token.get());
+      get.setHeader(HTTP_HEADER_AUTHORIZATION, HTTP_AUTH_HEADER_BEARER_PREFIX + immPortBearerToken.get());
       get.setHeader(HTTP_HEADER_ACCEPT, CONTENT_TYPE_APPLICATION_JSON);
+      client = HttpClientBuilder.create().build();
       response = client.execute(get);
 
       if (response.getStatusLine().getStatusCode() == 200) {
         HttpEntity entity = response.getEntity();
         return Response.ok(immPortWorkspacesResponseBody2CEDARWorkspaceResponse(entity)).build();
       } else {
-        logger.warn(
-          "Unexpected status code calling " + ImmPortUtil.IMMPORT_WORKSPACES_URL + ";status=" + response.getStatusLine()
-            .getStatusCode());
+        logger.warn("Unexpected status code calling " + ImmPortUtil.IMMPORT_WORKSPACES_URL + "; status=" + response
+          .getStatusLine().getStatusCode());
         return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build(); // TODO CEDAR error response
       }
     } catch (IOException e) {
       logger.warn("IO exception connecting to host " + ImmPortUtil.IMMPORT_WORKSPACES_URL + ": " + e.getMessage());
       return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build(); // TODO CEDAR error response
     } finally {
-      if (response != null)
-        try {
-          response.close();
-        } catch (IOException e) {
-          logger.warn("Error closing HTTP response for ImmPort workspaces call");
-        }
+      HttpClientUtils.closeQuietly(response);
+      HttpClientUtils.closeQuietly(client);
     }
   }
 
@@ -113,64 +117,111 @@ import static org.metadatacenter.util.json.JsonMapper.MAPPER;
     CedarRequestContext c = CedarRequestContextFactory.fromRequest(request);
     c.must(c.user()).be(LoggedIn);
 
-    Optional<String> token = ImmPortUtil.getImmPortToken();
-    if (!token.isPresent())
-      return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build(); // TODO CEDAR error response
+    String workspaceID = request.getParameter("workspaceId"); // TODO Constant for parameter
+    if (workspaceID == null || workspaceID.isEmpty()) {
+      logger.warn("No workspaceId parameter specified");
+      return Response.status(Response.Status.BAD_REQUEST).build();  // TODO CEDAR error response
+    }
 
-    CloseableHttpClient client = HttpClientBuilder.create().build();
+    Optional<String> immPortBearerToken = ImmPortUtil.getImmPortBearerToken();
+    if (!immPortBearerToken.isPresent()) {
+      logger.warn("No ImmPort token found");
+      return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build(); // TODO CEDAR error response
+    }
+
     CloseableHttpResponse response = null;
+    CloseableHttpClient client = null;
 
     try {
       if (ServletFileUpload.isMultipartContent(request)) {
-        MultipartEntityBuilder builder = MultipartEntityBuilder.create();
+        String userId = FlowUploadUtil.getLastFragmentOfUrl(c.getCedarUser().getId());
+        FlowData data = FlowUploadUtil.getFlowData(request);
+        String submissionLocalFolderPath = FlowUploadUtil
+          .getSubmissionLocalFolderPath(ImmPortUtil.IMMPORT_LOCAL_FOLDER_NAME, userId, data.getSubmissionId());
+        SubmissionUploadManager.getInstance().updateStatus(data, submissionLocalFolderPath);
 
-        String workspaceID = request.getParameter("workspaceId");
-        if (workspaceID == null || workspaceID.isEmpty()) {
-          logger.warn("No workspaceId parameter specified");
-          return Response.status(Response.Status.BAD_REQUEST).build();  // TODO CEDAR error response
-        }
-        builder.addTextBody("workspaceId", workspaceID);
-        builder.addTextBody("username", ImmPortUtil.IMMPORT_CEDAR_USER_NAME);
+        if (SubmissionUploadManager.getInstance().isSubmissionUploadComplete(data.getSubmissionId())) {
+          HttpEntity multiPartEntity = getMultipartContentFromSubmission(data.submissionId, workspaceID);
+          HttpPost post = new HttpPost(ImmPortUtil.IMMPORT_SUBMISSION_URL);
+          post.setHeader(HTTP_HEADER_AUTHORIZATION, HTTP_AUTH_HEADER_BEARER_PREFIX + immPortBearerToken.get());
+          post.setHeader(HTTP_HEADER_ACCEPT, CONTENT_TYPE_APPLICATION_JSON);
+          post.setEntity(multiPartEntity);
+          client = HttpClientBuilder.create().build();
+          response = client.execute(post);
+          int statusCode = response.getStatusLine().getStatusCode();
 
-        File tempDir = Files.createTempDir();
-        List<FileItem> fileItems = new ServletFileUpload(new DiskFileItemFactory(1024 * 1024, tempDir)).
-          parseRequest(request);
-
-        for (FileItem fileItem : fileItems) {
-          String fileName = fileItem.getName();
-          String fieldName = fileItem.getFieldName();
-          if (!fileItem.isFormField()) {
-            if ("instance".equals(fieldName)) {
-              InputStream is = fileItem.getInputStream();
-              builder.addBinaryBody("file", is, ContentType.DEFAULT_BINARY, fileName);
-            } else { // The user-supplied files
-              InputStream is = fileItem.getInputStream();
-              builder.addBinaryBody("file", is, ContentType.DEFAULT_BINARY, fileName);
-            }
+          if (statusCode == Response.Status.OK.getStatusCode()) {
+            CEDARSubmitResponse cedarSubmitResponse = immPortSubmissionResponseBody2CEDARSubmissionResponse(
+              response.getEntity());
+            SubmissionStatusManager.getInstance().addSubmission(
+              new ImmPortSubmissionStatusTask(cedarSubmitResponse.getSubmissionID(), c.getCedarUser().getId(),
+                cedarSubmitResponse.getStatusURL()));
+            return Response.ok(cedarSubmitResponse).build();
+          } else {
+            logger.warn("Unexpected status code returned from " + ImmPortUtil.IMMPORT_SUBMISSION_URL + ": " + response
+              .getStatusLine().getStatusCode());
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build(); // TODO CEDAR error response
           }
-        }
+        } else
+          return Response.ok().build(); // We are still building the request
+      } else {
+        logger.warn("No form data supplied");
+        return Response.status(Response.Status.BAD_REQUEST).build(); // TODO CEDAR error response
+      }
+    } catch (IOException | InstanceNotFoundException | IllegalAccessException | FileUploadException | JAXBException | DatatypeConfigurationException e) {
+      logger.warn("Exception submitting to ImmPort: " + e.getMessage());
+      return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build(); // TODO CEDAR error response
+    } finally {
+      HttpClientUtils.closeQuietly(response);
+      HttpClientUtils.closeQuietly(client);
+    }
+  }
 
-        HttpEntity multiPartRequestEntity = builder.build();
+  // Original implementation with single multipart form upload. Keep for the moment for command line testing.
+  @POST @Timed @Path("/immport-submit-old") @Consumes(MediaType.MULTIPART_FORM_DATA) public Response submitImmPortOld()
+    throws CedarException
+  {
+    CedarRequestContext c = CedarRequestContextFactory.fromRequest(request);
+    c.must(c.user()).be(LoggedIn);
+
+    String workspaceID = request.getParameter("workspaceId"); // TODO Constant for parameter
+    if (workspaceID == null || workspaceID.isEmpty()) {
+      logger.warn("No workspaceId parameter specified");
+      return Response.status(Response.Status.BAD_REQUEST).build();  // TODO CEDAR error response
+    }
+
+    Optional<String> immPortBearerToken = ImmPortUtil.getImmPortBearerToken();
+    if (!immPortBearerToken.isPresent()) {
+      logger.warn("No ImmPort token found");
+      return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build(); // TODO CEDAR error response
+    }
+
+    CloseableHttpResponse response = null;
+    CloseableHttpClient client = null;
+
+    try {
+      if (ServletFileUpload.isMultipartContent(request)) {
+
+        HttpEntity multiPartEntity = getMultipartContentFromRequest(workspaceID);
+
         HttpPost post = new HttpPost(ImmPortUtil.IMMPORT_SUBMISSION_URL);
-        post.setEntity(multiPartRequestEntity);
-        post.setHeader(HTTP_HEADER_AUTHORIZATION, HTTP_AUTH_HEADER_BEARER_PREFIX + token.get());
+        post.setHeader(HTTP_HEADER_AUTHORIZATION, HTTP_AUTH_HEADER_BEARER_PREFIX + immPortBearerToken.get());
         post.setHeader(HTTP_HEADER_ACCEPT, CONTENT_TYPE_APPLICATION_JSON);
+        post.setEntity(multiPartEntity);
+        client = HttpClientBuilder.create().build();
         response = client.execute(post);
 
         int statusCode = response.getStatusLine().getStatusCode();
-        if (statusCode == Response.Status.OK.getStatusCode()) {
-          CEDARSubmitResponse todo = immPortSubmissionResponseBody2CEDARSubmissionResponse(response.getEntity());
-          // TODO Create monitoring task here
-//          submissionStatusManager.addSubmission(String userID, String statusURL,
-//            new ImmPortSubmissionStatusTask(submissionID, userID, statudURL));
 
-          return Response.ok(immPortSubmissionResponseBody2CEDARSubmissionResponse(response.getEntity())).build();
-        } else if (statusCode == Response.Status.BAD_REQUEST.getStatusCode()) {
-          HttpEntity entity = response.getEntity();
-          String responseBody = EntityUtils.toString(entity);
-          logger.warn("Unexpected status code returned from " + ImmPortUtil.IMMPORT_SUBMISSION_URL + ": " + response
-            .getStatusLine().getStatusCode() + "JSON " + responseBody);
-          return Response.status(Response.Status.BAD_REQUEST).build();
+        if (statusCode == Response.Status.OK.getStatusCode()) {
+          CEDARSubmitResponse cedarSubmitResponse = immPortSubmissionResponseBody2CEDARSubmissionResponse(
+            response.getEntity());
+          String submissionID = cedarSubmitResponse.getSubmissionID();
+          String userID = c.getCedarUser().getId();
+          String statusURL = cedarSubmitResponse.getStatusURL();
+          SubmissionStatusManager.getInstance()
+            .addSubmission(new ImmPortSubmissionStatusTask(submissionID, userID, statusURL));
+          return Response.ok(cedarSubmitResponse).build();
         } else {
           logger.warn("Unexpected status code returned from " + ImmPortUtil.IMMPORT_SUBMISSION_URL + ": " + response
             .getStatusLine().getStatusCode());
@@ -180,26 +231,77 @@ import static org.metadatacenter.util.json.JsonMapper.MAPPER;
         logger.warn("No form data supplied");
         return Response.status(Response.Status.BAD_REQUEST).build(); // TODO CEDAR error response
       }
-    } catch (IOException e) {
-      logger.warn("IO exception connecting to host " + ImmPortUtil.IMMPORT_SUBMISSION_URL + ": " + e.getMessage());
-      return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build(); // TODO CEDAR error response
-    } catch (FileUploadException e) {
-      logger
-        .warn("File upload exception uploading to host " + ImmPortUtil.IMMPORT_SUBMISSION_URL + ": " + e.getMessage());
+    } catch (IOException | FileUploadException e) {
+      logger.warn("Exception submitting to ImmmPort " + ImmPortUtil.IMMPORT_SUBMISSION_URL + ": " + e.getMessage());
       return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build(); // TODO CEDAR error response
     } finally {
-      if (response != null)
-        try {
-          response.close();
-        } catch (IOException e) {
-          logger.warn("Error closing HTTP response for ImmPort submission: " + e.getMessage());
+      HttpClientUtils.closeQuietly(response);
+      HttpClientUtils.closeQuietly(client);
+    }
+  }
+
+  private HttpEntity getMultipartContentFromRequest(String workspaceID) throws FileUploadException, IOException
+  {
+    MultipartEntityBuilder builder = MultipartEntityBuilder.create();
+
+    builder.addTextBody(ImmPortUtil.IMMPORT_WORKSPACE_ID_FIELD, workspaceID);
+    builder.addTextBody(ImmPortUtil.IMMPORT_USERNAME_FIELD, ImmPortUtil.IMMPORT_CEDAR_USER_NAME);
+
+    File tempDir = Files.createTempDir();
+    List<FileItem> fileItems = new ServletFileUpload(new DiskFileItemFactory(1024 * 1024, tempDir)).
+      parseRequest(request);
+
+    for (FileItem fileItem : fileItems) {
+      String fileName = fileItem.getName();
+      String fieldName = fileItem.getFieldName();
+      if (!fileItem.isFormField()) {
+        if ("instance".equals(fieldName)) {
+          InputStream is = fileItem.getInputStream();
+          builder.addBinaryBody("file", is, ContentType.DEFAULT_BINARY, fileName);
+        } else { // The user-supplied files
+          InputStream is = fileItem.getInputStream();
+          builder.addBinaryBody("file", is, ContentType.DEFAULT_BINARY, fileName);
         }
-      try {
-        client.close();
-      } catch (IOException e) {
-        logger.warn("Error closing HTTP client for ImmPort submission call: " + e.getMessage());
       }
     }
+    return builder.build();
+  }
+
+  private static HttpEntity getMultipartContentFromSubmission(String submissionID, String workspaceID)
+    throws IOException, JAXBException, DatatypeConfigurationException
+  {
+    List<String> submissionFilePaths = getSubmissionFilePaths(submissionID);
+    MultipartEntityBuilder builder = MultipartEntityBuilder.create();
+
+    builder.addTextBody(ImmPortUtil.IMMPORT_WORKSPACE_ID_FIELD, workspaceID);
+    builder.addTextBody(ImmPortUtil.IMMPORT_USERNAME_FIELD, ImmPortUtil.IMMPORT_CEDAR_USER_NAME);
+
+    // TODO What are the 'file' fields called here? How do we distinguish
+    // TODO We need to translate metadata files from JSON-LD to JSON
+    for (String submissionFilePath : submissionFilePaths) {
+      File submissionFile = new File(submissionFilePath);
+      InputStream submissionFileInputStream = new FileInputStream(submissionFile);
+      builder.addBinaryBody("file", submissionFileInputStream, ContentType.DEFAULT_BINARY, submissionFile.getName());
+    }
+    return builder.build();
+  }
+
+  private static List<String> getSubmissionFilePaths(String submissionId)
+    throws IOException, JAXBException, DatatypeConfigurationException
+  {
+    List<String> submissionFilePaths = new ArrayList<>();
+
+    Map<String, FileUploadStatus> submissionUploadStatus = SubmissionUploadManager.getInstance()
+      .getSubmissionsUploadStatus(submissionId).getFilesUploadStatus();
+
+    for (Map.Entry<String, FileUploadStatus> entry : submissionUploadStatus.entrySet()) {
+      FileUploadStatus fileUploadStatus = entry.getValue();
+      if (fileUploadStatus.isMetadataFile()) {
+        // TODO so somethong
+      }
+      submissionFilePaths.add(fileUploadStatus.getFileLocalPath());
+    }
+    return submissionFilePaths;
   }
 
   private CEDARWorkspaceResponse immPortWorkspacesResponseBody2CEDARWorkspaceResponse(HttpEntity responseEntity)

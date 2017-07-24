@@ -5,12 +5,12 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Collections;
 import java.util.Map;
-import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+// TODO Use Redis queue
 // TODO Need to add insertion time in descriptor and clean old ones
 
 public class SubmissionStatusManager
@@ -21,13 +21,24 @@ public class SubmissionStatusManager
 
   private final ConcurrentHashMap<String, SubmissionStatusDescriptor> submissions = new ConcurrentHashMap<>();
 
-  public SubmissionStatusManager()
+  private SubmissionStatusManager()
   {
 
     this.executor = Executors.newFixedThreadPool(10);
   }
 
-  public void start()
+  private static SubmissionStatusManager singleInstance;
+
+  public static synchronized SubmissionStatusManager getInstance()
+  {
+    if (singleInstance == null) {
+      singleInstance = new SubmissionStatusManager();
+      singleInstance.start();
+    }
+    return singleInstance;
+  }
+
+  private void start()
   {
     logger.info("Starting the submission status manager");
     executor.submit(new SubmissionStatusManagerRunnable(this));
@@ -44,14 +55,16 @@ public class SubmissionStatusManager
     }
   }
 
-  public String addSubmission(String userID, String statusURL, SubmissionStatusTask submissionStatusTask)
+  public String addSubmission(SubmissionStatusTask submissionStatusTask)
   {
-    String submissionID = UUID.randomUUID().toString();
-    SubmissionStatus submissionStatus = new SubmissionStatus(submissionID, SubmissionState.IN_PROGRESS, "");
-    SubmissionStatusDescriptor submissionStatusDescriptor = new SubmissionStatusDescriptor(submissionID, userID,
-      statusURL, submissionStatus, submissionStatusTask);
+    String submissionID = submissionStatusTask.getSubmissionID();
+    SubmissionStatus submissionStatus = new SubmissionStatus(submissionID, SubmissionState.STARTED,
+      "Received submission with ID " + submissionID);
+    SubmissionStatusDescriptor submissionStatusDescriptor = new SubmissionStatusDescriptor(submissionID,
+      submissionStatusTask.getUserID(), submissionStatusTask.getStatusURL(), submissionStatus, submissionStatusTask);
 
     this.submissions.put(submissionID, submissionStatusDescriptor);
+
     notifyUser(submissionStatusDescriptor);
 
     return submissionID;
@@ -72,6 +85,11 @@ public class SubmissionStatusManager
       notifyUser(newSubmissionStatusDescriptor);
 
       this.submissions.put(submissionID, newSubmissionStatusDescriptor);
+
+      if (submissionStatus.getSubmissionState() == SubmissionState.COMPLETED
+        || submissionStatus.getSubmissionState() == SubmissionState.REJECTED
+        || submissionStatus.getSubmissionState() == SubmissionState.ERROR)
+        removeSubmission(submissionID);
     }
   }
 
@@ -84,6 +102,8 @@ public class SubmissionStatusManager
 
       if (submissionStatusDescriptor.getSubmissionStatus().getSubmissionState() != SubmissionState.COMPLETED)
         logger.warn("Removing incomplete submission " + submissionID);
+
+      logger.info("Removing submission " + submissionID);
 
       this.submissions.remove(submissionID);
     }
@@ -99,6 +119,8 @@ public class SubmissionStatusManager
   private void notifyUser(SubmissionStatusDescriptor submissionStatusDescriptor)
   {
     // TODO
-    logger.info("Notifying user");
+    logger.info("Notifying user for submission " + submissionStatusDescriptor.getSubmissionID() + "; status = "
+      + submissionStatusDescriptor.getSubmissionStatus().getSubmissionState() + ", message = "
+      + submissionStatusDescriptor.getSubmissionStatus().getStatusMessage());
   }
 }
