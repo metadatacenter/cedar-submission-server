@@ -184,7 +184,7 @@ import static org.metadatacenter.util.json.JsonMapper.MAPPER;
     CedarRequestContext c = CedarRequestContextFactory.fromRequest(request);
     c.must(c.user()).be(LoggedIn);
 
-    String workspaceID = request.getParameter("workspaceId"); // TODO Constant for parameter
+    String workspaceID = request.getParameter("workspaceId"); // TODO CEDAR constant for parameter
     if (workspaceID == null || workspaceID.isEmpty()) {
       logger.warn("No workspaceId parameter specified");
       return Response.status(Response.Status.BAD_REQUEST).build();  // TODO CEDAR error response
