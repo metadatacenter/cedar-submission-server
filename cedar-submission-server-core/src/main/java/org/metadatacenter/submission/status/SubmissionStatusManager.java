@@ -20,13 +20,24 @@ public class SubmissionStatusManager
 
   private final ConcurrentHashMap<String, SubmissionStatusDescriptor> submissions = new ConcurrentHashMap<>();
 
-  public SubmissionStatusManager()
+  private SubmissionStatusManager()
   {
 
     this.executor = Executors.newFixedThreadPool(10);
   }
 
-  public void start()
+  private static SubmissionStatusManager singleInstance;
+
+  public static synchronized SubmissionStatusManager getInstance()
+  {
+    if (singleInstance == null) {
+      singleInstance = new SubmissionStatusManager();
+      singleInstance.start();
+    }
+    return singleInstance;
+  }
+
+  private void start()
   {
     logger.info("Starting the submission status manager");
     executor.submit(new SubmissionStatusManagerRunnable(this));

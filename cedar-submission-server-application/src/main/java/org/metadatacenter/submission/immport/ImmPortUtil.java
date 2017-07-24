@@ -45,6 +45,8 @@ public class ImmPortUtil
     IMMPORT_WORKSPACES_URL_BASE + IMMPORT_CEDAR_USER_NAME + "/workspaces";
   public static final String IMMPORT_SUBMISSION_URL = "https://api.dev.immport.org/data/upload";
 
+  public static String IMMPORT_LOCAL_FOLDER_NAME = "immport-upload";
+
   static public SubmissionStatus getImmPortSubmissionStatus(String submissionID)
   {
     CloseableHttpResponse response = null;
