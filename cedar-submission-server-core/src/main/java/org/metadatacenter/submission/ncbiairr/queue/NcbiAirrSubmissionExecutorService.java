@@ -1,5 +1,6 @@
 package org.metadatacenter.submission.ncbiairr.queue;
 
+import org.apache.commons.io.FileUtils;
 import org.metadatacenter.config.CedarConfig;
 import org.metadatacenter.submission.Constants;
 import org.metadatacenter.submission.ncbiairr.NcbiAirrSubmission;
@@ -47,6 +48,9 @@ public class NcbiAirrSubmissionExecutorService {
       // TODO: Send notification to the user
       logger.info("Submission to the NCBI completed! Submission id: " + submission.getId() + "; No. files: " +
           submission.getLocalFilePaths().size());
+      logger.info("Deleting the submission local folder: " + submission.getSubmissionFolder());
+      // Delete the submission local folder
+      //FileUtils.deleteDirectory(new File(submission.getSubmissionFolder()));
 
     } catch (IOException e) {
       logger.error("Error submitting the data to the NCBI.");
@@ -58,6 +62,5 @@ public class NcbiAirrSubmissionExecutorService {
       logger.error("Error submitting the data to the NCBI.");
       logger.error(e.getMessage());
     }
-
   }
 }

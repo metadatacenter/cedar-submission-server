@@ -46,7 +46,12 @@ public class NcbiAirrSubmissionUtil {
         String submissionLocalFolderPath =
             FlowUploadUtil.getSubmissionLocalFolderPath(Constants.NCBI_AIRR_LOCAL_FOLDER_NAME, userId, submissionId);
         File submissionXmlFile = generateSubmissionXmlFile(airrInstance, submissionLocalFolderPath);
-        submissionFilePaths.add(submissionXmlFile.getAbsolutePath());
+
+        // TODO: remove the following line when we have the right instance/template
+        submissionFilePaths.add("/Users/marcosmr/Desktop/NCBI_AIRR_sample_files/sample_submission/submission.xml");
+
+        // TODO: uncomment the following line when we have the right instance/template
+        //submissionFilePaths.add(submissionXmlFile.getAbsolutePath());
       }
     }
 

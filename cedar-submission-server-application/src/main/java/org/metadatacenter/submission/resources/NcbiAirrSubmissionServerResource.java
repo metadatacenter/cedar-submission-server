@@ -3,6 +3,7 @@ package org.metadatacenter.submission.resources;
 import com.codahale.metrics.annotation.Timed;
 import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
+import org.apache.commons.io.FileUtils;
 import org.joda.time.DateTimeZone;
 import org.metadatacenter.cedar.util.dw.CedarMicroserviceResource;
 import org.metadatacenter.config.CedarConfig;
@@ -31,6 +32,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.xml.bind.JAXBException;
 import javax.xml.datatype.DatatypeConfigurationException;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 
@@ -116,7 +118,7 @@ public class NcbiAirrSubmissionServerResource extends CedarMicroserviceResource 
         // The submission to the NCBI must contain one (and only one) metadata file (instance)
         if (data.getMetadataFiles().size() != 1) {
           String message = "Wrong number of metadata files (submissionId = " +
-              data.getSubmissionId() + " ; metadataFiles = " + data.getMetadataFiles().size();
+              data.getSubmissionId() + "; metadataFiles = " + data.getMetadataFiles().size();
           logger.info(message);
           return Response.status(Response.Status.BAD_REQUEST).build();
         }
@@ -145,7 +147,7 @@ public class NcbiAirrSubmissionServerResource extends CedarMicroserviceResource 
           // Enqueue submission
           logger.info("Enqueuing submission");
           ncbiAirrSubmissionQueueService.enqueueSubmission(ncbiAirrSubmission);
-          // Remove the submission from status map
+          // Remove the submission from the status map
           SubmissionUploadManager.getInstance().removeSubmissionStatus(data.getSubmissionId());
         }
 

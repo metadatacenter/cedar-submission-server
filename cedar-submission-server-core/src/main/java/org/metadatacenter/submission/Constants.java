@@ -5,7 +5,7 @@ public class Constants
 
   /* Execution settings */
   public static boolean NCBI_AIRR_SUBMIT = true; // if false, the FTP submission is ignored
-  public static boolean NCBI_AIRR_UPLOAD_SUBMIT_READY_FILE = false;
+  public static boolean NCBI_AIRR_UPLOAD_SUBMIT_READY_FILE = true;
 
   /* Constants */
   public static String NCBI_AIRR_LOCAL_FOLDER_NAME = "ncbi-airr-upload";
