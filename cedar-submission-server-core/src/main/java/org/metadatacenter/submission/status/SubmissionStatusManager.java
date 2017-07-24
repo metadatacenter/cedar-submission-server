@@ -10,6 +10,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+// TODO Use Redis queue
 // TODO Need to add insertion time in descriptor and clean old ones
 
 public class SubmissionStatusManager
@@ -57,11 +58,13 @@ public class SubmissionStatusManager
   public String addSubmission(SubmissionStatusTask submissionStatusTask)
   {
     String submissionID = submissionStatusTask.getSubmissionID();
-    SubmissionStatus submissionStatus = new SubmissionStatus(submissionID, SubmissionState.IN_PROGRESS, "");
+    SubmissionStatus submissionStatus = new SubmissionStatus(submissionID, SubmissionState.STARTED,
+      "Received submission with ID " + submissionID);
     SubmissionStatusDescriptor submissionStatusDescriptor = new SubmissionStatusDescriptor(submissionID,
       submissionStatusTask.getUserID(), submissionStatusTask.getStatusURL(), submissionStatus, submissionStatusTask);
 
     this.submissions.put(submissionID, submissionStatusDescriptor);
+
     notifyUser(submissionStatusDescriptor);
 
     return submissionID;
@@ -83,7 +86,9 @@ public class SubmissionStatusManager
 
       this.submissions.put(submissionID, newSubmissionStatusDescriptor);
 
-      if (submissionStatus.getSubmissionState() == SubmissionState.COMPLETED)
+      if (submissionStatus.getSubmissionState() == SubmissionState.COMPLETED
+        || submissionStatus.getSubmissionState() == SubmissionState.REJECTED
+        || submissionStatus.getSubmissionState() == SubmissionState.ERROR)
         removeSubmission(submissionID);
     }
   }

@@ -2,7 +2,7 @@ package org.metadatacenter.submission.status;
 
 public enum SubmissionState
 {
-  IN_PROGRESS(0), COMPLETED(1), ERROR(2);
+  SUBMITTED(0), STARTED(1), COMPLETED(2), REJECTED(3), ERROR(4);
 
   private final int value;
 

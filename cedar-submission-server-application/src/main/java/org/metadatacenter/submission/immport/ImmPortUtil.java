@@ -135,7 +135,7 @@ public class ImmPortUtil
       String responseBody = EntityUtils.toString(responseEntity);
       JsonNode immPortSubmissionResponseBody = MAPPER.readTree(responseBody);
 
-      System.err.println("XXX " + immPortSubmissionResponseBody);
+      System.err.println("ImmPort response JSON " + immPortSubmissionResponseBody);
 
       if (immPortSubmissionResponseBody.has("error"))
         return new SubmissionStatus(submissionID, SubmissionState.ERROR,
@@ -179,9 +179,13 @@ public class ImmPortUtil
     String immPortSubmisionStatus)
   {
     if ("Pending".equals(immPortSubmisionStatus))
-      return Optional.of(SubmissionState.IN_PROGRESS);
+      return Optional.of(SubmissionState.SUBMITTED);
+    else if ("Started".equals(immPortSubmisionStatus))
+      return Optional.of(SubmissionState.STARTED);
     else if ("Completed".equals(immPortSubmisionStatus))
       return Optional.of(SubmissionState.COMPLETED);
+    else if ("Rejected".equals(immPortSubmisionStatus))
+      return Optional.of(SubmissionState.REJECTED);
     else if ("Error".equals(immPortSubmisionStatus))
       return Optional.of(SubmissionState.ERROR);
     else {
