@@ -73,7 +73,7 @@ public class ImmPortUtil
     }
 
     try {
-      String immPortStatusURL = IMMPORT_STATUS_URL_BASE + submissionID + "/status";
+      String immPortStatusURL = IMMPORT_STATUS_URL_BASE + submissionID + "/report";
       HttpGet get = new HttpGet(immPortStatusURL);
       get.setHeader(HTTP_HEADER_AUTHORIZATION, HTTP_AUTH_HEADER_BEARER_PREFIX + token.get());
       get.setHeader(HTTP_HEADER_ACCEPT, CONTENT_TYPE_APPLICATION_JSON);
