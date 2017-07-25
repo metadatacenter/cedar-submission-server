@@ -2,6 +2,7 @@ package org.metadatacenter.submission.upload.flow;
 
 import java.io.InputStream;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Object that represents a chunk of data uploaded to the server using the Flow.js library
@@ -21,11 +22,12 @@ public class FlowData {
   public String flowRelativePath;
   public long flowTotalChunks;
   public InputStream flowFileInputStream;
+  public Map<String, String> additionalParameters; // Stores additional (submission-specific) parameters
 
-
-  public FlowData(String submissionId, long totalFilesCount, List<String> metadataFiles, long flowChunkNumber,
-                  long flowChunkSize, long flowCurrentChunkSize, long flowTotalSize, String flowIdentifier, String
-                      flowFilename, String flowRelativePath, long flowTotalChunks, InputStream flowFileInputStream) {
+  public FlowData(String submissionId, long totalFilesCount, List<String> metadataFiles, long flowChunkNumber, long
+      flowChunkSize, long flowCurrentChunkSize, long flowTotalSize, String flowIdentifier, String flowFilename,
+                  String flowRelativePath, long flowTotalChunks, InputStream flowFileInputStream, Map<String, String>
+                      additionalParameters) {
     this.submissionId = submissionId;
     this.totalFilesCount = totalFilesCount;
     this.metadataFiles = metadataFiles;
@@ -38,6 +40,7 @@ public class FlowData {
     this.flowRelativePath = flowRelativePath;
     this.flowTotalChunks = flowTotalChunks;
     this.flowFileInputStream = flowFileInputStream;
+    this.additionalParameters = additionalParameters;
   }
 
   public String getSubmissionId() {
@@ -134,5 +137,13 @@ public class FlowData {
 
   public void setFlowFileInputStream(InputStream flowFileInputStream) {
     this.flowFileInputStream = flowFileInputStream;
+  }
+
+  public Map<String, String> getAdditionalParameters() {
+    return additionalParameters;
+  }
+
+  public void setAdditionalParameters(Map<String, String> additionalParameters) {
+    this.additionalParameters = additionalParameters;
   }
 }
