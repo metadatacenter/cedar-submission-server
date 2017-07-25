@@ -7,6 +7,7 @@ import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
+import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -20,6 +21,7 @@ import org.apache.http.util.EntityUtils;
 import org.metadatacenter.cedar.util.dw.CedarMicroserviceResource;
 import org.metadatacenter.config.CedarConfig;
 import org.metadatacenter.exception.CedarException;
+import org.metadatacenter.model.trimmer.JsonLdDocument;
 import org.metadatacenter.rest.context.CedarRequestContext;
 import org.metadatacenter.rest.context.CedarRequestContextFactory;
 import org.metadatacenter.submission.biosample.CEDARSubmitResponse;
@@ -133,9 +135,8 @@ import static org.metadatacenter.util.json.JsonMapper.MAPPER;
 
         String workspaceID = null;
         if (data.getAdditionalParameters().containsKey("workspaceId")) {
-         workspaceID = data.getAdditionalParameters().get("workspaceId");
-        }
-        else {
+          workspaceID = data.getAdditionalParameters().get("workspaceId");
+        } else {
           logger.warn("No workspaceId parameter specified");
           return Response.status(Response.Status.BAD_REQUEST).build();  // TODO CEDAR error response
         }
@@ -260,8 +261,13 @@ import static org.metadatacenter.util.json.JsonMapper.MAPPER;
       String fieldName = fileItem.getFieldName();
       if (!fileItem.isFormField()) {
         if ("instance".equals(fieldName)) {
-          InputStream is = fileItem.getInputStream();
-          builder.addBinaryBody("file", is, ContentType.DEFAULT_BINARY, fileName);
+          InputStream submissionMetadataJSONLDFileInputStream = fileItem.getInputStream();
+//          //TODO Need more checking here to ensure it is a JSON file
+//          JsonNode jsonLDNode = MAPPER.readTree(submissionMetadataJSONLDFileInputStream);
+//          JsonNode jsonNode = new JsonLdDocument(jsonLDNode).asJson(); // Translate from JSON-LD to JSON
+//          InputStream submissionMetadataJSONFileInputStream = IOUtils.toInputStream(jsonNode.toString());
+          builder
+            .addBinaryBody("file", submissionMetadataJSONLDFileInputStream, ContentType.APPLICATION_JSON, fileName);
         } else { // The user-supplied files
           InputStream is = fileItem.getInputStream();
           builder.addBinaryBody("file", is, ContentType.DEFAULT_BINARY, fileName);
@@ -274,38 +280,64 @@ import static org.metadatacenter.util.json.JsonMapper.MAPPER;
   private static HttpEntity getMultipartContentFromSubmission(String submissionID, String workspaceID)
     throws IOException, JAXBException, DatatypeConfigurationException
   {
-    List<String> submissionFilePaths = getSubmissionFilePaths(submissionID);
+    List<String> submissionMetadataFilePaths = getSubmissionMetadataFilePaths(submissionID);
+    List<String> submissionDataFilePaths = getSubmissionDataFilePaths(submissionID);
     MultipartEntityBuilder builder = MultipartEntityBuilder.create();
 
     builder.addTextBody(ImmPortUtil.IMMPORT_WORKSPACE_ID_FIELD, workspaceID);
     builder.addTextBody(ImmPortUtil.IMMPORT_USERNAME_FIELD, ImmPortUtil.IMMPORT_CEDAR_USER_NAME);
 
-    // TODO What are the 'file' fields called here? How do we distinguish
-    // TODO We need to translate metadata files from JSON-LD to JSON
-    for (String submissionFilePath : submissionFilePaths) {
-      File submissionFile = new File(submissionFilePath);
-      InputStream submissionFileInputStream = new FileInputStream(submissionFile);
-      builder.addBinaryBody("file", submissionFileInputStream, ContentType.DEFAULT_BINARY, submissionFile.getName());
+    for (String submissionMetadataFilePath : submissionMetadataFilePaths) {
+      File submissionMetadataFile = new File(submissionMetadataFilePath);
+      InputStream submissionMetadataJSONLDFileInputStream = new FileInputStream(submissionMetadataFile);
+      // TODO Need more checking here to ensure it is a JSON file
+      JsonNode jsonLDNode = MAPPER.readTree(submissionMetadataJSONLDFileInputStream);
+      JsonNode jsonNode = new JsonLdDocument(jsonLDNode).asJson(); // Translate from JSON-LD to JSON
+      InputStream submissionMetadataJSONFileInputStream = IOUtils.toInputStream(jsonNode.toString());
+      builder.addBinaryBody("file", submissionMetadataJSONLDFileInputStream, ContentType.APPLICATION_JSON,
+        submissionMetadataFile.getName());
     }
+
+    for (String submissionDataFilePath : submissionDataFilePaths) {
+      File submissionDataFile = new File(submissionDataFilePath);
+      InputStream submissionFileInputStream = new FileInputStream(submissionDataFile);
+      builder
+        .addBinaryBody("file", submissionFileInputStream, ContentType.DEFAULT_BINARY, submissionDataFile.getName());
+    }
+
     return builder.build();
   }
 
-  private static List<String> getSubmissionFilePaths(String submissionId)
+  private static List<String> getSubmissionMetadataFilePaths(String submissionId)
     throws IOException, JAXBException, DatatypeConfigurationException
   {
-    List<String> submissionFilePaths = new ArrayList<>();
+    List<String> submissionMetadataFilePaths = new ArrayList<>();
 
     Map<String, FileUploadStatus> submissionUploadStatus = SubmissionUploadManager.getInstance()
       .getSubmissionsUploadStatus(submissionId).getFilesUploadStatus();
 
     for (Map.Entry<String, FileUploadStatus> entry : submissionUploadStatus.entrySet()) {
       FileUploadStatus fileUploadStatus = entry.getValue();
-      if (fileUploadStatus.isMetadataFile()) {
-        // TODO so somethong
-      }
-      submissionFilePaths.add(fileUploadStatus.getFileLocalPath());
+      if (fileUploadStatus.isMetadataFile())
+        submissionMetadataFilePaths.add(fileUploadStatus.getFileLocalPath());
     }
-    return submissionFilePaths;
+    return submissionMetadataFilePaths;
+  }
+
+  private static List<String> getSubmissionDataFilePaths(String submissionId)
+    throws IOException, JAXBException, DatatypeConfigurationException
+  {
+    List<String> submissionDataFilePaths = new ArrayList<>();
+
+    Map<String, FileUploadStatus> submissionUploadStatus = SubmissionUploadManager.getInstance()
+      .getSubmissionsUploadStatus(submissionId).getFilesUploadStatus();
+
+    for (Map.Entry<String, FileUploadStatus> entry : submissionUploadStatus.entrySet()) {
+      FileUploadStatus fileUploadStatus = entry.getValue();
+      if (!fileUploadStatus.isMetadataFile())
+        submissionDataFilePaths.add(fileUploadStatus.getFileLocalPath());
+    }
+    return submissionDataFilePaths;
   }
 
   private CEDARWorkspaceResponse immPortWorkspacesResponseBody2CEDARWorkspaceResponse(HttpEntity responseEntity)
