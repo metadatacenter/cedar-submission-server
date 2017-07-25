@@ -135,9 +135,8 @@ import static org.metadatacenter.util.json.JsonMapper.MAPPER;
 
         String workspaceID = null;
         if (data.getAdditionalParameters().containsKey("workspaceId")) {
-         workspaceID = data.getAdditionalParameters().get("workspaceId");
-        }
-        else {
+          workspaceID = data.getAdditionalParameters().get("workspaceId");
+        } else {
           logger.warn("No workspaceId parameter specified");
           return Response.status(Response.Status.BAD_REQUEST).build();  // TODO CEDAR error response
         }
@@ -263,12 +262,12 @@ import static org.metadatacenter.util.json.JsonMapper.MAPPER;
       if (!fileItem.isFormField()) {
         if ("instance".equals(fieldName)) {
           InputStream submissionMetadataJSONLDFileInputStream = fileItem.getInputStream();
-          // TODO Need more checking here to ensure it is a JSON file
-          JsonNode jsonLDNode = MAPPER.readTree(submissionMetadataJSONLDFileInputStream);
-          JsonNode jsonNode = new JsonLdDocument(jsonLDNode).asJson(); // Translate from JSON-LD to JSON
-          InputStream submissionMetadataJSONFileInputStream = IOUtils.toInputStream(jsonNode.toString());
+//          //TODO Need more checking here to ensure it is a JSON file
+//          JsonNode jsonLDNode = MAPPER.readTree(submissionMetadataJSONLDFileInputStream);
+//          JsonNode jsonNode = new JsonLdDocument(jsonLDNode).asJson(); // Translate from JSON-LD to JSON
+//          InputStream submissionMetadataJSONFileInputStream = IOUtils.toInputStream(jsonNode.toString());
           builder
-            .addBinaryBody("instance", submissionMetadataJSONFileInputStream, ContentType.APPLICATION_JSON, fileName);
+            .addBinaryBody("file", submissionMetadataJSONLDFileInputStream, ContentType.APPLICATION_JSON, fileName);
         } else { // The user-supplied files
           InputStream is = fileItem.getInputStream();
           builder.addBinaryBody("file", is, ContentType.DEFAULT_BINARY, fileName);
@@ -295,7 +294,7 @@ import static org.metadatacenter.util.json.JsonMapper.MAPPER;
       JsonNode jsonLDNode = MAPPER.readTree(submissionMetadataJSONLDFileInputStream);
       JsonNode jsonNode = new JsonLdDocument(jsonLDNode).asJson(); // Translate from JSON-LD to JSON
       InputStream submissionMetadataJSONFileInputStream = IOUtils.toInputStream(jsonNode.toString());
-      builder.addBinaryBody("instance", submissionMetadataJSONFileInputStream, ContentType.APPLICATION_JSON,
+      builder.addBinaryBody("file", submissionMetadataJSONLDFileInputStream, ContentType.APPLICATION_JSON,
         submissionMetadataFile.getName());
     }
 
