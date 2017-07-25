@@ -108,15 +108,12 @@ public class FlowUploadUtil {
 
   }
 
-  public static String saveToLocalFile(FlowData data, String userId, int contentLength) throws IOException {
-    // If the file does not exist, create it
-    String submissionLocalFolderPath =
-        FlowUploadUtil.getSubmissionLocalFolderPath(Constants.NCBI_AIRR_LOCAL_FOLDER_NAME, userId, data.getSubmissionId());
-    File submissionLocalFolder = new File(submissionLocalFolderPath);
+  public static String saveToLocalFile(FlowData data, String userId, int contentLength, String folderPath) throws IOException {
+    File submissionLocalFolder = new File(folderPath);
     if (!submissionLocalFolder.exists()) {
       submissionLocalFolder.mkdirs();
     }
-    String fileLocalFolderPath = FlowUploadUtil.getFileLocalFolderPath(submissionLocalFolderPath, data.flowFilename);
+    String fileLocalFolderPath = FlowUploadUtil.getFileLocalFolderPath(folderPath, data.flowFilename);
     File file = new File(fileLocalFolderPath);
     if (!file.exists()) {
       file.createNewFile();

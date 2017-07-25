@@ -141,9 +141,10 @@ import static org.metadatacenter.util.json.JsonMapper.MAPPER;
           logger.warn("No workspaceId parameter specified");
           return Response.status(Response.Status.BAD_REQUEST).build();  // TODO CEDAR error response
         }
-
         String submissionLocalFolderPath = FlowUploadUtil
-          .getSubmissionLocalFolderPath(ImmPortUtil.IMMPORT_LOCAL_FOLDER_NAME, userId, data.getSubmissionId());
+            .getSubmissionLocalFolderPath(ImmPortUtil.IMMPORT_LOCAL_FOLDER_NAME, userId, data.getSubmissionId());
+        String filePath = FlowUploadUtil.saveToLocalFile(data, userId, request.getContentLength(), submissionLocalFolderPath);
+        logger.info("File created. Path: " + filePath);
         SubmissionUploadManager.getInstance().updateStatus(data, submissionLocalFolderPath);
 
         if (SubmissionUploadManager.getInstance().isSubmissionUploadComplete(data.getSubmissionId())) {

@@ -123,11 +123,11 @@ public class NcbiAirrSubmissionServerResource extends CedarMicroserviceResource 
           return Response.status(Response.Status.BAD_REQUEST).build();
         }
         // Every request contains a file chunk that we will save in the appropriate position of a local file
-        String filePath = FlowUploadUtil.saveToLocalFile(data,  userId, request.getContentLength());
-        logger.info("File created. Path: " + filePath);
-        // Update the submission upload status
         String submissionLocalFolderPath =
             FlowUploadUtil.getSubmissionLocalFolderPath(Constants.NCBI_AIRR_LOCAL_FOLDER_NAME, userId, data.getSubmissionId());
+        String filePath = FlowUploadUtil.saveToLocalFile(data,  userId, request.getContentLength(), submissionLocalFolderPath);
+        logger.info("File created. Path: " + filePath);
+        // Update the submission upload status
         SubmissionUploadManager.getInstance().updateStatus(data, submissionLocalFolderPath);
 
         // If the submission upload is complete, trigger the FTP submission to the NCBI servers

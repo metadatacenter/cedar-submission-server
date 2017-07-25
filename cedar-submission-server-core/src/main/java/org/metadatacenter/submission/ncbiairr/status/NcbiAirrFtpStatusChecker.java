@@ -3,75 +3,103 @@ package org.metadatacenter.submission.ncbiairr.status;
 import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPReply;
+import org.metadatacenter.config.FTPConfig;
+import org.metadatacenter.submission.status.SubmissionState;
+import org.metadatacenter.submission.status.SubmissionStatus;
+import org.metadatacenter.submission.status.SubmissionStatusDescriptor;
+import org.metadatacenter.submission.status.SubmissionStatusManager;
 import org.metadatacenter.submission.upload.ftp.UploaderCreationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.annotation.Nonnull;
 import java.io.IOException;
-import java.util.Optional;
-
-import static com.google.common.base.Preconditions.checkNotNull;
 
 public class NcbiAirrFtpStatusChecker {
 
-    final static Logger logger = LoggerFactory.getLogger(NcbiAirrFtpStatusChecker.class);
+  final static Logger logger = LoggerFactory.getLogger(NcbiAirrFtpStatusChecker.class);
 
-    private final FTPClient ftpClient;
-    private final String userDirectory;
+  public static SubmissionStatus getNcbiAirrSubmissionStatus(String submissionID) throws IOException,
+      UploaderCreationException {
 
-//    public FtpStatusChecker(@Nonnull FTPClient ftpClient) {
-//      this(ftpClient, "/");
+    SubmissionStatusDescriptor submissionStatusDescriptor =
+        SubmissionStatusManager.getInstance().getCurrentSubmissions().get(submissionID);
+    NcbiAirrSubmissionStatusTask submissionStatusTask =
+        (NcbiAirrSubmissionStatusTask) submissionStatusDescriptor.getSubmissionStatusTask();
+
+    FTPConfig ftpConfig = submissionStatusTask.getFtpConfig();
+    String submissionPath = ftpConfig.getSubmissionDirectory() + "/" + submissionStatusTask.getSubmissionFolder();
+
+    logger.info("Checking NCBI submission status (submissionPath: " + submissionPath + ")");
+
+    // Open the FTP connection
+    FTPClient ftpClient = connect(ftpConfig.getHost(), ftpConfig.getUser(),
+        ftpConfig.getPassword());
+
+    // TODO: remove this temp path
+
+
+    // Go to the submission folder
+    if (!ftpClient.changeWorkingDirectory(submissionPath))
+
+    {
+      throw new IOException("Couldn't go to the submission folder (path: " + submissionPath + ")");
+    }
+
+    // Get the submission status
+    // ...
+
+    // Close the FTP connection
+    ftpClient.disconnect();
+
+//    FTPFile[] files = ftpClient.listFiles();
+//    System.out.println("----------------------------------------");
+//    for (FTPFile file : files) {
+//      String details = file.getName();
+//      if (file.isDirectory()) {
+//        details = "[" + details + "]";
+//      }
+//      details += "\t\t" + file.getSize();
+//      System.out.println(details);
 //    }
+//    System.out.println("----------------------------------------");
 
-    private NcbiAirrFtpStatusChecker(@Nonnull FTPClient ftpClient, @Nonnull String userDirectory) {
-      this.ftpClient = checkNotNull(ftpClient);
-      this.userDirectory = checkNotNull(userDirectory);
-    }
+    return new SubmissionStatus(submissionID, SubmissionState.COMPLETED, "Simulated submission completed");
+  }
 
-    private void changeToUserDirectory() throws IOException {
-      ftpClient.changeToParentDirectory();
-      ftpClient.changeWorkingDirectory(userDirectory);
-    }
-
-    public static NcbiAirrFtpStatusChecker getStatusChecker(@Nonnull String hostname, @Nonnull String username, @Nonnull String password, @Nonnull Optional<String> userDirectory)
-        throws UploaderCreationException {
-
-      FTPClient ftpClient = new FTPClient();
-      try {
-        ftpClient.connect(hostname);
-        int replyCode = ftpClient.getReplyCode();
-        if (!FTPReply.isPositiveCompletion(replyCode)) {
-          showServerReply(ftpClient);
-          throw new UploaderCreationException("Failed to connect to the FTP server: " + hostname);
-        }
-        boolean success = ftpClient.login(username, password);
-        if (!success) {
-          ftpClient.disconnect();
-          showServerReply(ftpClient);
-          throw new UploaderCreationException("Invalid username and password to login to the FTP server: " + hostname);
-        }
-        ftpClient.setFileType(FTP.BINARY_FILE_TYPE);
-        ftpClient.enterLocalPassiveMode();
-        ftpClient.setControlKeepAliveTimeout(300); // set timeout to 5 minutes
-        return new NcbiAirrFtpStatusChecker(ftpClient, userDirectory.orElse("/"));
-      } catch (IOException ex) {
-        logger.error(ex.getMessage());
-        throw new UploaderCreationException("Error while creating the FTP client", ex);
+  public static FTPClient connect(String host, String user, String password) throws UploaderCreationException {
+    FTPClient ftpClient = new FTPClient();
+    try {
+      ftpClient.connect(host);
+      int replyCode = ftpClient.getReplyCode();
+      if (!FTPReply.isPositiveCompletion(replyCode)) {
+        showServerReply(ftpClient);
+        throw new UploaderCreationException("Failed to connect to the FTP server: " + host);
       }
-    }
-
-    private static void showServerReply(FTPClient ftpClient) {
-      String[] replies = ftpClient.getReplyStrings();
-      if (replies != null && replies.length > 0) {
-        for (String reply : replies) {
-          logger.error(reply);
-        }
+      boolean success = ftpClient.login(user, password);
+      if (!success) {
+        ftpClient.disconnect();
+        showServerReply(ftpClient);
+        throw new UploaderCreationException("Invalid username and password to login to the FTP server: " + host);
       }
-    }
+      ftpClient.setFileType(FTP.BINARY_FILE_TYPE);
+      ftpClient.enterLocalPassiveMode();
+      ftpClient.setControlKeepAliveTimeout(300); // set timeout to 5 minutes
 
-    public void disconnect() throws IOException {
-      ftpClient.disconnect();
+      return ftpClient;
+    } catch (IOException ex) {
+      logger.error(ex.getMessage());
+      throw new UploaderCreationException("Error while creating the FTP client", ex);
     }
   }
+
+
+  private static void showServerReply(FTPClient ftpClient) {
+    String[] replies = ftpClient.getReplyStrings();
+    if (replies != null && replies.length > 0) {
+      for (String reply : replies) {
+        logger.error(reply);
+      }
+    }
+  }
+}
 

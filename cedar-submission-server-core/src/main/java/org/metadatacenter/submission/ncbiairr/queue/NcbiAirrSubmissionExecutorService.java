@@ -39,6 +39,13 @@ public class NcbiAirrSubmissionExecutorService {
       }
 
       logger.info("Uploading to NCBI...");
+
+      // Track the submission status
+      NcbiAirrSubmissionStatusTask submissionStatusTask = new NcbiAirrSubmissionStatusTask(submission.getId(),
+          submission.getCedarUserId(), null, cedarConfig.getSubmissionConfig().getNcbi().getSra().getFtp(),
+          submission.getSubmissionFolder());
+      SubmissionStatusManager.getInstance().addSubmission(submissionStatusTask);
+
       if (Constants.NCBI_AIRR_SUBMIT) { // real submission
         NcbiAirrFtpUploadService.uploadToNcbi(submission.getSubmissionFolder(),
             filesToSubmit, cedarConfig.getSubmissionConfig().getNcbi().getSra().getFtp(), submission.getUploadSubmitReadyFile());
@@ -46,11 +53,6 @@ public class NcbiAirrSubmissionExecutorService {
       else { // simulated submission
         Thread.sleep(Constants.NCBI_AIRR_SIMULATION_MODE_TIMEOUT);
       }
-
-      // Track the submission status
-      NcbiAirrSubmissionStatusTask submissionStatusTask = new NcbiAirrSubmissionStatusTask(submission.getId(),
-          submission.getCedarUserId(), null, cedarConfig.getSubmissionConfig().getNcbi().getSra().getFtp());
-      SubmissionStatusManager.getInstance().addSubmission(submissionStatusTask);
 
       logger.info("Submission to the NCBI completed! Submission id: " + submission.getId() + "; No. files: " +
           submission.getLocalFilePaths().size());
