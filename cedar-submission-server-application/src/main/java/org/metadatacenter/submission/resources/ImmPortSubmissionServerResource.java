@@ -51,6 +51,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -262,12 +263,12 @@ import static org.metadatacenter.util.json.JsonMapper.MAPPER;
       if (!fileItem.isFormField()) {
         if ("instance".equals(fieldName)) {
           InputStream submissionMetadataJSONLDFileInputStream = fileItem.getInputStream();
-//          //TODO Need more checking here to ensure it is a JSON file
-//          JsonNode jsonLDNode = MAPPER.readTree(submissionMetadataJSONLDFileInputStream);
-//          JsonNode jsonNode = new JsonLdDocument(jsonLDNode).asJson(); // Translate from JSON-LD to JSON
-//          InputStream submissionMetadataJSONFileInputStream = IOUtils.toInputStream(jsonNode.toString());
-          builder
-            .addBinaryBody("file", submissionMetadataJSONLDFileInputStream, ContentType.APPLICATION_JSON, fileName);
+          //TODO Need more checking here to ensure it is a JSON file
+          JsonNode jsonLDNode = MAPPER.readTree(submissionMetadataJSONLDFileInputStream);
+          JsonNode jsonNode = new JsonLdDocument(jsonLDNode).asJson(); // Translate from JSON-LD to JSON
+          InputStream submissionMetadataJSONFileInputStream = IOUtils
+            .toInputStream(jsonNode.toString(), StandardCharsets.UTF_8);
+          builder.addBinaryBody("file", submissionMetadataJSONLDFileInputStream, ContentType.APPLICATION_JSON, fileName);
         } else { // The user-supplied files
           InputStream is = fileItem.getInputStream();
           builder.addBinaryBody("file", is, ContentType.DEFAULT_BINARY, fileName);
@@ -293,8 +294,9 @@ import static org.metadatacenter.util.json.JsonMapper.MAPPER;
       // TODO Need more checking here to ensure it is a JSON file
       JsonNode jsonLDNode = MAPPER.readTree(submissionMetadataJSONLDFileInputStream);
       JsonNode jsonNode = new JsonLdDocument(jsonLDNode).asJson(); // Translate from JSON-LD to JSON
-      InputStream submissionMetadataJSONFileInputStream = IOUtils.toInputStream(jsonNode.toString());
-      builder.addBinaryBody("file", submissionMetadataJSONLDFileInputStream, ContentType.APPLICATION_JSON,
+      InputStream submissionMetadataJSONFileInputStream = IOUtils
+        .toInputStream(jsonNode.toString(), StandardCharsets.UTF_8);
+      builder.addBinaryBody("file", submissionMetadataJSONFileInputStream, ContentType.APPLICATION_JSON,
         submissionMetadataFile.getName());
     }
 
