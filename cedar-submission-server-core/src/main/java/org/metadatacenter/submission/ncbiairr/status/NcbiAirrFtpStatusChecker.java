@@ -1,4 +1,4 @@
-package org.metadatacenter.submission.status.ftp;
+package org.metadatacenter.submission.ncbiairr.status;
 
 import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
@@ -13,9 +13,9 @@ import java.util.Optional;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-public class FtpStatusChecker {
+public class NcbiAirrFtpStatusChecker {
 
-    final static Logger logger = LoggerFactory.getLogger(org.metadatacenter.submission.upload.ftp.FtpUploader.class);
+    final static Logger logger = LoggerFactory.getLogger(NcbiAirrFtpStatusChecker.class);
 
     private final FTPClient ftpClient;
     private final String userDirectory;
@@ -24,7 +24,7 @@ public class FtpStatusChecker {
 //      this(ftpClient, "/");
 //    }
 
-    private FtpStatusChecker(@Nonnull FTPClient ftpClient, @Nonnull String userDirectory) {
+    private NcbiAirrFtpStatusChecker(@Nonnull FTPClient ftpClient, @Nonnull String userDirectory) {
       this.ftpClient = checkNotNull(ftpClient);
       this.userDirectory = checkNotNull(userDirectory);
     }
@@ -34,7 +34,7 @@ public class FtpStatusChecker {
       ftpClient.changeWorkingDirectory(userDirectory);
     }
 
-    public static FtpStatusChecker getStatusChecker(@Nonnull String hostname, @Nonnull String username, @Nonnull String password, @Nonnull Optional<String> userDirectory)
+    public static NcbiAirrFtpStatusChecker getStatusChecker(@Nonnull String hostname, @Nonnull String username, @Nonnull String password, @Nonnull Optional<String> userDirectory)
         throws UploaderCreationException {
 
       FTPClient ftpClient = new FTPClient();
@@ -54,7 +54,7 @@ public class FtpStatusChecker {
         ftpClient.setFileType(FTP.BINARY_FILE_TYPE);
         ftpClient.enterLocalPassiveMode();
         ftpClient.setControlKeepAliveTimeout(300); // set timeout to 5 minutes
-        return new FtpStatusChecker(ftpClient, userDirectory.orElse("/"));
+        return new NcbiAirrFtpStatusChecker(ftpClient, userDirectory.orElse("/"));
       } catch (IOException ex) {
         logger.error(ex.getMessage());
         throw new UploaderCreationException("Error while creating the FTP client", ex);

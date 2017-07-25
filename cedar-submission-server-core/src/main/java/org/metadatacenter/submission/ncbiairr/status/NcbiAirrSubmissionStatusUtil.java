@@ -5,7 +5,6 @@ import org.metadatacenter.submission.status.SubmissionState;
 import org.metadatacenter.submission.status.SubmissionStatus;
 import org.metadatacenter.submission.status.SubmissionStatusDescriptor;
 import org.metadatacenter.submission.status.SubmissionStatusManager;
-import org.metadatacenter.submission.status.ftp.FtpStatusChecker;
 import org.metadatacenter.submission.upload.ftp.UploaderCreationException;
 
 import java.util.Optional;
@@ -23,11 +22,13 @@ public class NcbiAirrSubmissionStatusUtil {
     FTPConfig ftpConfig = submissionStatusTask.getFtpConfig();
 
     try {
-      FtpStatusChecker ftpStatusChecker = FtpStatusChecker.getStatusChecker(ftpConfig.getHost(), ftpConfig.getUser(),
+      NcbiAirrFtpStatusChecker ftpStatusChecker = NcbiAirrFtpStatusChecker.getStatusChecker(ftpConfig.getHost(), ftpConfig.getUser(),
           ftpConfig.getPassword(), Optional.of(ftpConfig.getSubmissionDirectory()));
     } catch (UploaderCreationException e) {
       e.printStackTrace();
     }
+
+
 
 //    CloseableHttpResponse response = null;
 //    CloseableHttpClient client = null;
