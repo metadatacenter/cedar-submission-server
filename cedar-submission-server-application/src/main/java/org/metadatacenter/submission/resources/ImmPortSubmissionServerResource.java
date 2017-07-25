@@ -117,12 +117,6 @@ import static org.metadatacenter.util.json.JsonMapper.MAPPER;
     CedarRequestContext c = CedarRequestContextFactory.fromRequest(request);
     c.must(c.user()).be(LoggedIn);
 
-    String workspaceID = request.getParameter("workspaceId"); // TODO Constant for parameter
-    if (workspaceID == null || workspaceID.isEmpty()) {
-      logger.warn("No workspaceId parameter specified");
-      return Response.status(Response.Status.BAD_REQUEST).build();  // TODO CEDAR error response
-    }
-
     Optional<String> immPortBearerToken = ImmPortUtil.getImmPortBearerToken();
     if (!immPortBearerToken.isPresent()) {
       logger.warn("No ImmPort token found");
@@ -136,6 +130,16 @@ import static org.metadatacenter.util.json.JsonMapper.MAPPER;
       if (ServletFileUpload.isMultipartContent(request)) {
         String userId = FlowUploadUtil.getLastFragmentOfUrl(c.getCedarUser().getId());
         FlowData data = FlowUploadUtil.getFlowData(request);
+
+        String workspaceID = null;
+        if (data.getAdditionalParameters().containsKey("workspaceId")) {
+         workspaceID = data.getAdditionalParameters().get("workspaceId");
+        }
+        else {
+          logger.warn("No workspaceId parameter specified");
+          return Response.status(Response.Status.BAD_REQUEST).build();  // TODO CEDAR error response
+        }
+
         String submissionLocalFolderPath = FlowUploadUtil
           .getSubmissionLocalFolderPath(ImmPortUtil.IMMPORT_LOCAL_FOLDER_NAME, userId, data.getSubmissionId());
         SubmissionUploadManager.getInstance().updateStatus(data, submissionLocalFolderPath);

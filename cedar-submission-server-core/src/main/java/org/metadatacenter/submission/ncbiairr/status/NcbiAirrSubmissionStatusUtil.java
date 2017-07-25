@@ -12,7 +12,7 @@ import java.util.Optional;
 
 public class NcbiAirrSubmissionStatusUtil {
 
-  static public SubmissionStatus getNcbiAirrSubmissionStatus(String submissionID) throws UploaderCreationException {
+  static public SubmissionStatus getNcbiAirrSubmissionStatus(String submissionID) {
 
     SubmissionStatusDescriptor submissionStatusDescriptor =
         SubmissionStatusManager.getInstance().getCurrentSubmissions().get(submissionID);
@@ -22,11 +22,12 @@ public class NcbiAirrSubmissionStatusUtil {
 
     FTPConfig ftpConfig = submissionStatusTask.getFtpConfig();
 
-    FtpStatusChecker ftpStatusChecker = FtpStatusChecker.getStatusChecker(ftpConfig.getHost(), ftpConfig.getUser(),
-        ftpConfig.getPassword(), Optional.of(ftpConfig.getSubmissionDirectory()));
-
-    
-
+    try {
+      FtpStatusChecker ftpStatusChecker = FtpStatusChecker.getStatusChecker(ftpConfig.getHost(), ftpConfig.getUser(),
+          ftpConfig.getPassword(), Optional.of(ftpConfig.getSubmissionDirectory()));
+    } catch (UploaderCreationException e) {
+      e.printStackTrace();
+    }
 
 //    CloseableHttpResponse response = null;
 //    CloseableHttpClient client = null;

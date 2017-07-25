@@ -15,9 +15,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.RandomAccessFile;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 public class FlowUploadUtil {
 
@@ -40,6 +38,7 @@ public class FlowUploadUtil {
     String flowRelativePath = null;
     long flowTotalChunks = -1;
     InputStream flowFileInputStream = null;
+    Map<String, String> additionalParameters = new HashMap<>();
 
     for (FileItem item : fileItems) {
       if (item.isFormField()) {
@@ -64,6 +63,10 @@ public class FlowUploadUtil {
         } else if (item.getFieldName().equals("flowRelativePath")) {
           flowRelativePath = item.getString();
         } else if (item.getFieldName().equals("flowTotalChunks")) {
+          flowTotalChunks = Long.parseLong(item.getString());
+        // Additional parameters
+        } else {
+          additionalParameters.put(item.getFieldName(), item.getString());
           flowTotalChunks = Long.parseLong(item.getString());
         }
       } else { // It is a file
@@ -101,7 +104,7 @@ public class FlowUploadUtil {
     }
 
     return new FlowData(submissionId, numberOfFiles, metadataFiles, flowChunkNumber, flowChunkSize, flowCurrentChunkSize,
-        flowTotalSize, flowIdentifier, flowFilename, flowRelativePath, flowTotalChunks, flowFileInputStream);
+        flowTotalSize, flowIdentifier, flowFilename, flowRelativePath, flowTotalChunks, flowFileInputStream, additionalParameters);
 
   }
 
