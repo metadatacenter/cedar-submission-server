@@ -67,7 +67,6 @@ public class FlowUploadUtil {
         // Additional parameters
         } else {
           additionalParameters.put(item.getFieldName(), item.getString());
-          flowTotalChunks = Long.parseLong(item.getString());
         }
       } else { // It is a file
         try {

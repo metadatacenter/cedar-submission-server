@@ -2,6 +2,7 @@ package org.metadatacenter.submission.ncbiairr.status;
 
 import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
+import org.apache.commons.net.ftp.FTPFile;
 import org.apache.commons.net.ftp.FTPReply;
 import org.metadatacenter.config.FTPConfig;
 import org.metadatacenter.submission.status.SubmissionState;
@@ -39,11 +40,21 @@ public class NcbiAirrFtpStatusChecker {
 
 
     // Go to the submission folder
-    if (!ftpClient.changeWorkingDirectory(submissionPath))
-
-    {
+    if (!ftpClient.changeWorkingDirectory(submissionPath)) {
       throw new IOException("Couldn't go to the submission folder (path: " + submissionPath + ")");
     }
+
+    FTPFile[] files = ftpClient.listFiles();
+    System.out.println("----------------------------------------");
+    for (FTPFile file : files) {
+      String details = file.getName();
+      if (file.isDirectory()) {
+        details = "[" + details + "]";
+      }
+      details += "\t\t" + file.getSize();
+      System.out.println(details);
+    }
+    System.out.println("----------------------------------------");
 
     // Get the submission status
     // ...
@@ -51,17 +62,7 @@ public class NcbiAirrFtpStatusChecker {
     // Close the FTP connection
     ftpClient.disconnect();
 
-//    FTPFile[] files = ftpClient.listFiles();
-//    System.out.println("----------------------------------------");
-//    for (FTPFile file : files) {
-//      String details = file.getName();
-//      if (file.isDirectory()) {
-//        details = "[" + details + "]";
-//      }
-//      details += "\t\t" + file.getSize();
-//      System.out.println(details);
-//    }
-//    System.out.println("----------------------------------------");
+
 
     return new SubmissionStatus(submissionID, SubmissionState.COMPLETED, "Simulated submission completed");
   }
