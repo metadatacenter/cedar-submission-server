@@ -5601,7 +5601,7 @@
                 "label": "Other"
               }
             ],
-            "multipleChoice": true
+            "multipleChoice": false
           },
           "properties": {
             "@type": {
@@ -5623,7 +5623,7 @@
             },
             "@value": {
               "type": [
-                "array",
+                "string",
                 "null"
               ]
             },
@@ -5746,7 +5746,7 @@
             },
             "@value": {
               "type": [
-                "array",
+                "string",
                 "null"
               ]
             },
