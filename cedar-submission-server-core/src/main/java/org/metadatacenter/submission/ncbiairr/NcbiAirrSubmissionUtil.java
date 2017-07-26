@@ -65,20 +65,15 @@ public class NcbiAirrSubmissionUtil {
       IOException, JAXBException, DatatypeConfigurationException {
     AIRRTemplate2SRAConverter converter = new AIRRTemplate2SRAConverter();
 
-    // TODO: remove the following block when we have the right instance/template
+    AIRRTemplate airrInstance = null;
+    try {
+      airrInstance = JsonMapper.MAPPER.readValue(airrInstanceFile, AIRRTemplate.class);
+    } catch (JsonMappingException e) {
+      throw new IOException("The instance uploaded is not compatible with the AIRR template", e);
+    }
+    String submissionXml = converter.generateSRASubmissionXMLFromAIRRTemplateInstance(airrInstance);
     File submissionXmlFile = new File(submissionLocalFolderPath + "/" + Constants.SUBMISSION_XML_FILE_NAME);
-    FileUtils.writeStringToFile(submissionXmlFile, "this is just an example");
-
-    // TODO: uncomment the following block when we have the right instance/template
-//    AIRRTemplate airrInstance = null;
-//    try {
-//      airrInstance = JsonMapper.MAPPER.readValue(airrInstanceFile, AIRRTemplate.class);
-//    } catch (JsonMappingException e) {
-//      throw new IOException("The instance uploaded is not compatible with the AIRR template", e);
-//    }
-//    String submissionXml = converter.generateSRASubmissionXMLFromAIRRTemplateInstance(airrInstance);
-//    File submissionXmlFile = new File(submissionLocalFolderPath + "/" + Constants.SUBMISSION_XML_FILE_NAME);
-//    FileUtils.writeStringToFile(submissionXmlFile, submissionXml);
+    FileUtils.writeStringToFile(submissionXmlFile, submissionXml);
     return submissionXmlFile;
   }
 
