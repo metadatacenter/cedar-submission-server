@@ -7,10 +7,11 @@ public class Constants
   public static boolean NCBI_AIRR_SUBMIT = false; // if false, the FTP submission is ignored
   public static boolean NCBI_AIRR_UPLOAD_SUBMIT_READY_FILE = false;
 
-  /* Constants */
+  /* NCBI-AIRR */
   public static String NCBI_AIRR_LOCAL_FOLDER_NAME = "ncbi-airr-upload";
   public static int NCBI_AIRR_SIMULATION_MODE_TIMEOUT = 30000;
   public static String SUBMISSION_XML_FILE_NAME = "submission.xml";
+  public static String NCBI_AIRR_REPORT_REGEX = "(report)\\.([0-9]+)\\.(xml)";
 
   // PRIVATE //
 

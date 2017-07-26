@@ -1,7 +1,9 @@
 package org.metadatacenter.submission.status;
 
 import org.metadatacenter.submission.upload.ftp.UploaderCreationException;
+import org.xml.sax.SAXException;
 
+import javax.xml.parsers.ParserConfigurationException;
 import java.io.IOException;
 import java.util.concurrent.Callable;
 
@@ -36,9 +38,9 @@ public abstract class SubmissionStatusTask implements Callable<SubmissionStatus>
     return statusURL;
   }
 
-  @Override public SubmissionStatus call() throws IOException, UploaderCreationException {
+  @Override public SubmissionStatus call() throws Exception {
     return callSubmissionStatusEndpoint();
   }
 
-  abstract protected SubmissionStatus callSubmissionStatusEndpoint() throws IOException, UploaderCreationException;
+  abstract protected SubmissionStatus callSubmissionStatusEndpoint() throws Exception;
 }
