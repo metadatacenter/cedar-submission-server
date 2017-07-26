@@ -269,7 +269,7 @@ import static org.metadatacenter.util.json.JsonMapper.MAPPER;
           JsonNode jsonNode = new JsonLdDocument(jsonLDNode).asJson(); // Translate from JSON-LD to JSON
           InputStream submissionMetadataJSONFileInputStream = IOUtils
             .toInputStream(jsonNode.toString(), StandardCharsets.UTF_8);
-          builder.addBinaryBody("file", submissionMetadataJSONLDFileInputStream, ContentType.APPLICATION_JSON, fileName);
+          builder.addBinaryBody("file", submissionMetadataJSONFileInputStream, ContentType.APPLICATION_JSON, fileName);
         } else { // The user-supplied files
           InputStream is = fileItem.getInputStream();
           builder.addBinaryBody("file", is, ContentType.DEFAULT_BINARY, fileName);
