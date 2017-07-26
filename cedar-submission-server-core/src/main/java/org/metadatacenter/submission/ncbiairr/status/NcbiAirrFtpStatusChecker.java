@@ -6,6 +6,8 @@ import org.apache.commons.net.ftp.FTPFile;
 import org.apache.commons.net.ftp.FTPReply;
 import org.metadatacenter.config.FTPConfig;
 import org.metadatacenter.submission.Constants;
+import org.metadatacenter.submission.ncbiairr.status.report.NcbiAirrSubmissionState;
+import org.metadatacenter.submission.ncbiairr.status.report.NcbiAirrSubmissionStatusReport;
 import org.metadatacenter.submission.status.SubmissionState;
 import org.metadatacenter.submission.status.SubmissionStatus;
 import org.metadatacenter.submission.status.SubmissionStatusDescriptor;
@@ -13,12 +15,19 @@ import org.metadatacenter.submission.status.SubmissionStatusManager;
 import org.metadatacenter.submission.upload.ftp.UploaderCreationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.w3c.dom.Document;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.TransformerException;
 import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 public class NcbiAirrFtpStatusChecker {
@@ -28,7 +37,7 @@ public class NcbiAirrFtpStatusChecker {
   public static SubmissionStatus getNcbiAirrSubmissionStatus(String submissionID, FTPConfig ftpConfig,
                                                              String submissionFolder, String lastStatusReportFile)
       throws IOException,
-      UploaderCreationException, ParserConfigurationException, SAXException {
+      UploaderCreationException, ParserConfigurationException, SAXException, TransformerException {
 
     String submissionPath = ftpConfig.getSubmissionDirectory() + "/" + submissionFolder;
 
@@ -38,8 +47,10 @@ public class NcbiAirrFtpStatusChecker {
     FTPClient ftpClient = connect(ftpConfig.getHost(), ftpConfig.getUser(),
         ftpConfig.getPassword());
 
-    // TODO: remove this temp path
-    submissionPath = "submit/Test/2017-07-24T20-48-57.829Z_test";
+    // TODO: remove this temp path. It is used for testing
+    if (!Constants.NCBI_AIRR_SUBMIT || !Constants.NCBI_AIRR_UPLOAD_SUBMIT_READY_FILE) {
+      submissionPath = "submit/Test/2017-07-24T20-48-57.829Z_test";
+    }
 
     // Go to the submission folder
     if (!ftpClient.changeWorkingDirectory(submissionPath)) {
@@ -48,11 +59,10 @@ public class NcbiAirrFtpStatusChecker {
     }
 
     FTPFile[] files = ftpClient.listFiles();
-    System.out.println("----------------------------------------");
-
     Optional<String> mostRecentReportFileName = getMostRecentReportFileName(files);
+    String waitingMessage = "The submission is being processed";
 
-    SubmissionStatus status = null;
+    SubmissionStatus submissionStatus = null;
     if (mostRecentReportFileName.isPresent()) { // the folder contains a report file (at the minimum)
 
       if (!mostRecentReportFileName.get().equals(lastStatusReportFile)) { // there is a new report
@@ -63,31 +73,27 @@ public class NcbiAirrFtpStatusChecker {
             .getSubmissionStatusTask();
         statusTask.setLastStatusReportFile(mostRecentReportFileName.get());
 
+        // check the content of the most recent file
+        InputStream inputStream = ftpClient.retrieveFileStream(mostRecentReportFileName.get());
+        NcbiAirrSubmissionStatusReport statusFromReport = getSubmissionStatusFromReport(inputStream);
 
-        // check the content of the report files
-        status = new SubmissionStatus(submissionID, SubmissionState.STARTED, "THE STATUS HAS BEEN UPDATED!!");
-        // TODO: Updates found. Notify the user.
+        submissionStatus = NcbiAirrSubmissionStatusUtil.toSubmissionStatus(submissionID, statusFromReport);
+        // TODO: Notify the user.
+        logger.info("The submission status has been updated (submissionId = " + submissionID + ")");
       } else { // the report file has already been checked
-        status = new SubmissionStatus(submissionID, SubmissionState.STARTED, "no changes");
+        submissionStatus = new SubmissionStatus(submissionID, SubmissionState.STARTED, waitingMessage);
       }
 
     } else { // the folder does not contain any report file yet
-      status = new SubmissionStatus(submissionID, SubmissionState.STARTED, "no changes");
+      submissionStatus = new SubmissionStatus(submissionID, SubmissionState.STARTED, waitingMessage);
     }
-
-    System.out.println("----------------------------------------");
 
     // Close the FTP connection
     ftpClient.disconnect();
-    return status;
+    return submissionStatus;
   }
 
-
-  private static Optional<String> getMostRecentReportFileName(FTPFile[] files) throws ParserConfigurationException {
-    // create a new DocumentBuilderFactory
-    DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-    // use the factory to create a documentbuilder
-    DocumentBuilder builder = factory.newDocumentBuilder();
+  private static Optional<String> getMostRecentReportFileName(FTPFile[] files) {
     String lastReportFileName = null;
     int lastReportNumber = -1;
     for (FTPFile file : files) {
@@ -111,6 +117,24 @@ public class NcbiAirrFtpStatusChecker {
     int index1 = 6; // index of the first '.'
     int index2 = fileName.indexOf(".xml");
     return Integer.parseInt(fileName.substring(index1 + 1, index2));
+  }
+
+  private static NcbiAirrSubmissionStatusReport getSubmissionStatusFromReport(InputStream inputStream)
+      throws ParserConfigurationException, IOException, SAXException, TransformerException {
+
+    DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+    DocumentBuilder builder = factory.newDocumentBuilder();
+    Document statusReport = builder.parse(inputStream);
+
+    // Get the submission status from the xml
+    Node submissionStatus = statusReport.getElementsByTagName("SubmissionStatus").item(0);
+    String status = submissionStatus.getAttributes().getNamedItem("status").getNodeValue();
+
+    // TODO: fix
+    //String textReport = NcbiAirrSubmissionStatusUtil.generatePlainTextReport(statusReport);
+    String textReport = "no report";
+
+    return new NcbiAirrSubmissionStatusReport(NcbiAirrSubmissionState.fromString(status), statusReport.toString(), textReport);
   }
 
   public static FTPClient connect(String host, String user, String password) throws UploaderCreationException {
@@ -138,7 +162,6 @@ public class NcbiAirrFtpStatusChecker {
       throw new UploaderCreationException("Error while creating the FTP client", ex);
     }
   }
-
 
   private static void showServerReply(FTPClient ftpClient) {
     String[] replies = ftpClient.getReplyStrings();

@@ -12,6 +12,7 @@ public class Constants
   public static int NCBI_AIRR_SIMULATION_MODE_TIMEOUT = 30000;
   public static String SUBMISSION_XML_FILE_NAME = "submission.xml";
   public static String NCBI_AIRR_REPORT_REGEX = "(report)\\.([0-9]+)\\.(xml)";
+  public static String NCBI_AIRR_XSLT_PATH = "xslt/ncbi_airr_report.xml";
 
   // PRIVATE //
 

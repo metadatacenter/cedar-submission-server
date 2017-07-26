@@ -20,6 +20,7 @@ public class SubmissionStatusManagerRunnable implements Runnable
   final static Logger logger = LoggerFactory.getLogger(SubmissionStatusManagerRunnable.class);
 
   private static final int NUMBER_OF_THREADS = 10;
+  private static final int CHECK_INTERVAL = 3000;
 
   private final SubmissionStatusManager submissionStatusManager;
 
@@ -55,20 +56,20 @@ public class SubmissionStatusManagerRunnable implements Runnable
             this.submissionStatusManager.updateSubmission(submissionStatus);
           }
         } else
-          Thread.sleep(1000);
+          Thread.sleep(CHECK_INTERVAL);
       } catch (CancellationException e) {
-        logger.warn("Cancellation exception : " + e.getMessage());
+        logger.error("Cancellation exception : " + e.getMessage());
       } catch (InterruptedException e) {
-        logger.warn("Interrupted exception : " + e.getMessage());
+        logger.error("Interrupted exception : " + e.getMessage());
       } catch (ExecutionException e) {
-        logger.warn("Execution exception : " + e.getMessage());
+        logger.error("Execution exception : " + e.getMessage());
       } catch (TimeoutException e) {
-        logger.warn("Timeout exception : " + e.getMessage());
+        logger.error("Timeout exception : " + e.getMessage());
       } finally {
         for (String submissionID : futures.keySet()) {
           Future<SubmissionStatus> future = futures.get(submissionID);
           future.cancel(true); // Cancel tasks that did not complete in time
-          logger.warn("Status call for submission " + submissionID + " did not complete; cancelling");
+          logger.error("Status call for submission " + submissionID + " did not complete; cancelling");
         }
         futures.clear();
       }
