@@ -13,6 +13,7 @@ public class Constants
   public static String SUBMISSION_XML_FILE_NAME = "submission.xml";
   public static String NCBI_AIRR_REPORT_REGEX = "(report)\\.([0-9]+)\\.(xml)";
   public static String NCBI_AIRR_XSLT_PATH = "xslt/ncbi_airr_report.xsl";
+  public static String NCBI_AIRR_TEST_SUBMISSION_PATH = "submit/Test/2017-07-24T20-48-57.829Z_test"; // used for testing
 
   // PRIVATE //
 

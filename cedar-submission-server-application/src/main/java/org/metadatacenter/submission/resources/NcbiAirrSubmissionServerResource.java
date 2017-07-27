@@ -3,7 +3,6 @@ package org.metadatacenter.submission.resources;
 import com.codahale.metrics.annotation.Timed;
 import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
-import org.apache.commons.io.FileUtils;
 import org.joda.time.DateTimeZone;
 import org.metadatacenter.cedar.util.dw.CedarMicroserviceResource;
 import org.metadatacenter.config.CedarConfig;
@@ -32,8 +31,6 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.xml.bind.JAXBException;
 import javax.xml.datatype.DatatypeConfigurationException;
-import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 
 import static org.metadatacenter.rest.assertion.GenericAssertions.LoggedIn;
@@ -88,9 +85,9 @@ public class NcbiAirrSubmissionServerResource extends CedarMicroserviceResource 
       String bioSampleSubmissionXML = this.airrTemplate2SRAConverter
           .generateSRASubmissionXMLFromAIRRTemplateInstance(airrInstance);
 
-      return Response.ok(this.bioSampleValidator.validateBioSampleSubmission(bioSampleSubmissionXML)).build();
+      return Response.ok(this.bioSampleValidator.validateBioSampleSubmission(bioSampleSubmissionXML)).build();  // TODO CEDAR error response
     } catch (JAXBException | DatatypeConfigurationException e) {
-      return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
+      return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build(); // TODO CEDAR error response
     }
   }
 
@@ -120,12 +117,14 @@ public class NcbiAirrSubmissionServerResource extends CedarMicroserviceResource 
           String message = "Wrong number of metadata files (submissionId = " +
               data.getSubmissionId() + "; metadataFiles = " + data.getMetadataFiles().size();
           logger.info(message);
-          return Response.status(Response.Status.BAD_REQUEST).build();
+          return Response.status(Response.Status.BAD_REQUEST).build();  // TODO CEDAR error response
         }
         // Every request contains a file chunk that we will save in the appropriate position of a local file
         String submissionLocalFolderPath =
-            FlowUploadUtil.getSubmissionLocalFolderPath(Constants.NCBI_AIRR_LOCAL_FOLDER_NAME, userId, data.getSubmissionId());
-        String filePath = FlowUploadUtil.saveToLocalFile(data,  userId, request.getContentLength(), submissionLocalFolderPath);
+            FlowUploadUtil.getSubmissionLocalFolderPath(Constants.NCBI_AIRR_LOCAL_FOLDER_NAME, userId, data
+                .getSubmissionId());
+        String filePath = FlowUploadUtil.saveToLocalFile(data, userId, request.getContentLength(),
+            submissionLocalFolderPath);
         logger.info("File created. Path: " + filePath);
         // Update the submission upload status
         SubmissionUploadManager.getInstance().updateStatus(data, submissionLocalFolderPath);
@@ -151,25 +150,16 @@ public class NcbiAirrSubmissionServerResource extends CedarMicroserviceResource 
           SubmissionUploadManager.getInstance().removeSubmissionStatus(data.getSubmissionId());
         }
 
-      } catch (FileNotFoundException e) {
+      } catch (IOException | FileUploadException | InstanceNotFoundException | JAXBException |
+          DatatypeConfigurationException e) {
         logger.error(e.getMessage(), e);
-        return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
-      } catch (IOException e) {
-        logger.error(e.getMessage(), e);
-        return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
-      } catch (InstanceNotFoundException e) {
-        logger.error(e.getMessage(), e);
-        return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
-      } catch (FileUploadException e) {
-        logger.error(e.getMessage(), e);
-        return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
-      } catch (Exception e) {
-        logger.error(e.getMessage(), e);
-        return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
+        return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();  // TODO CEDAR error response
+      } catch (IllegalAccessException e) {
+        e.printStackTrace();
       }
-      return Response.ok().build();
+      return Response.ok().build();  // TODO CEDAR error response
     } else {
-      return Response.status(Response.Status.BAD_REQUEST).build();
+      return Response.status(Response.Status.BAD_REQUEST).build();  // TODO CEDAR error response
     }
   }
 

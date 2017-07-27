@@ -17,7 +17,7 @@ import java.util.List;
 
 public class NcbiAirrSubmissionExecutorService {
 
-  private CedarConfig cedarConfig;
+  private final CedarConfig cedarConfig;
 
   public NcbiAirrSubmissionExecutorService(CedarConfig cedarConfig) {
     this.cedarConfig = cedarConfig;
@@ -60,13 +60,7 @@ public class NcbiAirrSubmissionExecutorService {
       // Delete the submission local folder
       //FileUtils.deleteDirectory(new File(submission.getSubmissionFolder()));
 
-    } catch (IOException e) {
-      logger.error("Error submitting the data to the NCBI.");
-      logger.error(e.getMessage());
-    } catch (UploaderCreationException e) {
-      logger.error("Error submitting the data to the NCBI.");
-      logger.error(e.getMessage());
-    } catch (InterruptedException e) {
+    } catch (IOException | UploaderCreationException | InterruptedException e) {
       logger.error("Error submitting the data to the NCBI.");
       logger.error(e.getMessage());
     }

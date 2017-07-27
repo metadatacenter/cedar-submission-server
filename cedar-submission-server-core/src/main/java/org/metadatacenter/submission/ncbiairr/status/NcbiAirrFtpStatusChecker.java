@@ -17,7 +17,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -26,8 +25,6 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 
 public class NcbiAirrFtpStatusChecker {
@@ -47,9 +44,9 @@ public class NcbiAirrFtpStatusChecker {
     FTPClient ftpClient = connect(ftpConfig.getHost(), ftpConfig.getUser(),
         ftpConfig.getPassword());
 
-    // TODO: remove this temp path. It is used for testing
+    // TODO: remove this block. It is used for testing
     if (!Constants.NCBI_AIRR_SUBMIT || !Constants.NCBI_AIRR_UPLOAD_SUBMIT_READY_FILE) {
-      submissionPath = "submit/Test/2017-07-24T20-48-57.829Z_test";
+      submissionPath = Constants.NCBI_AIRR_TEST_SUBMISSION_PATH;
     }
 
     // Go to the submission folder
@@ -64,7 +61,6 @@ public class NcbiAirrFtpStatusChecker {
 
     SubmissionStatus submissionStatus = null;
     if (mostRecentReportFileName.isPresent()) { // the folder contains a report file (at the minimum)
-
       if (!mostRecentReportFileName.get().equals(lastStatusReportFile)) { // there is a new report
         // update the variable that stores the name of the last report checked
         SubmissionStatusDescriptor submissionStatusDescriptor = SubmissionStatusManager.getInstance()
@@ -73,21 +69,17 @@ public class NcbiAirrFtpStatusChecker {
             .getSubmissionStatusTask();
         statusTask.setLastStatusReportFile(mostRecentReportFileName.get());
 
-        // check the content of the most recent file
+        // generate submission status from the most recent report file
         InputStream inputStream = ftpClient.retrieveFileStream(mostRecentReportFileName.get());
         NcbiAirrSubmissionStatusReport statusFromReport = getSubmissionStatusFromReport(inputStream);
-
         submissionStatus = NcbiAirrSubmissionStatusUtil.toSubmissionStatus(submissionID, statusFromReport);
-        // TODO: Notify the user.
         logger.info("The submission status has been updated (submissionId = " + submissionID + ")");
       } else { // the report file has already been checked
         submissionStatus = new SubmissionStatus(submissionID, SubmissionState.STARTED, waitingMessage);
       }
-
     } else { // the folder does not contain any report file yet
       submissionStatus = new SubmissionStatus(submissionID, SubmissionState.STARTED, waitingMessage);
     }
-
     // Close the FTP connection
     ftpClient.disconnect();
     return submissionStatus;
@@ -129,7 +121,7 @@ public class NcbiAirrFtpStatusChecker {
     // Get the submission status from the xml
     Node submissionStatus = statusReport.getElementsByTagName("SubmissionStatus").item(0);
     String status = submissionStatus.getAttributes().getNamedItem("status").getNodeValue();
-
+    // Generate plain text report
     String textReport = NcbiAirrSubmissionStatusUtil.generatePlainTextReport(statusReport);
 
     return new NcbiAirrSubmissionStatusReport(NcbiAirrSubmissionState.fromString(status), statusReport.toString(), textReport);
