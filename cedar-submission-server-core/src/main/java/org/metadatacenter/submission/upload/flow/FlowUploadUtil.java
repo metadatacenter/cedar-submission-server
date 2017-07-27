@@ -6,7 +6,6 @@ import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
-import org.metadatacenter.submission.Constants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -181,12 +180,7 @@ public class FlowUploadUtil {
   }
 
   public static boolean isMetadataFile(FlowData data) {
-    if (data.getMetadataFiles().contains(data.getFlowFilename())) {
-      return true;
-    }
-    else {
-      return false;
-    }
+    return data.getMetadataFiles().contains(data.getFlowFilename());
   }
 
 }

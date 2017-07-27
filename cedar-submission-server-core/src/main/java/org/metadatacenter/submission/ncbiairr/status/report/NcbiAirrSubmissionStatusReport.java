@@ -1,7 +1,5 @@
 package org.metadatacenter.submission.ncbiairr.status.report;
 
-import java.util.List;
-
 /**
  * This class represents the submission status extracted from a report.[number].xml file
  */

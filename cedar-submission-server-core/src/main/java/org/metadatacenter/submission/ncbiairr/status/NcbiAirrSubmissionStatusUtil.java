@@ -12,9 +12,7 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 import java.io.File;
-import java.io.InputStream;
 import java.io.StringWriter;
-import java.net.URL;
 
 public class NcbiAirrSubmissionStatusUtil {
 

@@ -1,10 +1,5 @@
 package org.metadatacenter.submission.status;
 
-import org.metadatacenter.submission.upload.ftp.UploaderCreationException;
-import org.xml.sax.SAXException;
-
-import javax.xml.parsers.ParserConfigurationException;
-import java.io.IOException;
 import java.util.concurrent.Callable;
 
 /**
