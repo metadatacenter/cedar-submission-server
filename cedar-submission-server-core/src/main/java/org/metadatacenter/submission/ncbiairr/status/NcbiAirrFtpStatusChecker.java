@@ -130,9 +130,7 @@ public class NcbiAirrFtpStatusChecker {
     Node submissionStatus = statusReport.getElementsByTagName("SubmissionStatus").item(0);
     String status = submissionStatus.getAttributes().getNamedItem("status").getNodeValue();
 
-    // TODO: fix
-    //String textReport = NcbiAirrSubmissionStatusUtil.generatePlainTextReport(statusReport);
-    String textReport = "no report";
+    String textReport = NcbiAirrSubmissionStatusUtil.generatePlainTextReport(statusReport);
 
     return new NcbiAirrSubmissionStatusReport(NcbiAirrSubmissionState.fromString(status), statusReport.toString(), textReport);
   }

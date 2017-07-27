@@ -12,7 +12,9 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 import java.io.File;
+import java.io.InputStream;
 import java.io.StringWriter;
+import java.net.URL;
 
 public class NcbiAirrSubmissionStatusUtil {
 
@@ -39,7 +41,9 @@ public class NcbiAirrSubmissionStatusUtil {
 
   public static String generatePlainTextReport(Document xmlReport) throws TransformerException {
     TransformerFactory factory = TransformerFactory.newInstance();
-    Source xslt = new StreamSource(new File(Constants.NCBI_AIRR_XSLT_PATH));
+    File xsltFilePath =
+        new File(NcbiAirrSubmissionStatusUtil.class.getClassLoader().getResource(Constants.NCBI_AIRR_XSLT_PATH).getPath());
+    Source xslt = new StreamSource(xsltFilePath);
     Transformer transformer = factory.newTransformer(xslt);
     StringWriter writer = new StringWriter();
     transformer.transform(new DOMSource(xmlReport), new StreamResult(writer));
