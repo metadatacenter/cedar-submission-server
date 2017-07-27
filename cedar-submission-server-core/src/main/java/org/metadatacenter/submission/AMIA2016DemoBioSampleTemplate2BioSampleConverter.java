@@ -3,19 +3,14 @@ package org.metadatacenter.submission;
 import biosample.TypeAttribute;
 import biosample.TypeBioSample;
 import biosample.TypeBioSampleIdentifier;
-import common.sp.TypeDescriptor;
-import common.sp.TypeOrganism;
-import common.sp.TypePrimaryId;
-import common.sp.TypeRefId;
-import generated.TypeContactInfo;
-import generated.TypeName;
+import common.sp.*;
+import generated.Submission;
 import generated.TypeOrganization;
-import generated.TypeSubmission;
+import generated.TypeTargetDb;
 import org.metadatacenter.submission.biosample.AMIA2016DemoBioSampleTemplate;
 import org.metadatacenter.submission.biosample.OptionalAttribute;
 
 import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.datatype.DatatypeConfigurationException;
@@ -45,15 +40,15 @@ public class AMIA2016DemoBioSampleTemplate2BioSampleConverter
     final biosample.ObjectFactory bioSampleObjectFactory = new biosample.ObjectFactory();
     final common.sp.ObjectFactory spCommonObjectFactory = new common.sp.ObjectFactory();
 
-    TypeSubmission xmlSubmission = objectFactory.createTypeSubmission();
+    Submission xmlSubmission = objectFactory.createSubmission();
 
     // Submission/Description/Comment
-    TypeSubmission.Description description = objectFactory.createTypeSubmissionDescription();
+    Submission.Description description = objectFactory.createSubmissionDescription();
     xmlSubmission.setDescription(description);
     description.setComment("Example CEDAR-generated BioSample submission using the Human.1.0 package");
 
     // Submission/Description/Hold/releaseDate
-    TypeSubmission.Description.Hold hold = objectFactory.createTypeSubmissionDescriptionHold();
+    Submission.Description.Hold hold = objectFactory.createSubmissionDescriptionHold();
     description.setHold(hold);
     hold.setReleaseDate(createXMLGregorianCalendar("2016-10-10")); // Hard coded release date
 
@@ -69,32 +64,32 @@ public class AMIA2016DemoBioSampleTemplate2BioSampleConverter
     organizationName.setValue("CEDAR"); // Hard coded organization name
 
     // Submission/Description/Organization/ContactInfo/email
-    TypeContactInfo contactInfo = objectFactory.createTypeContactInfo();
+    TypeContactInfo contactInfo = spCommonObjectFactory.createTypeContactInfo();
     organization.getContact().add(contactInfo);
     contactInfo.setEmail("metadatacenter@gmail.com"); // Hard coded email address
 
     // Submission/Description/Organization/ContactInfo/Name
-    TypeName name = objectFactory.createTypeName();
+    TypeName name = spCommonObjectFactory.createTypeName();
     contactInfo.setName(name);
     name.setFirst("Mr."); // Hard coded first name
     name.setLast("CEDAR"); // Hard coded last name
 
     // Submission/Action
-    TypeSubmission.Action action = objectFactory.createTypeSubmissionAction();
+    Submission.Action action = objectFactory.createSubmissionAction();
     xmlSubmission.getAction().add(action);
 
     // Submission/Action/AddData/target_db
-    TypeSubmission.Action.AddData addData = objectFactory.createTypeSubmissionActionAddData();
+    Submission.Action.AddData addData = objectFactory.createSubmissionActionAddData();
     action.setAddData(addData);
-    addData.setTargetDb("BioSample");
+    addData.setTargetDb(TypeTargetDb.BIO_SAMPLE);
 
     // Submission/Action/AddData/Data/content_type
-    TypeSubmission.Action.AddData.Data data = objectFactory.createTypeSubmissionActionAddDataData();
-    addData.getData().add(data);
+    Submission.Action.AddData.Data data = objectFactory.createSubmissionActionAddDataData();
+    addData.setData(data);
     data.setContentType("XML");
 
     // Submission/Action/AddData/Data/XMLContent
-    TypeSubmission.Action.AddData.Data.XmlContent xmlContent = objectFactory.createTypeInlineDataXmlContent();
+    Submission.Action.AddData.Data.XmlContent xmlContent = objectFactory.createTypeInlineDataXmlContent();
     data.setXmlContent(xmlContent);
 
     // Submission/Action/AddData/Data/XMLContent/BioSample/schema_version
@@ -178,12 +173,11 @@ public class AMIA2016DemoBioSampleTemplate2BioSampleConverter
     }
     StringWriter writer = new StringWriter();
 
-    JAXBElement<TypeSubmission> submissionRoot = objectFactory.createSubmission(xmlSubmission);
-    JAXBContext ctx = JAXBContext.newInstance(TypeSubmission.class);
+    JAXBContext ctx = JAXBContext.newInstance(Submission.class);
     Marshaller marshaller = ctx.createMarshaller();
     marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
     //marshaller.marshal(submissionRoot, System.out);
-    marshaller.marshal(submissionRoot, writer);
+    marshaller.marshal(xmlSubmission, writer);
 
     return writer.toString();
   }

@@ -74,6 +74,7 @@ public class NcbiAirrFtpStatusChecker {
         NcbiAirrSubmissionStatusReport statusFromReport = getSubmissionStatusFromReport(inputStream);
         submissionStatus = NcbiAirrSubmissionStatusUtil.toSubmissionStatus(submissionID, statusFromReport);
         logger.info("The submission status has been updated (submissionId = " + submissionID + ")");
+        logger.info(submissionStatus.toString());
       } else { // the report file has already been checked
         submissionStatus = new SubmissionStatus(submissionID, SubmissionState.STARTED, waitingMessage);
       }

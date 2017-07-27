@@ -27,4 +27,13 @@ public class SubmissionStatus
   {
     return statusMessage;
   }
+
+  @Override
+  public String toString() {
+    return "SubmissionStatus{" +
+        "submissionID='" + submissionID + '\'' +
+        ", submissionState=" + submissionState +
+        ", statusMessage='" + statusMessage + '\'' +
+        '}';
+  }
 }

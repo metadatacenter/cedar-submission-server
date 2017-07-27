@@ -6,6 +6,7 @@ import org.metadatacenter.submission.AIRRTemplate2SRAConverter;
 import org.metadatacenter.submission.Constants;
 import org.metadatacenter.submission.biosample.AIRRTemplate;
 import org.metadatacenter.submission.upload.flow.FileUploadStatus;
+import org.metadatacenter.submission.upload.flow.FlowUploadUtil;
 import org.metadatacenter.submission.upload.flow.SubmissionUploadManager;
 import org.metadatacenter.util.json.JsonMapper;
 import org.slf4j.Logger;
@@ -40,11 +41,11 @@ public class NcbiAirrSubmissionUtil {
       // If it is a metadata file (instance), generate the submission.xml file and save its path instead
       else {
         // XML generation
-//        File airrInstance = new File(fileUploadStatus.getFileLocalPath());
-//        String submissionLocalFolderPath =
-//            FlowUploadUtil.getSubmissionLocalFolderPath(Constants.NCBI_AIRR_LOCAL_FOLDER_NAME, userId, submissionId);
-//        File submissionXmlFile = generateSubmissionXmlFile(airrInstance, submissionLocalFolderPath);
-//        submissionFilePaths.add(submissionXmlFile.getAbsolutePath());
+        File airrInstance = new File(fileUploadStatus.getFileLocalPath());
+        String submissionLocalFolderPath =
+            FlowUploadUtil.getSubmissionLocalFolderPath(Constants.NCBI_AIRR_LOCAL_FOLDER_NAME, userId, submissionId);
+        File submissionXmlFile = generateSubmissionXmlFile(airrInstance, submissionLocalFolderPath);
+        submissionFilePaths.add(submissionXmlFile.getAbsolutePath());
       }
     }
 
