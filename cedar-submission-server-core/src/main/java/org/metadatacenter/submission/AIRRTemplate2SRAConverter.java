@@ -346,7 +346,7 @@ public class AIRRTemplate2SRAConverter
       value = ncbiSRA.getLibraryStrategy().getValue();
       if (value != null) {
         TypeFileAttribute fileAttribute = submissionObjectFactory.createTypeFileAttribute();
-        fileAttribute.setName("libraryStrategy");
+        fileAttribute.setName("library_strategy");
         fileAttribute.setValue(value);
         sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(fileAttribute);
       }
@@ -354,7 +354,7 @@ public class AIRRTemplate2SRAConverter
       value = ncbiSRA.getLibrarySource().getValue();
       if (value != null) {
         TypeFileAttribute fileAttribute = submissionObjectFactory.createTypeFileAttribute();
-        fileAttribute.setName("librarySource");
+        fileAttribute.setName("library_source");
         fileAttribute.setValue(value);
         sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(fileAttribute);
       }
@@ -362,7 +362,7 @@ public class AIRRTemplate2SRAConverter
       value = ncbiSRA.getLibrarySelection().getValue();
       if (value != null) {
         TypeFileAttribute fileAttribute = submissionObjectFactory.createTypeFileAttribute();
-        fileAttribute.setName("librarySelection");
+        fileAttribute.setName("library_selection");
         fileAttribute.setValue(value);
         sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(fileAttribute);
       }
@@ -370,7 +370,7 @@ public class AIRRTemplate2SRAConverter
       value = ncbiSRA.getLibraryLayout().getValue();
       if (value != null) {
         TypeFileAttribute fileAttribute = submissionObjectFactory.createTypeFileAttribute();
-        fileAttribute.setName("libraryLayout");
+        fileAttribute.setName("library_layout");
         fileAttribute.setValue(value);
         sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(fileAttribute);
       }
@@ -386,7 +386,7 @@ public class AIRRTemplate2SRAConverter
       value = ncbiSRA.getInstrumentModel().getValue();
       if (value != null) {
         TypeFileAttribute fileAttribute = submissionObjectFactory.createTypeFileAttribute();
-        fileAttribute.setName("instrumentModel");
+        fileAttribute.setName("instrument_model");
         fileAttribute.setValue(value);
         sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(fileAttribute);
       }
