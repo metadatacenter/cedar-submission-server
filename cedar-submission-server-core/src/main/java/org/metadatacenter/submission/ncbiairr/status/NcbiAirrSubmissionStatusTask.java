@@ -3,6 +3,7 @@ package org.metadatacenter.submission.ncbiairr.status;
 import org.metadatacenter.config.FTPConfig;
 import org.metadatacenter.submission.status.SubmissionStatus;
 import org.metadatacenter.submission.status.SubmissionStatusTask;
+import org.metadatacenter.submission.status.SubmissionType;
 
 public class NcbiAirrSubmissionStatusTask extends SubmissionStatusTask {
 
@@ -11,9 +12,9 @@ public class NcbiAirrSubmissionStatusTask extends SubmissionStatusTask {
   private String lastStatusReportFile;
 
   // TODO: keep the statusURL in the parent. Not needed here.
-  public NcbiAirrSubmissionStatusTask(String submissionID, String userID, String statusURL,
+  public NcbiAirrSubmissionStatusTask(String submissionID, SubmissionType submissionType, String userID, String statusURL,
                                       FTPConfig ftpConfig, String submissionFolder) {
-    super(submissionID, userID, statusURL);
+    super(submissionID, submissionType, userID, statusURL);
     this.ftpConfig = ftpConfig;
     this.submissionFolder = submissionFolder;
   }

@@ -8,12 +8,14 @@ import java.util.concurrent.Callable;
 public abstract class SubmissionStatusTask implements Callable<SubmissionStatus>
 {
   private final String submissionID;
+  private final SubmissionType submissionType;
   private final String userID;
   private final String statusURL;
 
-  public SubmissionStatusTask(String submissionID, String userID, String statusURL)
+  public SubmissionStatusTask(String submissionID, SubmissionType submissionType, String userID, String statusURL)
   {
     this.submissionID = submissionID;
+    this.submissionType = submissionType;
     this.userID = userID;
     this.statusURL = statusURL;
   }
@@ -23,6 +25,7 @@ public abstract class SubmissionStatusTask implements Callable<SubmissionStatus>
     return submissionID;
   }
 
+  public SubmissionType getSubmissionType() { return submissionType; }
   public String getUserID()
   {
     return userID;

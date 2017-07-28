@@ -6,6 +6,7 @@ import org.metadatacenter.submission.ncbiairr.NcbiAirrSubmission;
 import org.metadatacenter.submission.ncbiairr.status.NcbiAirrSubmissionStatusTask;
 import org.metadatacenter.submission.ncbiairr.upload.NcbiAirrFtpUploadService;
 import org.metadatacenter.submission.status.SubmissionStatusManager;
+import org.metadatacenter.submission.status.SubmissionType;
 import org.metadatacenter.submission.upload.ftp.UploaderCreationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,9 +43,10 @@ public class NcbiAirrSubmissionExecutorService {
 
       // Track the submission status
       NcbiAirrSubmissionStatusTask submissionStatusTask = new NcbiAirrSubmissionStatusTask(submission.getId(),
-          submission.getCedarUserId(), null, cedarConfig.getSubmissionConfig().getNcbi().getSra().getFtp(),
+          SubmissionType.NCBI_AIRR, submission.getCedarUserId(), null, cedarConfig.getSubmissionConfig().getNcbi().getSra().getFtp(),
           submission.getSubmissionFolder());
       SubmissionStatusManager.getInstance().addSubmission(submissionStatusTask);
+      SubmissionStatusManager.getInstance().setCedarConfig(cedarConfig);
 
       if (Constants.NCBI_AIRR_SUBMIT) { // real submission
         NcbiAirrFtpUploadService.uploadToNcbi(submission.getSubmissionFolder(),

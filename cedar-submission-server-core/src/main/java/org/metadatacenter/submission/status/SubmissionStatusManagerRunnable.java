@@ -20,7 +20,7 @@ public class SubmissionStatusManagerRunnable implements Runnable
   final static Logger logger = LoggerFactory.getLogger(SubmissionStatusManagerRunnable.class);
 
   private static final int NUMBER_OF_THREADS = 10;
-  private static final int CHECK_INTERVAL = 3000;
+  private static final int CHECK_INTERVAL = 5000;
 
   private final SubmissionStatusManager submissionStatusManager;
 
@@ -49,7 +49,7 @@ public class SubmissionStatusManagerRunnable implements Runnable
           }
 
           for (int i = 0; i < currentSubmissions.size(); i++) {
-            SubmissionStatus submissionStatus = pool.take().get(1000, TimeUnit.MILLISECONDS);
+            SubmissionStatus submissionStatus = pool.take().get(CHECK_INTERVAL, TimeUnit.MILLISECONDS);
             String submissionID = submissionStatus.getSubmissionID();
 
             futures.remove(submissionID);

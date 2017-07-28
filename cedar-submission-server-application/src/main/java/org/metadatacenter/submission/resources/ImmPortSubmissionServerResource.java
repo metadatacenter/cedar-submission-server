@@ -30,6 +30,7 @@ import org.metadatacenter.submission.biosample.Workspace;
 import org.metadatacenter.submission.immport.ImmPortSubmissionStatusTask;
 import org.metadatacenter.submission.immport.ImmPortUtil;
 import org.metadatacenter.submission.status.SubmissionStatusManager;
+import org.metadatacenter.submission.status.SubmissionType;
 import org.metadatacenter.submission.upload.flow.FileUploadStatus;
 import org.metadatacenter.submission.upload.flow.FlowData;
 import org.metadatacenter.submission.upload.flow.FlowUploadUtil;
@@ -161,8 +162,10 @@ import static org.metadatacenter.util.json.JsonMapper.MAPPER;
             CEDARSubmitResponse cedarSubmitResponse = immPortSubmissionResponseBody2CEDARSubmissionResponse(
               response.getEntity());
             SubmissionStatusManager.getInstance().addSubmission(
-              new ImmPortSubmissionStatusTask(cedarSubmitResponse.getSubmissionID(), c.getCedarUser().getId(),
+              new ImmPortSubmissionStatusTask(cedarSubmitResponse.getSubmissionID(), SubmissionType.IMMPORT, c.getCedarUser().getId(),
                 cedarSubmitResponse.getStatusURL()));
+            SubmissionStatusManager.getInstance().setCedarConfig(cedarConfig);
+
             return Response.ok(cedarSubmitResponse).build();
           } else {
             logger.warn("Unexpected status code returned from " + ImmPortUtil.IMMPORT_SUBMISSION_URL + ": " + response
@@ -227,7 +230,7 @@ import static org.metadatacenter.util.json.JsonMapper.MAPPER;
           String userID = c.getCedarUser().getId();
           String statusURL = cedarSubmitResponse.getStatusURL();
           SubmissionStatusManager.getInstance()
-            .addSubmission(new ImmPortSubmissionStatusTask(submissionID, userID, statusURL));
+            .addSubmission(new ImmPortSubmissionStatusTask(submissionID, SubmissionType.IMMPORT, userID, statusURL));
           return Response.ok(cedarSubmitResponse).build();
         } else {
           logger.warn("Unexpected status code returned from " + ImmPortUtil.IMMPORT_SUBMISSION_URL + ": " + response
