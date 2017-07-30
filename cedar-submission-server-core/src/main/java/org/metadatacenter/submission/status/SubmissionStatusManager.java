@@ -3,6 +3,7 @@ package org.metadatacenter.submission.status;
 import org.glassfish.jersey.client.ClientProperties;
 import org.metadatacenter.config.CedarConfig;
 import org.metadatacenter.server.security.model.user.CedarUser;
+import org.metadatacenter.submission.notifications.StatusNotifier;
 import org.metadatacenter.util.http.ProxyUtil;
 import org.metadatacenter.util.test.TestUserUtil;
 import org.slf4j.Logger;
@@ -41,8 +42,6 @@ public class SubmissionStatusManager
   private SubmissionStatusManager()
   {
     this.executor = Executors.newFixedThreadPool(10);
-    cedarConfig = null;
-
   }
 
   private static SubmissionStatusManager singleInstance;
@@ -136,54 +135,10 @@ public class SubmissionStatusManager
 
   private void notifyUser(SubmissionStatusDescriptor submissionStatusDescriptor)
   {
-
-    // TODO: reuse this client
-    Client client = ClientBuilder.newClient();
-    client.property(ClientProperties.CONNECT_TIMEOUT, 3000);
-    client.property(ClientProperties.READ_TIMEOUT, 30000);
-
     logger.info("Notifying user for submission " + submissionStatusDescriptor.getSubmissionID() + "; status = "
-      + submissionStatusDescriptor.getSubmissionStatus().getSubmissionState() + ", message = "
-      + submissionStatusDescriptor.getSubmissionStatus().getStatusMessage());
+        + submissionStatusDescriptor.getSubmissionStatus().getSubmissionState() + ", message = "
+        + submissionStatusDescriptor.getSubmissionStatus().getStatusMessage());
 
-    // TODO: read from cedarConfig
-    //String url = cedarConfig.getMicroserviceUrlUtil().getMessaging().getMessages();
-    String url = "https://messaging.metadatacenter.orgx/messages";
-
-    Map<String, Object> content = new HashMap<>();
-    content.put("subject", submissionStatusDescriptor.getSubmissionStatusTask().getSubmissionType() + "Submission Notification");
-    content.put("body", submissionStatusDescriptor.getSubmissionStatus().getStatusMessage());
-
-    Map<String, Object> to = new HashMap<>();
-    to.put("recipientType", "user");
-    //TODO
-    //to.put("@id", submissionStatusDescriptor.getUserID());
-    to.put("@id", "https://metadatacenter.org/users/" + submissionStatusDescriptor.getUserID());
-    content.put("to", to);
-
-    Map<String, Object> from = new HashMap<>();
-    from.put("senderType", "process");
-
-    String processId = null;
-    if (submissionStatusDescriptor.getSubmissionStatusTask().getSubmissionType().equals(SubmissionType.IMMPORT)) {
-      processId = "submission.IMMPORT";
-    }
-    else if (submissionStatusDescriptor.getSubmissionStatusTask().getSubmissionType().equals(SubmissionType.NCBI_AIRR)) {
-      processId = "submission.AIRR";
-    }
-
-    from.put("processId", processId);
-    content.put("from", from);
-
-    Entity postContent = Entity.entity(content, MediaType.APPLICATION_JSON);
-
-    // TODO: is it fine to get this header from TestUtil?
-    //String adminUserAuthHeader = TestUserUtil.getAdminUserAuthHeader(cedarConfig);
-    String adminUserAuthHeader = "apiKey 58c4f22b9ea1548047682f3112f2f1bcedcb5e40443ddb5e6a11bda0629c2f20";
-
-    Response response = client.target(url).request().header("Authorization", adminUserAuthHeader).post(postContent);
-    logger.info("******* RESPONSE ********");
-    logger.info(response.toString());
-
+    StatusNotifier.getInstance().sendMessage(submissionStatusDescriptor);
   }
 }

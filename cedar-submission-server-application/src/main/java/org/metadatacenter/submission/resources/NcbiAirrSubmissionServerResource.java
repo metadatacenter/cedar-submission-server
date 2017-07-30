@@ -109,7 +109,7 @@ public class NcbiAirrSubmissionServerResource extends CedarMicroserviceResource 
     if (ServletFileUpload.isMultipartContent(request)) {
 
       try {
-        String userId = FlowUploadUtil.getLastFragmentOfUrl(c.getCedarUser().getId());
+        String userId = c.getCedarUser().getId();
         // Extract data from the request
         FlowData data = FlowUploadUtil.getFlowData(request);
         // The submission to the NCBI must contain one (and only one) metadata file (instance)

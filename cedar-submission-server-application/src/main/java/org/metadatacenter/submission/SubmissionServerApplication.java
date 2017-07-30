@@ -3,6 +3,7 @@ package org.metadatacenter.submission;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 import org.metadatacenter.submission.health.SubmissionServerHealthCheck;
+import org.metadatacenter.submission.notifications.StatusNotifier;
 import org.metadatacenter.submission.resources.AMIA2016DemoBioSampleServerResource;
 import org.metadatacenter.submission.resources.ImmPortSubmissionServerResource;
 import org.metadatacenter.submission.resources.IndexResource;
@@ -44,6 +45,8 @@ public class SubmissionServerApplication extends CedarMicroserviceApplication<Su
     NcbiAirrSubmissionServerResource.injectServices(ncbiAirrSubmissionQueueService);
 
     ncbiAirrSubmissionExecutorService = new NcbiAirrSubmissionExecutorService(cedarConfig);
+
+    StatusNotifier.initialize(cedarConfig);
   }
 
   @Override
