@@ -57,7 +57,7 @@ public class StatusNotifier {
 
     Map<String, Object> content = new HashMap<>();
     content.put("subject", submissionStatusDescriptor.getSubmissionStatusTask().getSubmissionType()
-        + "Submission Notification");
+        + " Submission Status");
     content.put("body", submissionStatusDescriptor.getSubmissionStatus().getStatusMessage());
 
     Map<String, Object> to = new HashMap<>();

@@ -1,21 +1,11 @@
 package org.metadatacenter.submission.status;
 
-import org.glassfish.jersey.client.ClientProperties;
 import org.metadatacenter.config.CedarConfig;
-import org.metadatacenter.server.security.model.user.CedarUser;
 import org.metadatacenter.submission.notifications.StatusNotifier;
-import org.metadatacenter.util.http.ProxyUtil;
-import org.metadatacenter.util.test.TestUserUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.ws.rs.client.Client;
-import javax.ws.rs.client.ClientBuilder;
-import javax.ws.rs.client.Entity;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
@@ -99,7 +89,15 @@ public class SubmissionStatusManager
         currentSubmissionStatusDescriptor.getUserID(), currentSubmissionStatusDescriptor.getStatusURL(),
         submissionStatus, currentSubmissionStatusDescriptor.getSubmissionStatusTask());
 
-      notifyUser(newSubmissionStatusDescriptor);
+      logger.info("Checking status of submission " + submissionID);
+
+      // If the status has changed, notify user
+      SubmissionStatus currentStatus = currentSubmissionStatusDescriptor.getSubmissionStatus();
+      SubmissionStatus newStatus = newSubmissionStatusDescriptor.getSubmissionStatus();
+      if ((currentStatus.getSubmissionState() != newStatus.getSubmissionState()) ||
+      (!currentStatus.getStatusMessage().equals(newStatus.getStatusMessage()))) {
+        notifyUser(newSubmissionStatusDescriptor);
+      }
 
       this.submissions.put(submissionID, newSubmissionStatusDescriptor);
 

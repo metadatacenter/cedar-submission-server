@@ -164,11 +164,11 @@ public class ImmPortUtil
         if ("Completed".equals(immPortSubmissionStatus)) {
           if (!immPortSubmissionResponseBody.has(IMMPORT_RESPONSE_STATUS_URL_FIELD))
             return new SubmissionStatus(submissionID, SubmissionState.COMPLETED,
-              "Submission " + submissionID + " completed; no status URL found");
+              "Submission " + submissionID + " COMPLETED. No status URL found");
           else {
             String immPortStatusURL = immPortSubmissionResponseBody.get(IMMPORT_RESPONSE_STATUS_URL_FIELD).asText();
             return new SubmissionStatus(submissionID, SubmissionState.COMPLETED,
-              "Submission " + submissionID + " completed; status URL = " + immPortStatusURL);
+              "Submission " + submissionID + " COMPLETED. Status URL = " + immPortStatusURL);
           }
         } else {
 
@@ -176,7 +176,7 @@ public class ImmPortUtil
             immPortSubmissionStatus);
 
           if (submissionState.isPresent())
-            return new SubmissionStatus(submissionID, submissionState.get(), "");
+            return new SubmissionStatus(submissionID, submissionState.get(), "Status: " + submissionState.get());
           else
             return new SubmissionStatus(submissionID, SubmissionState.ERROR,
               "Unknown ImmPort submission status " + immPortSubmissionStatus);
