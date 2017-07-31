@@ -60,6 +60,7 @@ public class BioSampleValidator
     try {
       // TODO Temporary for debugging of generated XML - write a temporary file and log its location
       File sraAIRRXMLSubmissionFile = File.createTempFile("AIRRSRASubmission", ".xml");
+      logger.info("Temporary SRA submission XML file path:" + sraAIRRXMLSubmissionFile.toPath() + ":");
       PrintWriter writer = new PrintWriter(sraAIRRXMLSubmissionFile);
       writer.print(bioSampleSubmissionXML);
       writer.close();
