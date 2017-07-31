@@ -147,7 +147,7 @@ public class FlowUploadUtil {
 
   public static String getSubmissionLocalFolderPath(String baseFolderName, String userId, String submissionId) {
     String userFolder = FlowUploadUtil.getLastFragmentOfUrl(userId);
-    return System.getProperty("java.io.tmpdir") + baseFolderName + "/user_" + userFolder + "/submission_" + submissionId;
+    return System.getProperty("java.io.tmpdir") + "/" + baseFolderName + "/user_" + userFolder + "/submission_" + submissionId;
   }
 
   public static String getFileLocalFolderPath(String submissionLocalFolderPath, String fileName) {
