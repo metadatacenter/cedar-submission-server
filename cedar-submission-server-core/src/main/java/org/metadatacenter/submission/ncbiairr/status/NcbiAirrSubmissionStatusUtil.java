@@ -5,6 +5,7 @@ import org.metadatacenter.submission.ncbiairr.status.report.NcbiAirrSubmissionSt
 import org.metadatacenter.submission.ncbiairr.status.report.NcbiAirrSubmissionStatusReport;
 import org.metadatacenter.submission.status.SubmissionState;
 import org.metadatacenter.submission.status.SubmissionStatus;
+import org.metadatacenter.submission.status.SubmissionStatusUtil;
 import org.w3c.dom.Document;
 
 import javax.xml.transform.*;
@@ -29,10 +30,11 @@ public class NcbiAirrSubmissionStatusUtil {
     }
     // TODO: complete with all NCBI states
     else {
-      submissionState = SubmissionState.COMPLETED;
+      submissionState = SubmissionState.SUCCEEDED;
     }
 
-    String message = report.getTextReport();
+    String message = SubmissionStatusUtil.getShortStatusMessage(submissionId, submissionState) +
+        "\nNCBI STATUS REPORT\n==================" + report.getTextReport();
 
     return new SubmissionStatus(submissionId, submissionState, message);
   }
@@ -48,5 +50,9 @@ public class NcbiAirrSubmissionStatusUtil {
     String output = writer.getBuffer().toString();
     return output;
   }
+
+
+
+
 
 }

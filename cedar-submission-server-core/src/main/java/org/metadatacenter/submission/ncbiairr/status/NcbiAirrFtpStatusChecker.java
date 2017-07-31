@@ -8,10 +8,7 @@ import org.metadatacenter.config.FTPConfig;
 import org.metadatacenter.submission.Constants;
 import org.metadatacenter.submission.ncbiairr.status.report.NcbiAirrSubmissionState;
 import org.metadatacenter.submission.ncbiairr.status.report.NcbiAirrSubmissionStatusReport;
-import org.metadatacenter.submission.status.SubmissionState;
-import org.metadatacenter.submission.status.SubmissionStatus;
-import org.metadatacenter.submission.status.SubmissionStatusDescriptor;
-import org.metadatacenter.submission.status.SubmissionStatusManager;
+import org.metadatacenter.submission.status.*;
 import org.metadatacenter.submission.upload.ftp.UploaderCreationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -57,7 +54,8 @@ public class NcbiAirrFtpStatusChecker {
 
     FTPFile[] files = ftpClient.listFiles();
     Optional<String> mostRecentReportFileName = getMostRecentReportFileName(files);
-    String waitingMessage = "The submission is being processed";
+    String waitingMessage = SubmissionStatusUtil.getShortStatusMessage(submissionID, SubmissionState.STARTED) +
+        "\nNCBI validation in progress";
 
     SubmissionStatus submissionStatus = null;
     if (mostRecentReportFileName.isPresent()) { // the folder contains a report file (at the minimum)

@@ -56,8 +56,8 @@ public class StatusNotifier {
     //String url = cedarConfig.getMicroserviceUrlUtil().getMessaging().getMessages();
 
     Map<String, Object> content = new HashMap<>();
-    content.put("subject", submissionStatusDescriptor.getSubmissionStatusTask().getSubmissionType()
-        + " Submission Status");
+    content.put("subject", submissionStatusDescriptor.getSubmissionStatusTask().getSubmissionType().getValue()
+        + " Submission " + submissionStatusDescriptor.getSubmissionStatus().getSubmissionState());
     content.put("body", submissionStatusDescriptor.getSubmissionStatus().getStatusMessage());
 
     Map<String, Object> to = new HashMap<>();

@@ -66,7 +66,7 @@ public class SubmissionStatusManager
   {
     String submissionID = submissionStatusTask.getSubmissionID();
     SubmissionStatus submissionStatus = new SubmissionStatus(submissionID, SubmissionState.STARTED,
-      "Received submission with ID " + submissionID);
+        SubmissionStatusUtil.getShortStatusMessage(submissionID, SubmissionState.STARTED));
     SubmissionStatusDescriptor submissionStatusDescriptor = new SubmissionStatusDescriptor(submissionID,
       submissionStatusTask.getUserID(), submissionStatusTask.getStatusURL(), submissionStatus, submissionStatusTask);
 
@@ -101,7 +101,7 @@ public class SubmissionStatusManager
 
       this.submissions.put(submissionID, newSubmissionStatusDescriptor);
 
-      if (submissionStatus.getSubmissionState() == SubmissionState.COMPLETED
+      if (submissionStatus.getSubmissionState() == SubmissionState.SUCCEEDED
         || submissionStatus.getSubmissionState() == SubmissionState.REJECTED
         || submissionStatus.getSubmissionState() == SubmissionState.ERROR)
         removeSubmission(submissionID);
@@ -115,7 +115,7 @@ public class SubmissionStatusManager
     else {
       SubmissionStatusDescriptor submissionStatusDescriptor = this.submissions.get(submissionID);
 
-      if (submissionStatusDescriptor.getSubmissionStatus().getSubmissionState() != SubmissionState.COMPLETED)
+      if (submissionStatusDescriptor.getSubmissionStatus().getSubmissionState() != SubmissionState.SUCCEEDED)
         logger.warn("Removing incomplete submission " + submissionID);
 
       logger.info("Removing submission " + submissionID);
