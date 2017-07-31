@@ -107,12 +107,16 @@ public class FlowUploadUtil {
   }
 
   public static String saveToLocalFile(FlowData data, String userId, int contentLength, String folderPath) throws IOException {
-    File submissionLocalFolder = new File(folderPath);
-    if (!submissionLocalFolder.exists()) {
-      submissionLocalFolder.mkdirs();
-    }
+    //File submissionLocalFolder = new File(folderPath);
+//    if (!submissionLocalFolder.exists()) {
+//      submissionLocalFolder.mkdirs();
+//    }
     String fileLocalFolderPath = FlowUploadUtil.getFileLocalFolderPath(folderPath, data.flowFilename);
     File file = new File(fileLocalFolderPath);
+    logger.info("Local file path: " + fileLocalFolderPath);
+    if (!file.getParentFile().exists()) {
+      file.getParentFile().mkdirs();
+    }
     if (!file.exists()) {
       file.createNewFile();
     }
