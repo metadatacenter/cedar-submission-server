@@ -15,8 +15,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-public class SubmissionStatusManagerRunnable implements Runnable
-{
+public class SubmissionStatusManagerRunnable implements Runnable {
   final static Logger logger = LoggerFactory.getLogger(SubmissionStatusManagerRunnable.class);
 
   private static final int NUMBER_OF_THREADS = 10;
@@ -24,13 +23,12 @@ public class SubmissionStatusManagerRunnable implements Runnable
 
   private final SubmissionStatusManager submissionStatusManager;
 
-  public SubmissionStatusManagerRunnable(SubmissionStatusManager submissionStatusManager)
-  {
+  public SubmissionStatusManagerRunnable(SubmissionStatusManager submissionStatusManager) {
     this.submissionStatusManager = submissionStatusManager;
   }
 
-  @Override public void run()
-  {
+  @Override
+  public void run() {
     ExecutorService threadPool = Executors.newFixedThreadPool(NUMBER_OF_THREADS);
     Map<String, Future<SubmissionStatus>> futures = new HashMap<>();
     CompletionService<SubmissionStatus> pool = new ExecutorCompletionService<>(threadPool);
@@ -49,14 +47,14 @@ public class SubmissionStatusManagerRunnable implements Runnable
           }
 
           for (int i = 0; i < currentSubmissions.size(); i++) {
-            SubmissionStatus submissionStatus = pool.take().get(CHECK_INTERVAL, TimeUnit.MILLISECONDS);
+            SubmissionStatus submissionStatus = pool.take().get(1000, TimeUnit.MILLISECONDS);
             String submissionID = submissionStatus.getSubmissionID();
 
             futures.remove(submissionID);
             this.submissionStatusManager.updateSubmission(submissionStatus);
           }
-        } else
-          Thread.sleep(CHECK_INTERVAL);
+        }
+        Thread.sleep(CHECK_INTERVAL);
       } catch (CancellationException e) {
         logger.error("Cancellation exception : " + e.getMessage());
       } catch (InterruptedException e) {
