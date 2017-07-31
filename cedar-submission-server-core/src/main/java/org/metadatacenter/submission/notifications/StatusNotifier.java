@@ -2,9 +2,6 @@ package org.metadatacenter.submission.notifications;
 
 import org.glassfish.jersey.client.ClientProperties;
 import org.metadatacenter.config.CedarConfig;
-import org.metadatacenter.model.CedarNodeType;
-import org.metadatacenter.server.url.MessagingMicroserviceUrlProvider;
-import org.metadatacenter.server.url.MicroserviceUrlUtil;
 import org.metadatacenter.submission.status.SubmissionStatusDescriptor;
 import org.metadatacenter.submission.status.SubmissionType;
 import org.metadatacenter.util.test.TestUserUtil;
@@ -51,9 +48,7 @@ public class StatusNotifier {
 
   public void sendMessage(SubmissionStatusDescriptor submissionStatusDescriptor) {
 
-    String url = "http://127.0.0.1:" + cedarConfig.getServers().getMessaging().getHttpPort() + "/" + CedarNodeType.Prefix.MESSAGES;
-    // TODO: read url using the following line
-    //String url = cedarConfig.getMicroserviceUrlUtil().getMessaging().getMessages();
+    String url = cedarConfig.getMicroserviceUrlUtil().getMessaging().getMessages();
 
     Map<String, Object> content = new HashMap<>();
     content.put("subject", submissionStatusDescriptor.getSubmissionStatusTask().getSubmissionType().getValue()
