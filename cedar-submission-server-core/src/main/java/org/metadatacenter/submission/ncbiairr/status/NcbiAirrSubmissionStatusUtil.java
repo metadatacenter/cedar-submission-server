@@ -8,11 +8,14 @@ import org.metadatacenter.submission.status.SubmissionStatus;
 import org.metadatacenter.submission.status.SubmissionStatusUtil;
 import org.w3c.dom.Document;
 
-import javax.xml.transform.*;
+import javax.xml.transform.Source;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
-import java.io.File;
+import java.io.InputStream;
 import java.io.StringWriter;
 
 public class NcbiAirrSubmissionStatusUtil {
@@ -41,10 +44,10 @@ public class NcbiAirrSubmissionStatusUtil {
 
   public static String generatePlainTextReport(Document xmlReport) throws TransformerException {
     TransformerFactory factory = TransformerFactory.newInstance();
-    File xsltFilePath =
-        new File(NcbiAirrSubmissionStatusUtil.class.getClassLoader().getResource(Constants.NCBI_AIRR_XSLT_PATH).getFile());
-    Source xslt = new StreamSource(xsltFilePath);
-    Transformer transformer = factory.newTransformer(xslt);
+    InputStream inputStream =
+        NcbiAirrSubmissionStatusUtil.class.getClassLoader().getResourceAsStream(Constants.NCBI_AIRR_XSLT_PATH);
+    Source xslSource = new StreamSource(inputStream);
+    Transformer transformer = factory.newTransformer(xslSource);
     StringWriter writer = new StringWriter();
     transformer.transform(new DOMSource(xmlReport), new StreamResult(writer));
     String output = writer.getBuffer().toString();
