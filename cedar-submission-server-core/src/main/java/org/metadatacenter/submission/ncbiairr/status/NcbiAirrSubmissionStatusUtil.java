@@ -23,7 +23,7 @@ public class NcbiAirrSubmissionStatusUtil {
   public static SubmissionStatus toSubmissionStatus(String submissionId, NcbiAirrSubmissionStatusReport report) {
     SubmissionState submissionState = null;
     if (report.getState().equals(NcbiAirrSubmissionState.SUBMITTED)) {
-      submissionState = SubmissionState.SUBMITTED;
+      submissionState = SubmissionState.PROCESSING;
     }
     else if (report.getState().equals(NcbiAirrSubmissionState.PROCESSING)) {
       submissionState = SubmissionState.PROCESSING;
