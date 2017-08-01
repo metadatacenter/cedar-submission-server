@@ -89,8 +89,6 @@ public class SubmissionStatusManager
         currentSubmissionStatusDescriptor.getUserID(), currentSubmissionStatusDescriptor.getStatusURL(),
         submissionStatus, currentSubmissionStatusDescriptor.getSubmissionStatusTask());
 
-      logger.info("Checking status of submission " + submissionID);
-
       // If the status has changed, notify user
       SubmissionStatus currentStatus = currentSubmissionStatusDescriptor.getSubmissionStatus();
       SubmissionStatus newStatus = newSubmissionStatusDescriptor.getSubmissionStatus();
@@ -98,6 +96,8 @@ public class SubmissionStatusManager
       (!currentStatus.getStatusMessage().equals(newStatus.getStatusMessage()))) {
         notifyUser(newSubmissionStatusDescriptor);
       }
+
+      logger.info("Submission status: " + newStatus.toString());
 
       this.submissions.put(submissionID, newSubmissionStatusDescriptor);
 
