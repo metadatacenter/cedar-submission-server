@@ -29,7 +29,8 @@ public class NcbiAirrFtpStatusChecker {
   final static Logger logger = LoggerFactory.getLogger(NcbiAirrFtpStatusChecker.class);
 
   public static SubmissionStatus getNcbiAirrSubmissionStatus(String submissionID, FTPConfig ftpConfig,
-                                                             String submissionFolder, String lastStatusReportFile) throws SAXException, ParserConfigurationException, TransformerException, UploaderCreationException, IOException {
+                                                             String submissionFolder, String lastStatusReportFile)
+      throws SAXException, ParserConfigurationException, TransformerException, UploaderCreationException, IOException {
 
     FTPClient ftpClient = null;
     SubmissionStatus submissionStatus = null;
@@ -49,16 +50,27 @@ public class NcbiAirrFtpStatusChecker {
       }
 
       // Go to the submission folder
-      if (!ftpClient.changeWorkingDirectory(submissionPath)) {
-        SubmissionStatusManager.getInstance().removeSubmission(submissionID);
-        throw new IOException("Couldn't go to the submission folder (path: " + submissionPath + ")");
+      int count = 0;
+      while (count <= 3) {
+        if (!ftpClient.changeWorkingDirectory(submissionPath)) {
+          if (count < 3) {
+            count++;
+            logger.warn("Couldn't go to the submission folder (path: " + submissionPath + "). Retrying...");
+          } else {
+            SubmissionStatusManager.getInstance().removeSubmission(submissionID);
+            throw new IOException("Couldn't go to the submission folder (path: " + submissionPath + ")");
+          }
+        }
+        else {
+          break;
+        }
       }
 
       FTPFile[] files = ftpClient.listFiles();
       Optional<String> mostRecentReportFileName = getMostRecentReportFileName(files);
       String waitingMessage = SubmissionStatusUtil.getShortStatusMessage(submissionID, SubmissionState.STARTED) +
           "\nNCBI validation in progress";
-      
+
       if (mostRecentReportFileName.isPresent()) { // the folder contains a report file (at the minimum)
         if (!mostRecentReportFileName.get().equals(lastStatusReportFile)) { // there is a new report
           // update the variable that stores the name of the last report checked
@@ -81,7 +93,8 @@ public class NcbiAirrFtpStatusChecker {
         submissionStatus = new SubmissionStatus(submissionID, SubmissionState.STARTED, waitingMessage);
       }
       ftpClient.logout();
-    } catch (IOException | ParserConfigurationException | TransformerException | SAXException | UploaderCreationException e) {
+    } catch (IOException | ParserConfigurationException | TransformerException | SAXException |
+        UploaderCreationException e) {
       throw e;
     } finally {
       // Close the FTP connection
@@ -155,8 +168,9 @@ public class NcbiAirrFtpStatusChecker {
         throw new UploaderCreationException("Invalid username and password to login to the FTP server: " + host);
       }
       ftpClient.setFileType(FTP.BINARY_FILE_TYPE);
-      ftpClient.enterRemotePassiveMode();
-      ftpClient.setControlKeepAliveTimeout(300); // set timeout to 5 minutes
+      //ftpClient.enterRemotePassiveMode();
+      ftpClient.enterLocalPassiveMode();
+      ftpClient.setControlKeepAliveTimeout(3000); // set timeout to 5 minutes
 
       return ftpClient;
     } catch (IOException ex) {
