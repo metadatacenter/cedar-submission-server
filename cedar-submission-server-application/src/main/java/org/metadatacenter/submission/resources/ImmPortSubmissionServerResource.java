@@ -56,6 +56,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
@@ -173,7 +174,7 @@ import static org.metadatacenter.util.json.JsonMapper.MAPPER;
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build(); // TODO CEDAR error response
           }
         } else
-          return Response.ok().build(); // We are still building the request
+          return Response.ok(new HashMap()).build(); // We are still building the request
       } else {
         logger.warn("No form data supplied");
         return Response.status(Response.Status.BAD_REQUEST).build(); // TODO CEDAR error response
