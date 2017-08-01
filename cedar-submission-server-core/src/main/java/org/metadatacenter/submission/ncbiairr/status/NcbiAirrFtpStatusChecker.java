@@ -142,7 +142,7 @@ public class NcbiAirrFtpStatusChecker {
         throw new UploaderCreationException("Invalid username and password to login to the FTP server: " + host);
       }
       ftpClient.setFileType(FTP.BINARY_FILE_TYPE);
-      ftpClient.enterLocalPassiveMode();
+      ftpClient.enterRemotePassiveMode();
       ftpClient.setControlKeepAliveTimeout(300); // set timeout to 5 minutes
 
       return ftpClient;
