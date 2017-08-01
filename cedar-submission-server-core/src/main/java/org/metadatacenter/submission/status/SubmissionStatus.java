@@ -36,4 +36,8 @@ public class SubmissionStatus
         ", statusMessage='" + statusMessage + '\'' +
         '}';
   }
+
+  public String getSummary() {
+    return "SubmissionStatus{submissionID='" + submissionID + " , submissionState=" + submissionState + '}';
+  }
 }

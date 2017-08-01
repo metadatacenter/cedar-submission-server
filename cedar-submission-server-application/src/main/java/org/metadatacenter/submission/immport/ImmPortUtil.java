@@ -52,7 +52,7 @@ public class ImmPortUtil {
   public static String IMMPORT_LOCAL_FOLDER_NAME = "immport-upload";
 
   private static final String IMMPORT_SUBMIT_STATE_PENDING = "Pending";
-  private static final String IMMPORT_SUBMIT_STATE_STARTED = "Started";
+  private static final String IMMPORT_SUBMIT_STATE_PROCESSING = "Processing";
   private static final String IMMPORT_SUBMIT_STATE_COMPLETED = "Completed";
   private static final String IMMPORT_SUBMIT_STATE_REJECTED = "Rejected";
   private static final String IMMPORT_SUBMIT_STATE_ERROR = "Error";
@@ -210,9 +210,9 @@ public class ImmPortUtil {
   static private Optional<SubmissionState> immPortSubmissionStatus2SubmissionState(String submissionID,
                                                                                    String immPortSubmissionStatus) {
     if (IMMPORT_SUBMIT_STATE_PENDING.equals(immPortSubmissionStatus)) {
-      return Optional.of(SubmissionState.SUBMITTED);
-    } else if (IMMPORT_SUBMIT_STATE_STARTED.equals(immPortSubmissionStatus)) {
-      return Optional.of(SubmissionState.STARTED);
+      return Optional.of(SubmissionState.PROCESSING);
+    } else if (IMMPORT_SUBMIT_STATE_PROCESSING.equals(immPortSubmissionStatus)) {
+      return Optional.of(SubmissionState.PROCESSING);
     } else if (IMMPORT_SUBMIT_STATE_COMPLETED.equals(immPortSubmissionStatus)) {
       return Optional.of(SubmissionState.SUCCEEDED);
     } else if (IMMPORT_SUBMIT_STATE_REJECTED.equals(immPortSubmissionStatus)) {

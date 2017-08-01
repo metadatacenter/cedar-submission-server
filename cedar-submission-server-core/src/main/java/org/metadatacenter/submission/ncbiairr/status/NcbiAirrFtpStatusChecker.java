@@ -69,7 +69,6 @@ public class NcbiAirrFtpStatusChecker {
 
       FTPFile[] files = ftpClient.listFiles();
       Optional<String> mostRecentReportFileName = getMostRecentReportFileName(files);
-      
       if (mostRecentReportFileName.isPresent()) { // the folder contains a report file (at the minimum)
         if (!mostRecentReportFileName.get().equals(lastStatusReportFile)) { // there is a new report
           // update the variable that stores the name of the last report checked
@@ -90,8 +89,9 @@ public class NcbiAirrFtpStatusChecker {
               SubmissionStatusManager.getInstance().getCurrentSubmissions().get(submissionID).getSubmissionStatus();
         }
       } else { // the folder does not contain any report file yet
-        submissionStatus =
-            SubmissionStatusManager.getInstance().getCurrentSubmissions().get(submissionID).getSubmissionStatus();
+        String message = SubmissionStatusUtil.getShortStatusMessage(submissionID, SubmissionState.PROCESSING)
+            + "\n" + "The submission is being processed";
+        submissionStatus = new SubmissionStatus(submissionID, SubmissionState.PROCESSING, message);
       }
       ftpClient.logout();
     } catch (IOException | ParserConfigurationException | TransformerException | SAXException |

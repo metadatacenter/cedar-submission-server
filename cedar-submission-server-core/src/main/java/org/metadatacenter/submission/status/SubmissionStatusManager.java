@@ -96,11 +96,11 @@ public class SubmissionStatusManager
       SubmissionStatus newStatus = newSubmissionStatusDescriptor.getSubmissionStatus();
       if ((currentStatus.getSubmissionState() != newStatus.getSubmissionState()) ||
       (!currentStatus.getStatusMessage().equals(newStatus.getStatusMessage()) &&
-          !currentStatus.getSubmissionState().equals(SubmissionState.STARTED))) {
+          !currentStatus.getSubmissionState().equals(SubmissionState.SUBMITTED))) {
         notifyUser(newSubmissionStatusDescriptor);
       }
 
-      logger.info("Submission status: " + newStatus.toString());
+      logger.info("Submission status: " + newStatus.getSummary());
 
       this.submissions.put(submissionID, newSubmissionStatusDescriptor);
 

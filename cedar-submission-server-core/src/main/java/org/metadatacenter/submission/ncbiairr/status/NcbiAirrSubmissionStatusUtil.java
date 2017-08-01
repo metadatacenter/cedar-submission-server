@@ -25,6 +25,9 @@ public class NcbiAirrSubmissionStatusUtil {
     if (report.getState().equals(NcbiAirrSubmissionState.SUBMITTED)) {
       submissionState = SubmissionState.SUBMITTED;
     }
+    else if (report.getState().equals(NcbiAirrSubmissionState.PROCESSING)) {
+      submissionState = SubmissionState.PROCESSING;
+    }
     else if (report.getState().equals(NcbiAirrSubmissionState.PROCESSED_ERROR)) {
       submissionState = SubmissionState.ERROR;
     }
@@ -53,9 +56,5 @@ public class NcbiAirrSubmissionStatusUtil {
     String output = writer.getBuffer().toString();
     return output;
   }
-
-
-
-
 
 }

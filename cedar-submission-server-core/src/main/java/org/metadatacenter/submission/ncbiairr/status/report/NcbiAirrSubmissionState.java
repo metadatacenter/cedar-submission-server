@@ -2,7 +2,7 @@ package org.metadatacenter.submission.ncbiairr.status.report;
 
 public enum NcbiAirrSubmissionState
 {
-  SUBMITTED("submitted"), PROCESSED_ERROR("processed-error"), FAILED("failed");
+  SUBMITTED("submitted"), PROCESSING("processing"), PROCESSED_ERROR("processed-error"), FAILED("failed");
 
   private final String value;
 
