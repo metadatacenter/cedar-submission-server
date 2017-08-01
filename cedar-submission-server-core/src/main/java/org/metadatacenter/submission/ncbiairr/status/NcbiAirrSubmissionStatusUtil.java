@@ -42,7 +42,7 @@ public class NcbiAirrSubmissionStatusUtil {
   public static String generatePlainTextReport(Document xmlReport) throws TransformerException {
     TransformerFactory factory = TransformerFactory.newInstance();
     File xsltFilePath =
-        new File(NcbiAirrSubmissionStatusUtil.class.getClassLoader().getResource(Constants.NCBI_AIRR_XSLT_PATH).getPath());
+        new File(NcbiAirrSubmissionStatusUtil.class.getClassLoader().getResource(Constants.NCBI_AIRR_XSLT_PATH).getFile());
     Source xslt = new StreamSource(xsltFilePath);
     Transformer transformer = factory.newTransformer(xslt);
     StringWriter writer = new StringWriter();
