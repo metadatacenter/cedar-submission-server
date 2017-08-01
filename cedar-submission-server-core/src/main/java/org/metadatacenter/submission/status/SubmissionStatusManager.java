@@ -65,8 +65,8 @@ public class SubmissionStatusManager
   public String addSubmission(SubmissionStatusTask submissionStatusTask)
   {
     String submissionID = submissionStatusTask.getSubmissionID();
-    SubmissionStatus submissionStatus = new SubmissionStatus(submissionID, SubmissionState.STARTED,
-        SubmissionStatusUtil.getShortStatusMessage(submissionID, SubmissionState.STARTED));
+    SubmissionStatus submissionStatus = new SubmissionStatus(submissionID, SubmissionState.SUBMITTED,
+        SubmissionStatusUtil.getShortStatusMessage(submissionID, SubmissionState.SUBMITTED));
     SubmissionStatusDescriptor submissionStatusDescriptor = new SubmissionStatusDescriptor(submissionID,
       submissionStatusTask.getUserID(), submissionStatusTask.getStatusURL(), submissionStatus, submissionStatusTask);
 
@@ -89,11 +89,14 @@ public class SubmissionStatusManager
         currentSubmissionStatusDescriptor.getUserID(), currentSubmissionStatusDescriptor.getStatusURL(),
         submissionStatus, currentSubmissionStatusDescriptor.getSubmissionStatusTask());
 
-      // If the status has changed, notify user
+      // If the status has changed, notify user. We consider that the status has changed in the following cases:
+      // 1. The new state is different than the previous one (e.g., STARTED vs SUBMITTED)
+      // 2. The new state is the same, but the messages are different (except for the STARTED state)
       SubmissionStatus currentStatus = currentSubmissionStatusDescriptor.getSubmissionStatus();
       SubmissionStatus newStatus = newSubmissionStatusDescriptor.getSubmissionStatus();
       if ((currentStatus.getSubmissionState() != newStatus.getSubmissionState()) ||
-      (!currentStatus.getStatusMessage().equals(newStatus.getStatusMessage()))) {
+      (!currentStatus.getStatusMessage().equals(newStatus.getStatusMessage()) &&
+          !currentStatus.getSubmissionState().equals(SubmissionState.STARTED))) {
         notifyUser(newSubmissionStatusDescriptor);
       }
 

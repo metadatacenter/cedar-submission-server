@@ -69,9 +69,7 @@ public class NcbiAirrFtpStatusChecker {
 
       FTPFile[] files = ftpClient.listFiles();
       Optional<String> mostRecentReportFileName = getMostRecentReportFileName(files);
-      String waitingMessage = SubmissionStatusUtil.getShortStatusMessage(submissionID, SubmissionState.STARTED) +
-          "\nNCBI validation in progress";
-
+      
       if (mostRecentReportFileName.isPresent()) { // the folder contains a report file (at the minimum)
         if (!mostRecentReportFileName.get().equals(lastStatusReportFile)) { // there is a new report
           // update the variable that stores the name of the last report checked
@@ -87,11 +85,13 @@ public class NcbiAirrFtpStatusChecker {
           submissionStatus = NcbiAirrSubmissionStatusUtil.toSubmissionStatus(submissionID, statusFromReport);
           logger.info("The submission status has been updated (submissionId = " + submissionID + ")");
           logger.info(submissionStatus.toString());
-        } else { // the report file has already been checked
-          submissionStatus = new SubmissionStatus(submissionID, SubmissionState.STARTED, waitingMessage);
+        } else { // the report file has already been checked so the status will be the same
+          submissionStatus =
+              SubmissionStatusManager.getInstance().getCurrentSubmissions().get(submissionID).getSubmissionStatus();
         }
       } else { // the folder does not contain any report file yet
-        submissionStatus = new SubmissionStatus(submissionID, SubmissionState.STARTED, waitingMessage);
+        submissionStatus =
+            SubmissionStatusManager.getInstance().getCurrentSubmissions().get(submissionID).getSubmissionStatus();
       }
       ftpClient.logout();
     } catch (IOException | ParserConfigurationException | TransformerException | SAXException |
