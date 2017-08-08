@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
   <modelVersion>4.0.0</modelVersion>
 
@@ -15,6 +16,16 @@
   <packaging>jar</packaging>
 
   <dependencies>
+
+    <dependency>
+      <groupId>org.metadatacenter</groupId>
+      <artifactId>cedar-server-globals</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.metadatacenter</groupId>
+      <artifactId>cedar-cache-operations</artifactId>
+    </dependency>
 
     <dependency>
       <groupId>commons-lang</groupId>
@@ -38,6 +49,11 @@
 
     <dependency>
       <groupId>org.apache.httpcomponents</groupId>
+      <artifactId>httpmime</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.httpcomponents</groupId>
       <artifactId>httpcore</artifactId>
     </dependency>
 
@@ -47,13 +63,18 @@
     </dependency>
 
     <dependency>
-       <groupId>commons-net</groupId>
-       <artifactId>commons-net</artifactId>
+      <groupId>commons-net</groupId>
+      <artifactId>commons-net</artifactId>
     </dependency>
 
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-api</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.metadatacenter</groupId>
+      <artifactId>cedar-server-rest</artifactId>
     </dependency>
 
   </dependencies>
@@ -79,7 +100,7 @@
         <artifactId>jsonschema2pojo-maven-plugin</artifactId>
         <configuration>
           <sourceDirectory>${basedir}/src/main/resources/json-schema</sourceDirectory>
-          <targetPackage>org.metadatacenter.submission.biosample</targetPackage>
+          <targetPackage>org.metadatacenter.submission</targetPackage>
         </configuration>
         <executions>
           <execution>
