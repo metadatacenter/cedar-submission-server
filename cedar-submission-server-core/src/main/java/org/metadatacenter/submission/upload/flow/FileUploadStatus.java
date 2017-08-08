@@ -38,7 +38,11 @@ public class FileUploadStatus {
     this.fileLocalPath = fileLocalPath;
   }
 
-  public boolean isMetadataFile() { return isMetadataFile; }
+  public boolean isMetadataFile() {
+    return isMetadataFile;
+  }
 
-  public void setMetadataFile(boolean metadataFile) { isMetadataFile = metadataFile; }
+  public void setMetadataFile(boolean metadataFile) {
+    isMetadataFile = metadataFile;
+  }
 }

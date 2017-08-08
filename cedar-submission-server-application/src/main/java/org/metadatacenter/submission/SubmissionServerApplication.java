@@ -2,20 +2,16 @@ package org.metadatacenter.submission;
 
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
-import org.metadatacenter.submission.health.SubmissionServerHealthCheck;
-import org.metadatacenter.submission.notifications.StatusNotifier;
-import org.metadatacenter.submission.resources.AMIA2016DemoBioSampleServerResource;
-import org.metadatacenter.submission.resources.ImmPortSubmissionServerResource;
-import org.metadatacenter.submission.resources.IndexResource;
-import org.metadatacenter.submission.resources.LincsSubmissionServerResource;
-import org.metadatacenter.submission.resources.NcbiAirrSubmissionServerResource;
 import org.metadatacenter.cedar.util.dw.CedarMicroserviceApplication;
 import org.metadatacenter.config.CedarConfig;
 import org.metadatacenter.model.ServerName;
 import org.metadatacenter.server.cache.util.CacheService;
+import org.metadatacenter.submission.health.SubmissionServerHealthCheck;
 import org.metadatacenter.submission.ncbiairr.queue.NcbiAirrSubmissionExecutorService;
 import org.metadatacenter.submission.ncbiairr.queue.NcbiAirrSubmissionQueueProcessor;
 import org.metadatacenter.submission.ncbiairr.queue.NcbiAirrSubmissionQueueService;
+import org.metadatacenter.submission.notifications.StatusNotifier;
+import org.metadatacenter.submission.resources.*;
 
 public class SubmissionServerApplication extends CedarMicroserviceApplication<SubmissionServerConfiguration> {
 
@@ -67,7 +63,8 @@ public class SubmissionServerApplication extends CedarMicroserviceApplication<Su
     final LincsSubmissionServerResource lincsSubmissionServerResource = new LincsSubmissionServerResource(cedarConfig);
     environment.jersey().register(lincsSubmissionServerResource);
 
-    final ImmPortSubmissionServerResource immPortSubmissionServerResource = new ImmPortSubmissionServerResource(cedarConfig);
+    final ImmPortSubmissionServerResource immPortSubmissionServerResource = new ImmPortSubmissionServerResource
+        (cedarConfig);
     environment.jersey().register(immPortSubmissionServerResource);
 
     final SubmissionServerHealthCheck healthCheck = new SubmissionServerHealthCheck();

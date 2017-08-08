@@ -24,14 +24,11 @@ public class NcbiAirrSubmissionStatusUtil {
     SubmissionState submissionState = null;
     if (report.getState().equals(NcbiAirrSubmissionState.SUBMITTED)) {
       submissionState = SubmissionState.PROCESSING;
-    }
-    else if (report.getState().equals(NcbiAirrSubmissionState.PROCESSING)) {
+    } else if (report.getState().equals(NcbiAirrSubmissionState.PROCESSING)) {
       submissionState = SubmissionState.PROCESSING;
-    }
-    else if (report.getState().equals(NcbiAirrSubmissionState.PROCESSED_ERROR)) {
+    } else if (report.getState().equals(NcbiAirrSubmissionState.PROCESSED_ERROR)) {
       submissionState = SubmissionState.ERROR;
-    }
-    else if (report.getState().equals(NcbiAirrSubmissionState.FAILED)) {
+    } else if (report.getState().equals(NcbiAirrSubmissionState.FAILED)) {
       submissionState = SubmissionState.REJECTED;
     }
     // TODO: complete with all NCBI states

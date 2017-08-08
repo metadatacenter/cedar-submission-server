@@ -42,6 +42,11 @@ public class LincsSubmissionServerResource extends CedarMicroserviceResource {
     super(cedarConfig);
   }
 
+  private static void loggingError(String errorMessage, String detailedMessage) {
+    logger.error(errorMessage);
+    logger.error("Message from the upstream server: " + detailedMessage);
+  }
+
   @POST
   @Timed
   @Path("/validate-lincs")
@@ -121,7 +126,8 @@ public class LincsSubmissionServerResource extends CedarMicroserviceResource {
   }
 
   private Response handleServerErrorResponse(HttpEntity responseEntity) throws IOException {
-    String errorMessage = "The validation service from 'dev3.ccs.miami.edu' returns an Internal Server Error (500) status";
+    String errorMessage = "The validation service from 'dev3.ccs.miami.edu' returns an Internal Server Error (500) " +
+        "status";
     String detailedMessage = IOUtils.toString(responseEntity.getContent());
     loggingError(errorMessage, detailedMessage);
     return CedarResponse.badGateway()
@@ -132,7 +138,8 @@ public class LincsSubmissionServerResource extends CedarMicroserviceResource {
   }
 
   private Response handleOtherErrorResponse(int statusCode, HttpEntity responseEntity) throws IOException {
-    String errorMessage = String.format("The validation service from 'dev3.ccs.miami.edu' returns (%s) status", statusCode);
+    String errorMessage = String.format("The validation service from 'dev3.ccs.miami.edu' returns (%s) status",
+        statusCode);
     String detailedMessage = IOUtils.toString(responseEntity.getContent());
     loggingError(errorMessage, detailedMessage);
     return CedarResponse.status(Status.fromStatusCode(statusCode))
@@ -140,10 +147,5 @@ public class LincsSubmissionServerResource extends CedarMicroserviceResource {
         .errorMessage(errorMessage)
         .parameter("upstreamErrorMessage", detailedMessage)
         .build();
-  }
-
-  private static void loggingError(String errorMessage, String detailedMessage) {
-    logger.error(errorMessage);
-    logger.error("Message from the upstream server: " + detailedMessage);
   }
 }

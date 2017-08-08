@@ -30,7 +30,8 @@ public class NcbiAirrFtpStatusChecker {
 
   public static SubmissionStatus getNcbiAirrSubmissionStatus(String submissionID, FTPConfig ftpConfig,
                                                              String submissionFolder, String lastStatusReportFile)
-      throws SAXException, ParserConfigurationException, TransformerException, UploaderCreationException, IOException, InterruptedException {
+      throws SAXException, ParserConfigurationException, TransformerException, UploaderCreationException,
+      IOException, InterruptedException {
 
     FTPClient ftpClient = null;
     SubmissionStatus submissionStatus = null;
@@ -61,8 +62,7 @@ public class NcbiAirrFtpStatusChecker {
             SubmissionStatusManager.getInstance().removeSubmission(submissionID);
             throw new IOException("Couldn't go to the submission folder (path: " + submissionPath + ")");
           }
-        }
-        else {
+        } else {
           break;
         }
       }

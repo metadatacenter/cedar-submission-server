@@ -30,7 +30,8 @@ public class NcbiAirrFtpUploadService {
    * @throws UploaderCreationException When the FTP uploader failed to be created (e.g., hostname not found or
    *                                   invalid credential)
    */
-  public static void uploadToNcbi(String submissionDir, Collection<File> listOfFiles, FTPConfig ftpConfig, boolean uploadSubmitReadyFile) throws IOException,
+  public static void uploadToNcbi(String submissionDir, Collection<File> listOfFiles, FTPConfig ftpConfig, boolean
+      uploadSubmitReadyFile) throws IOException,
       UploaderCreationException {
     FileUploader uploader = null;
     try {
@@ -55,7 +56,8 @@ public class NcbiAirrFtpUploadService {
     }
   }
 
-  private static void uploadResourceFiles(FileUploader uploader, String submissionDir, Collection<File> listOfFiles) throws
+  private static void uploadResourceFiles(FileUploader uploader, String submissionDir, Collection<File> listOfFiles)
+      throws
       IOException {
     for (File file : listOfFiles) {
       Stopwatch stopwatch = Stopwatch.createStarted();

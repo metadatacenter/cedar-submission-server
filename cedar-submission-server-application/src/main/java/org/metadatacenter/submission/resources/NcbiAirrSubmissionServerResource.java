@@ -9,10 +9,10 @@ import org.metadatacenter.config.CedarConfig;
 import org.metadatacenter.exception.CedarException;
 import org.metadatacenter.rest.context.CedarRequestContext;
 import org.metadatacenter.rest.context.CedarRequestContextFactory;
+import org.metadatacenter.submission.AIRRTemplate;
 import org.metadatacenter.submission.AIRRTemplate2SRAConverter;
 import org.metadatacenter.submission.BioSampleValidator;
 import org.metadatacenter.submission.Constants;
-import org.metadatacenter.submission.biosample.AIRRTemplate;
 import org.metadatacenter.submission.ncbiairr.NcbiAirrSubmission;
 import org.metadatacenter.submission.ncbiairr.NcbiAirrSubmissionUtil;
 import org.metadatacenter.submission.ncbiairr.queue.NcbiAirrSubmissionQueueService;
@@ -45,12 +45,9 @@ import static org.metadatacenter.rest.assertion.GenericAssertions.LoggedIn;
 public class NcbiAirrSubmissionServerResource extends CedarMicroserviceResource {
 
   final static Logger logger = LoggerFactory.getLogger(NcbiAirrSubmissionServerResource.class);
-
-  private final BioSampleValidator bioSampleValidator;
-
-  private final AIRRTemplate2SRAConverter airrTemplate2SRAConverter;
-
   private static NcbiAirrSubmissionQueueService ncbiAirrSubmissionQueueService;
+  private final BioSampleValidator bioSampleValidator;
+  private final AIRRTemplate2SRAConverter airrTemplate2SRAConverter;
 
   public NcbiAirrSubmissionServerResource(CedarConfig cedarConfig) {
     super(cedarConfig);
@@ -85,7 +82,8 @@ public class NcbiAirrSubmissionServerResource extends CedarMicroserviceResource 
       String bioSampleSubmissionXML = this.airrTemplate2SRAConverter
           .generateSRASubmissionXMLFromAIRRTemplateInstance(airrInstance);
 
-      return Response.ok(this.bioSampleValidator.validateBioSampleSubmission(bioSampleSubmissionXML)).build();  // TODO CEDAR error response
+      return Response.ok(this.bioSampleValidator.validateBioSampleSubmission(bioSampleSubmissionXML)).build();  //
+      // TODO CEDAR error response
     } catch (JAXBException | DatatypeConfigurationException e) {
       return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build(); // TODO CEDAR error response
     }

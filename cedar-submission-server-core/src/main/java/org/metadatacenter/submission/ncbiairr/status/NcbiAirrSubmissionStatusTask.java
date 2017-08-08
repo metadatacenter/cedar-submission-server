@@ -12,7 +12,8 @@ public class NcbiAirrSubmissionStatusTask extends SubmissionStatusTask {
   private String lastStatusReportFile;
 
   // TODO: keep the statusURL in the parent. Not needed here.
-  public NcbiAirrSubmissionStatusTask(String submissionID, SubmissionType submissionType, String userID, String statusURL,
+  public NcbiAirrSubmissionStatusTask(String submissionID, SubmissionType submissionType, String userID, String
+      statusURL,
                                       FTPConfig ftpConfig, String submissionFolder) {
     super(submissionID, submissionType, userID, statusURL);
     this.ftpConfig = ftpConfig;
@@ -21,7 +22,8 @@ public class NcbiAirrSubmissionStatusTask extends SubmissionStatusTask {
 
   @Override
   protected SubmissionStatus callSubmissionStatusEndpoint() throws Exception {
-    return NcbiAirrFtpStatusChecker.getNcbiAirrSubmissionStatus(getSubmissionID(), ftpConfig, submissionFolder, lastStatusReportFile);
+    return NcbiAirrFtpStatusChecker.getNcbiAirrSubmissionStatus(getSubmissionID(), ftpConfig, submissionFolder,
+        lastStatusReportFile);
   }
 
   public FTPConfig getFtpConfig() {

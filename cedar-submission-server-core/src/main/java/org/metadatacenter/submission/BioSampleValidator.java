@@ -10,7 +10,6 @@ import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
-import org.metadatacenter.submission.biosample.CEDARBioSampleValidationResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,14 +24,12 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
 
-public class BioSampleValidator
-{
+public class BioSampleValidator {
   final static Logger logger = LoggerFactory.getLogger(BioSampleValidator.class);
 
   private static final String BIOSAMPLE_VALIDATION_URL = "https://www.ncbi.nlm.nih.gov/projects/biosample/validate/";
 
-  public BioSampleValidator()
-  {
+  public BioSampleValidator() {
   }
 
   /**
@@ -50,8 +47,7 @@ public class BioSampleValidator
    * @throws JAXBException                  If a JAXB error occurs during processing
    * @throws DatatypeConfigurationException If a configuration error occurs during processing
    */
-  public CEDARBioSampleValidationResponse validateBioSampleSubmission(String bioSampleSubmissionXML)
-  {
+  public CEDARBioSampleValidationResponse validateBioSampleSubmission(String bioSampleSubmissionXML) {
     CloseableHttpClient client = HttpClientBuilder.create().build();
     HttpPost post = new HttpPost(BIOSAMPLE_VALIDATION_URL);
     StringEntity requestEntity = new StringEntity(bioSampleSubmissionXML, ContentType.APPLICATION_XML);
@@ -77,17 +73,19 @@ public class BioSampleValidator
         InputStream xmlResponseStream = entity.getContent();
         BioSampleValidate bioSampleValidationResponse = bioSampleXMLResponse2BioSampleValidate(xmlResponseStream);
         return bioSampleValidationResponse2CEDARValidationResponse(bioSampleValidationResponse);
-      } else
+      } else {
         return generateUnexpectedStatusCodeCEDARBioSampleValidationResponse(response.getStatusLine().getStatusCode());
+      }
     } catch (IOException | JAXBException e) {
       return generateUnexpectedConnectionErrorCEDARBioSampleValidationResponse(e.getMessage());
     } finally {
-      if (response != null)
+      if (response != null) {
         try {
           response.close();
         } catch (IOException e) {
           logger.warn("Error closing HTTP response for NCBI BioSample validator");
         }
+      }
     }
   }
 
@@ -98,8 +96,7 @@ public class BioSampleValidator
    * @param statusCode A HTTP status code
    * @return A validation response message
    */
-  private CEDARBioSampleValidationResponse generateUnexpectedStatusCodeCEDARBioSampleValidationResponse(int statusCode)
-  {
+  private CEDARBioSampleValidationResponse generateUnexpectedStatusCodeCEDARBioSampleValidationResponse(int statusCode) {
     CEDARBioSampleValidationResponse cedarValidationResponse = new CEDARBioSampleValidationResponse();
     List<String> messages = new ArrayList<>();
     String message = "Unexpected status code " + statusCode + " returned by BioSample validation service";
@@ -118,8 +115,7 @@ public class BioSampleValidator
    * @return A validation response message
    */
   private CEDARBioSampleValidationResponse generateUnexpectedConnectionErrorCEDARBioSampleValidationResponse(
-    String errorMessage)
-  {
+      String errorMessage) {
     CEDARBioSampleValidationResponse cedarValidationResponse = new CEDARBioSampleValidationResponse();
     List<String> messages = new ArrayList<>();
     String message = "Unexpected error calling BioSample validation service: " + errorMessage;
@@ -144,8 +140,7 @@ public class BioSampleValidator
    * @return A CEDAR
    */
   private CEDARBioSampleValidationResponse bioSampleValidationResponse2CEDARValidationResponse(
-    BioSampleValidate bioSampleValidationResponse)
-  {
+      BioSampleValidate bioSampleValidationResponse) {
     CEDARBioSampleValidationResponse cedarValidationResponse = new CEDARBioSampleValidationResponse();
     List<String> messages = new ArrayList<>();
     cedarValidationResponse.setMessages(messages);
@@ -154,10 +149,11 @@ public class BioSampleValidator
     if (!actionStatuses.isEmpty()) {
       TypeActionStatus actionStatus = actionStatuses.get(0);
       TypeStatus status = actionStatus.getStatus();
-      if (status == TypeStatus.PROCESSED_OK)
+      if (status == TypeStatus.PROCESSED_OK) {
         cedarValidationResponse.setIsValid(true);
-      else
+      } else {
         cedarValidationResponse.setIsValid(false);
+      }
 
       // There can be warning messages from the validator even if validation passes
       List<TypeActionStatus.Response> statusResponses = actionStatus.getResponse();
@@ -180,12 +176,11 @@ public class BioSampleValidator
    * @return A Java representation of the XML response
    * @throws JAXBException If there is an error during processing
    */
-  private BioSampleValidate bioSampleXMLResponse2BioSampleValidate(InputStream xmlResponseStream) throws JAXBException
-  {
+  private BioSampleValidate bioSampleXMLResponse2BioSampleValidate(InputStream xmlResponseStream) throws JAXBException {
     JAXBContext jaxbBioSampleValidateContext = JAXBContext.newInstance(BioSampleValidate.class);
     Unmarshaller jaxbBioSampleValidateUnmarshaller = jaxbBioSampleValidateContext.createUnmarshaller();
-    BioSampleValidate bioSampleValidate = (BioSampleValidate)jaxbBioSampleValidateUnmarshaller
-      .unmarshal(xmlResponseStream);
+    BioSampleValidate bioSampleValidate = (BioSampleValidate) jaxbBioSampleValidateUnmarshaller
+        .unmarshal(xmlResponseStream);
     return bioSampleValidate;
   }
 }

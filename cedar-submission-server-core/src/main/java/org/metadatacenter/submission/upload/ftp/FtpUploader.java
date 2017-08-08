@@ -31,14 +31,9 @@ public class FtpUploader implements FileUploader {
     this.userDirectory = checkNotNull(userDirectory);
   }
 
-  private void changeToUserDirectory() throws IOException {
-    ftpClient.changeToParentDirectory();
-    ftpClient.changeWorkingDirectory(userDirectory);
-  }
-
   public static FtpUploader createNewUploader(@Nonnull String hostname, @Nonnull String username,
                                               @Nonnull String password, @Nonnull Optional<String> userDirectory)
-                                              throws UploaderCreationException {
+      throws UploaderCreationException {
     FTPClient ftpClient = new FTPClient();
     try {
       ftpClient.connect(hostname);
@@ -61,6 +56,20 @@ public class FtpUploader implements FileUploader {
       logger.error(ex.getMessage());
       throw new UploaderCreationException("Error while creating the FTP client", ex);
     }
+  }
+
+  private static void showServerReply(FTPClient ftpClient) {
+    String[] replies = ftpClient.getReplyStrings();
+    if (replies != null && replies.length > 0) {
+      for (String reply : replies) {
+        logger.error(reply);
+      }
+    }
+  }
+
+  private void changeToUserDirectory() throws IOException {
+    ftpClient.changeToParentDirectory();
+    ftpClient.changeWorkingDirectory(userDirectory);
   }
 
   @Override
@@ -90,8 +99,8 @@ public class FtpUploader implements FileUploader {
     changeToUserDirectory();
     boolean dirExists = true;
     String[] directories = directory.split("/");
-    for (String dir : directories ) {
-      if (!dir.isEmpty() ) {
+    for (String dir : directories) {
+      if (!dir.isEmpty()) {
         if (dirExists) {
           dirExists = ftpClient.changeWorkingDirectory(dir);
         }
@@ -105,15 +114,6 @@ public class FtpUploader implements FileUploader {
             throw new IOException("Unable to change the working remote directory: " + directory);
           }
         }
-      }
-    }
-  }
-
-  private static void showServerReply(FTPClient ftpClient) {
-    String[] replies = ftpClient.getReplyStrings();
-    if (replies != null && replies.length > 0) {
-      for (String reply : replies) {
-        logger.error(reply);
       }
     }
   }

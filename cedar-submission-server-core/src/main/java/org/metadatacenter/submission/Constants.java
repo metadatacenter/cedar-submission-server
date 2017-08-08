@@ -1,7 +1,6 @@
 package org.metadatacenter.submission;
 
-public class Constants
-{
+public class Constants {
 
   /* Execution settings */
   public static boolean NCBI_AIRR_SUBMIT = true; // if false, the FTP submission is ignored
@@ -18,12 +17,11 @@ public class Constants
   // PRIVATE //
 
   /**
-   The caller references the constants using Constants.EMPTY_STRING,
-   and so on. Thus, the caller should be prevented from constructing objects of
-   this class, by declaring this private constructor.
+   * The caller references the constants using Constants.EMPTY_STRING,
+   * and so on. Thus, the caller should be prevented from constructing objects of
+   * this class, by declaring this private constructor.
    */
-  private Constants()
-  {
+  private Constants() {
     // This restricts instantiation
     throw new AssertionError();
   }

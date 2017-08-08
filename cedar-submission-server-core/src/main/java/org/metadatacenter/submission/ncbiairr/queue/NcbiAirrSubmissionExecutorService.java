@@ -18,13 +18,12 @@ import java.util.List;
 
 public class NcbiAirrSubmissionExecutorService {
 
+  private static final Logger logger = LoggerFactory.getLogger(NcbiAirrSubmissionExecutorService.class);
   private final CedarConfig cedarConfig;
 
   public NcbiAirrSubmissionExecutorService(CedarConfig cedarConfig) {
     this.cedarConfig = cedarConfig;
   }
-
-  private static final Logger logger = LoggerFactory.getLogger(NcbiAirrSubmissionExecutorService.class);
 
   // Main entry point
   public void handleEvent(NcbiAirrSubmissionQueueEvent event) {
@@ -43,16 +42,17 @@ public class NcbiAirrSubmissionExecutorService {
 
       // Track the submission status
       NcbiAirrSubmissionStatusTask submissionStatusTask = new NcbiAirrSubmissionStatusTask(submission.getId(),
-          SubmissionType.NCBI_AIRR, submission.getCedarUserId(), null, cedarConfig.getSubmissionConfig().getNcbi().getSra().getFtp(),
+          SubmissionType.NCBI_AIRR, submission.getCedarUserId(), null, cedarConfig.getSubmissionConfig().getNcbi()
+          .getSra().getFtp(),
           submission.getSubmissionFolder());
       SubmissionStatusManager.getInstance().addSubmission(submissionStatusTask);
       SubmissionStatusManager.getInstance().setCedarConfig(cedarConfig);
 
       if (Constants.NCBI_AIRR_SUBMIT) { // real submission
         NcbiAirrFtpUploadService.uploadToNcbi(submission.getSubmissionFolder(),
-            filesToSubmit, cedarConfig.getSubmissionConfig().getNcbi().getSra().getFtp(), submission.getUploadSubmitReadyFile());
-      }
-      else { // simulated submission
+            filesToSubmit, cedarConfig.getSubmissionConfig().getNcbi().getSra().getFtp(), submission
+                .getUploadSubmitReadyFile());
+      } else { // simulated submission
         Thread.sleep(Constants.NCBI_AIRR_SIMULATION_MODE_TIMEOUT);
       }
 

@@ -12,9 +12,8 @@ import redis.clients.jedis.JedisPoolConfig;
 
 public class NcbiAirrSubmissionQueueService {
 
-  protected static final Logger log = LoggerFactory.getLogger(NcbiAirrSubmissionQueueService.class);
-
   public final static String NCBI_SUBMISSION_QUEUE_ID = "ncbiAirrSubmission";
+  protected static final Logger log = LoggerFactory.getLogger(NcbiAirrSubmissionQueueService.class);
   private final CacheServerPersistent cacheConfig;
   private JedisPool pool;
 

@@ -2,9 +2,9 @@ package org.metadatacenter.submission.ncbiairr;
 
 import com.fasterxml.jackson.databind.JsonMappingException;
 import org.apache.commons.io.FileUtils;
+import org.metadatacenter.submission.AIRRTemplate;
 import org.metadatacenter.submission.AIRRTemplate2SRAConverter;
 import org.metadatacenter.submission.Constants;
-import org.metadatacenter.submission.biosample.AIRRTemplate;
 import org.metadatacenter.submission.upload.flow.FileUploadStatus;
 import org.metadatacenter.submission.upload.flow.FlowUploadUtil;
 import org.metadatacenter.submission.upload.flow.SubmissionUploadManager;

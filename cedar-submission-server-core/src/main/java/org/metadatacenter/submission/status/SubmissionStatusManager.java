@@ -15,29 +15,19 @@ import java.util.concurrent.TimeUnit;
 // TODO Use Redis queue
 // TODO Need to add insertion time in descriptor and clean old ones
 
-public class SubmissionStatusManager
-{
+public class SubmissionStatusManager {
   final static Logger logger = LoggerFactory.getLogger(SubmissionStatusManager.class);
-
+  private static SubmissionStatusManager singleInstance;
   private final ExecutorService executor;
-
   private final ConcurrentHashMap<String, SubmissionStatusDescriptor> submissions = new ConcurrentHashMap<>();
-
   // TODO: this is not nice. Find another way of having these variable available to call the messaging server
   private CedarConfig cedarConfig;
-  public void setCedarConfig(CedarConfig cedarConfig) {
-    this.cedarConfig = cedarConfig;
-  }
 
-  private SubmissionStatusManager()
-  {
+  private SubmissionStatusManager() {
     this.executor = Executors.newFixedThreadPool(10);
   }
 
-  private static SubmissionStatusManager singleInstance;
-
-  public static synchronized SubmissionStatusManager getInstance()
-  {
+  public static synchronized SubmissionStatusManager getInstance() {
     if (singleInstance == null) {
       singleInstance = new SubmissionStatusManager();
       singleInstance.start();
@@ -45,14 +35,16 @@ public class SubmissionStatusManager
     return singleInstance;
   }
 
-  private void start()
-  {
+  public void setCedarConfig(CedarConfig cedarConfig) {
+    this.cedarConfig = cedarConfig;
+  }
+
+  private void start() {
     logger.info("Starting the submission status manager");
     executor.submit(new SubmissionStatusManagerRunnable(this));
   }
 
-  public void stop()
-  {
+  public void stop() {
     logger.info("Stopping the submission status manager");
     executor.shutdown();
     try {
@@ -62,13 +54,12 @@ public class SubmissionStatusManager
     }
   }
 
-  public String addSubmission(SubmissionStatusTask submissionStatusTask)
-  {
+  public String addSubmission(SubmissionStatusTask submissionStatusTask) {
     String submissionID = submissionStatusTask.getSubmissionID();
     SubmissionStatus submissionStatus = new SubmissionStatus(submissionID, SubmissionState.SUBMITTED,
         SubmissionStatusUtil.getShortStatusMessage(submissionID, SubmissionState.SUBMITTED));
     SubmissionStatusDescriptor submissionStatusDescriptor = new SubmissionStatusDescriptor(submissionID,
-      submissionStatusTask.getUserID(), submissionStatusTask.getStatusURL(), submissionStatus, submissionStatusTask);
+        submissionStatusTask.getUserID(), submissionStatusTask.getStatusURL(), submissionStatus, submissionStatusTask);
 
     this.submissions.put(submissionID, submissionStatusDescriptor);
 
@@ -77,17 +68,16 @@ public class SubmissionStatusManager
     return submissionID;
   }
 
-  public void updateSubmission(SubmissionStatus submissionStatus)
-  {
+  public void updateSubmission(SubmissionStatus submissionStatus) {
     String submissionID = submissionStatus.getSubmissionID();
 
-    if (!this.submissions.containsKey(submissionID))
+    if (!this.submissions.containsKey(submissionID)) {
       logger.warn("Attempt to update unknown submission " + submissionID);
-    else {
+    } else {
       SubmissionStatusDescriptor currentSubmissionStatusDescriptor = submissions.get(submissionID);
       SubmissionStatusDescriptor newSubmissionStatusDescriptor = new SubmissionStatusDescriptor(submissionID,
-        currentSubmissionStatusDescriptor.getUserID(), currentSubmissionStatusDescriptor.getStatusURL(),
-        submissionStatus, currentSubmissionStatusDescriptor.getSubmissionStatusTask());
+          currentSubmissionStatusDescriptor.getUserID(), currentSubmissionStatusDescriptor.getStatusURL(),
+          submissionStatus, currentSubmissionStatusDescriptor.getSubmissionStatusTask());
 
       // If the status has changed, notify user. We consider that the status has changed in the following cases:
       // 1. The new state is different than the previous one (e.g., STARTED vs SUBMITTED)
@@ -95,8 +85,8 @@ public class SubmissionStatusManager
       SubmissionStatus currentStatus = currentSubmissionStatusDescriptor.getSubmissionStatus();
       SubmissionStatus newStatus = newSubmissionStatusDescriptor.getSubmissionStatus();
       if ((currentStatus.getSubmissionState() != newStatus.getSubmissionState()) ||
-      (!currentStatus.getStatusMessage().equals(newStatus.getStatusMessage()) &&
-          !currentStatus.getSubmissionState().equals(SubmissionState.SUBMITTED))) {
+          (!currentStatus.getStatusMessage().equals(newStatus.getStatusMessage()) &&
+              !currentStatus.getSubmissionState().equals(SubmissionState.SUBMITTED))) {
         notifyUser(newSubmissionStatusDescriptor);
       }
 
@@ -105,21 +95,22 @@ public class SubmissionStatusManager
       this.submissions.put(submissionID, newSubmissionStatusDescriptor);
 
       if (submissionStatus.getSubmissionState() == SubmissionState.SUCCEEDED
-        || submissionStatus.getSubmissionState() == SubmissionState.REJECTED
-        || submissionStatus.getSubmissionState() == SubmissionState.ERROR)
+          || submissionStatus.getSubmissionState() == SubmissionState.REJECTED
+          || submissionStatus.getSubmissionState() == SubmissionState.ERROR) {
         removeSubmission(submissionID);
+      }
     }
   }
 
-  public void removeSubmission(String submissionID)
-  {
-    if (!this.submissions.containsKey(submissionID))
+  public void removeSubmission(String submissionID) {
+    if (!this.submissions.containsKey(submissionID)) {
       logger.warn("Attempt to remove unknown submission " + submissionID);
-    else {
+    } else {
       SubmissionStatusDescriptor submissionStatusDescriptor = this.submissions.get(submissionID);
 
-      if (submissionStatusDescriptor.getSubmissionStatus().getSubmissionState() != SubmissionState.SUCCEEDED)
+      if (submissionStatusDescriptor.getSubmissionStatus().getSubmissionState() != SubmissionState.SUCCEEDED) {
         logger.warn("Removing incomplete submission " + submissionID);
+      }
 
       logger.info("Removing submission " + submissionID);
 
@@ -127,15 +118,13 @@ public class SubmissionStatusManager
     }
   }
 
-  public Map<String, SubmissionStatusDescriptor> getCurrentSubmissions()
-  {
+  public Map<String, SubmissionStatusDescriptor> getCurrentSubmissions() {
     synchronized (submissions) {
       return Collections.unmodifiableMap(submissions);
     }
   }
 
-  private void notifyUser(SubmissionStatusDescriptor submissionStatusDescriptor)
-  {
+  private void notifyUser(SubmissionStatusDescriptor submissionStatusDescriptor) {
     logger.info("Notifying user for submission " + submissionStatusDescriptor.getSubmissionID() + "; status = "
         + submissionStatusDescriptor.getSubmissionStatus().getSubmissionState() + ", message = "
         + submissionStatusDescriptor.getSubmissionStatus().getStatusMessage());

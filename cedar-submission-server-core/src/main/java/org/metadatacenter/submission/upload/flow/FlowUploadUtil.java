@@ -63,7 +63,7 @@ public class FlowUploadUtil {
           flowRelativePath = item.getString();
         } else if (item.getFieldName().equals("flowTotalChunks")) {
           flowTotalChunks = Long.parseLong(item.getString());
-        // Additional parameters
+          // Additional parameters
         } else {
           additionalParameters.put(item.getFieldName(), item.getString());
         }
@@ -101,12 +101,15 @@ public class FlowUploadUtil {
       throw new InternalError("Missing field: flowTotalChunks");
     }
 
-    return new FlowData(submissionId, numberOfFiles, metadataFiles, flowChunkNumber, flowChunkSize, flowCurrentChunkSize,
-        flowTotalSize, flowIdentifier, flowFilename, flowRelativePath, flowTotalChunks, flowFileInputStream, additionalParameters);
+    return new FlowData(submissionId, numberOfFiles, metadataFiles, flowChunkNumber, flowChunkSize,
+        flowCurrentChunkSize,
+        flowTotalSize, flowIdentifier, flowFilename, flowRelativePath, flowTotalChunks, flowFileInputStream,
+        additionalParameters);
 
   }
 
-  public static String saveToLocalFile(FlowData data, String userId, int contentLength, String folderPath) throws IOException {
+  public static String saveToLocalFile(FlowData data, String userId, int contentLength, String folderPath) throws
+      IOException {
     //File submissionLocalFolder = new File(folderPath);
 //    if (!submissionLocalFolder.exists()) {
 //      submissionLocalFolder.mkdirs();
@@ -147,7 +150,8 @@ public class FlowUploadUtil {
 
   public static String getSubmissionLocalFolderPath(String baseFolderName, String userId, String submissionId) {
     String userFolder = FlowUploadUtil.getLastFragmentOfUrl(userId);
-    return System.getProperty("java.io.tmpdir") + "/" + baseFolderName + "/user_" + userFolder + "/submission_" + submissionId;
+    return System.getProperty("java.io.tmpdir") + "/" + baseFolderName + "/user_" + userFolder + "/submission_" +
+        submissionId;
   }
 
   public static String getFileLocalFolderPath(String submissionLocalFolderPath, String fileName) {
@@ -177,8 +181,7 @@ public class FlowUploadUtil {
   public static List<String> commaSeparatedStringToList(String string) {
     if (string.trim().length() == 0) {
       return new ArrayList<>();
-    }
-    else {
+    } else {
       //Remove whitespaces and split by comma
       return Arrays.asList(string.split("\\s*,\\s*"));
     }

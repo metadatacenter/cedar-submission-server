@@ -10,7 +10,8 @@ public class NcbiAirrSubmission {
   private String submissionFolder;
   private boolean uploadSubmitReadyFile;
 
-  public NcbiAirrSubmission() {}
+  public NcbiAirrSubmission() {
+  }
 
   public NcbiAirrSubmission(String id, String cedarUserId, Collection<String> localFilePaths, String
       submissionFolder, boolean uploadSubmitReadyFile) {

@@ -8,13 +8,12 @@ import java.util.Map;
 
 public class SubmissionUploadManager {
 
+  private static SubmissionUploadManager singleInstance;
   private Map<String, SubmissionUploadStatus> submissionsUploadStatus = new HashMap<>();
 
   // Single instance
   private SubmissionUploadManager() {
   }
-
-  private static SubmissionUploadManager singleInstance;
 
   public static synchronized SubmissionUploadManager getInstance() {
     if (singleInstance == null) {
@@ -63,14 +62,12 @@ public class SubmissionUploadManager {
     }
   }
 
-  private boolean isFileUploadComplete(FileUploadStatus fileUploadStatus)  {
+  private boolean isFileUploadComplete(FileUploadStatus fileUploadStatus) {
     if (fileUploadStatus.getFileUploadedChunks() == fileUploadStatus.getFileTotalChunks()) {
       return true;
-    }
-    else if (fileUploadStatus.getFileUploadedChunks() > fileUploadStatus.getFileTotalChunks()) {
+    } else if (fileUploadStatus.getFileUploadedChunks() > fileUploadStatus.getFileTotalChunks()) {
       throw new InternalError("Uploaded file chunks is higher than total file chunks");
-    }
-    else {
+    } else {
       return false;
     }
   }
@@ -83,11 +80,10 @@ public class SubmissionUploadManager {
 
     if (submissionUploadStatus.getUploadedFilesCount() == submissionUploadStatus.getTotalFilesCount()) {
       return true;
-    }
-    else if (submissionUploadStatus.getUploadedFilesCount() > submissionUploadStatus.getTotalFilesCount()) {
-      throw new InternalError("Number of uploaded files is higher than the total number of files (submissionId = " + submissionId);
-    }
-    else {
+    } else if (submissionUploadStatus.getUploadedFilesCount() > submissionUploadStatus.getTotalFilesCount()) {
+      throw new InternalError("Number of uploaded files is higher than the total number of files (submissionId = " +
+          submissionId);
+    } else {
       return false;
     }
   }

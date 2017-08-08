@@ -3,17 +3,8 @@ package org.metadatacenter.submission;
 import biosample.TypeAttribute;
 import biosample.TypeBioSample;
 import biosample.TypeBioSampleIdentifier;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import common.sp.*;
 import generated.*;
-import org.metadatacenter.submission.biosample.AIRRTemplate;
-import org.metadatacenter.submission.biosample.BioSampleOptionalAttribute;
-import org.metadatacenter.submission.biosample.FileName;
-import org.metadatacenter.submission.biosample.FileType;
-import org.metadatacenter.submission.biosample.NCBIBioProject;
-import org.metadatacenter.submission.biosample.NCBIBioSample;
-import org.metadatacenter.submission.biosample.NCBISRA;
-import org.metadatacenter.submission.biosample.SRAOptionalAttribute;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
@@ -23,8 +14,6 @@ import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
 import javax.xml.namespace.QName;
-import java.io.File;
-import java.io.IOException;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.GregorianCalendar;
@@ -36,8 +25,7 @@ import java.util.UUID;
 /**
  * Convert a CEDAR JSON Schema-based AIRR template instance into a BioProject/BioSample/SRA XML-based submission.
  */
-public class AIRRTemplate2SRAConverter
-{
+public class AIRRTemplate2SRAConverter {
   private List<String> bioSampleIds = new ArrayList<>();
   private List<String> sraIds = new ArrayList<>();
 
@@ -51,8 +39,7 @@ public class AIRRTemplate2SRAConverter
    * @throws JAXBException                  If a JAXB error occurs during processing
    */
   public String generateSRASubmissionXMLFromAIRRTemplateInstance(AIRRTemplate airrInstance)
-    throws DatatypeConfigurationException, JAXBException
-  {
+      throws DatatypeConfigurationException, JAXBException {
     final generated.ObjectFactory submissionObjectFactory = new generated.ObjectFactory();
     final common.sp.ObjectFactory spCommonObjectFactory = new common.sp.ObjectFactory();
     final biosample.ObjectFactory bioSampleObjectFactory = new biosample.ObjectFactory();
@@ -85,7 +72,8 @@ public class AIRRTemplate2SRAConverter
 
     Submission.Description submissionDescription = submissionObjectFactory.createSubmissionDescription();
     submissionDescription.setComment("Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor "
-        + "incididunt ut labore et dolore magna aliqua."); // XXX: Hard-coded due to no corresponding entry in the AIRR instance
+        + "incididunt ut labore et dolore magna aliqua."); // XXX: Hard-coded due to no corresponding entry in the
+    // AIRR instance
     submissionDescription.setSubmitter(contactSubmitter);
     submissionDescription.getOrganization().add(contactOrganization);
 
@@ -115,13 +103,15 @@ public class AIRRTemplate2SRAConverter
       JAXBElement descriptionElement = new JAXBElement(
           new QName("p"), String.class, // as in HTML <p> tag
           "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor "
-              + "incididunt ut labore et dolore magna aliqua."); // XXX: Hard-coded due to no corresponding entry in the AIRR instance
+              + "incididunt ut labore et dolore magna aliqua."); // XXX: Hard-coded due to no corresponding entry in
+      // the AIRR instance
 
       TypeBlock sampleDescription = spCommonObjectFactory.createTypeBlock();
       sampleDescription.getPOrUlOrOl().add(descriptionElement);
 
       TypeDescriptor sampleDescriptor = spCommonObjectFactory.createTypeDescriptor();
-      sampleDescriptor.setTitle("Lorem ipsum dolor sit amet"); // XXX: Hard-coded due to no corresponding entry in the AIRR instance
+      sampleDescriptor.setTitle("Lorem ipsum dolor sit amet"); // XXX: Hard-coded due to no corresponding entry in
+      // the AIRR instance
       sampleDescriptor.setDescription(sampleDescription);
 
       bioSample.setDescriptor(sampleDescriptor);

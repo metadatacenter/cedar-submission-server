@@ -6,9 +6,9 @@ import org.metadatacenter.config.CedarConfig;
 import org.metadatacenter.exception.CedarException;
 import org.metadatacenter.rest.context.CedarRequestContext;
 import org.metadatacenter.rest.context.CedarRequestContextFactory;
+import org.metadatacenter.submission.AMIA2016DemoBioSampleTemplate;
 import org.metadatacenter.submission.AMIA2016DemoBioSampleTemplate2BioSampleConverter;
 import org.metadatacenter.submission.BioSampleValidator;
-import org.metadatacenter.submission.biosample.AMIA2016DemoBioSampleTemplate;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
@@ -21,15 +21,16 @@ import javax.xml.datatype.DatatypeConfigurationException;
 
 import static org.metadatacenter.rest.assertion.GenericAssertions.LoggedIn;
 
-@Path("/command") @Produces(MediaType.APPLICATION_JSON) @Consumes(MediaType.APPLICATION_JSON) public class AMIA2016DemoBioSampleServerResource
-  extends CedarMicroserviceResource
-{
+@Path("/command")
+@Produces(MediaType.APPLICATION_JSON)
+@Consumes(MediaType.APPLICATION_JSON)
+public class AMIA2016DemoBioSampleServerResource
+    extends CedarMicroserviceResource {
   private final BioSampleValidator bioSampleValidator;
 
   private final AMIA2016DemoBioSampleTemplate2BioSampleConverter amia2016DemoBioSampleTemplate2BioSampleConverter;
 
-  public AMIA2016DemoBioSampleServerResource(CedarConfig cedarConfig)
-  {
+  public AMIA2016DemoBioSampleServerResource(CedarConfig cedarConfig) {
     super(cedarConfig);
     this.bioSampleValidator = new BioSampleValidator();
     this.amia2016DemoBioSampleTemplate2BioSampleConverter = new AMIA2016DemoBioSampleTemplate2BioSampleConverter();
@@ -40,15 +41,17 @@ import static org.metadatacenter.rest.assertion.GenericAssertions.LoggedIn;
    * AMIA2016DemoBioSampleTemplate.json JSON Schema file in the resources directory. This file
    * contains the CEDAR template that defines the example BioSample submission used for the 2016 AMIA demo.
    */
-  @POST @Timed @Path("/validate-biosample") public Response validate(
-    AMIA2016DemoBioSampleTemplate amia2016BioSampleInstance) throws CedarException
-  {
+  @POST
+  @Timed
+  @Path("/validate-biosample")
+  public Response validate(
+      AMIA2016DemoBioSampleTemplate amia2016BioSampleInstance) throws CedarException {
     CedarRequestContext c = CedarRequestContextFactory.fromRequest(request);
     c.must(c.user()).be(LoggedIn);
 
     try {
       String bioSampleSubmissionXML = this.amia2016DemoBioSampleTemplate2BioSampleConverter
-        .generateBioSampleSubmissionXMLFromAMIA2016DemoBioSampleTemplateInstance(amia2016BioSampleInstance);
+          .generateBioSampleSubmissionXMLFromAMIA2016DemoBioSampleTemplateInstance(amia2016BioSampleInstance);
 
       return Response.ok(this.bioSampleValidator.validateBioSampleSubmission(bioSampleSubmissionXML)).build();
     } catch (JAXBException | DatatypeConfigurationException e) {

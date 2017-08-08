@@ -11,7 +11,8 @@ public class NcbiAirrSubmissionQueueEvent {
   private long createdAtTS;
   private NcbiAirrSubmission submission;
 
-  public NcbiAirrSubmissionQueueEvent() {}
+  public NcbiAirrSubmissionQueueEvent() {
+  }
 
   public NcbiAirrSubmissionQueueEvent(NcbiAirrSubmission submission) {
     Instant now = Instant.now();
