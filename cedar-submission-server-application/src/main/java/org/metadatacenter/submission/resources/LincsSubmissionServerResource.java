@@ -14,6 +14,7 @@ import org.metadatacenter.exception.CedarException;
 import org.metadatacenter.exception.CedarProcessingException;
 import org.metadatacenter.rest.context.CedarRequestContext;
 import org.metadatacenter.rest.context.CedarRequestContextFactory;
+import org.metadatacenter.server.security.model.auth.CedarPermission;
 import org.metadatacenter.util.http.CedarResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -54,6 +55,7 @@ public class LincsSubmissionServerResource extends CedarMicroserviceResource {
   public Response validateInstance() throws CedarException {
     CedarRequestContext c = CedarRequestContextFactory.fromRequest(request);
     c.must(c.user()).be(LoggedIn);
+    c.must(c.user()).have(CedarPermission.POST_SUBMISSION);
 
     String payload = c.request().getRequestBody().asJsonString();
 

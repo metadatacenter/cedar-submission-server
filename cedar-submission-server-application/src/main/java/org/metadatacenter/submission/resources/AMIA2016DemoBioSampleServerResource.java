@@ -6,6 +6,7 @@ import org.metadatacenter.config.CedarConfig;
 import org.metadatacenter.exception.CedarException;
 import org.metadatacenter.rest.context.CedarRequestContext;
 import org.metadatacenter.rest.context.CedarRequestContextFactory;
+import org.metadatacenter.server.security.model.auth.CedarPermission;
 import org.metadatacenter.submission.AMIA2016DemoBioSampleTemplate;
 import org.metadatacenter.submission.AMIA2016DemoBioSampleTemplate2BioSampleConverter;
 import org.metadatacenter.submission.BioSampleValidator;
@@ -24,8 +25,7 @@ import static org.metadatacenter.rest.assertion.GenericAssertions.LoggedIn;
 @Path("/command")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
-public class AMIA2016DemoBioSampleServerResource
-    extends CedarMicroserviceResource {
+public class AMIA2016DemoBioSampleServerResource extends CedarMicroserviceResource {
   private final BioSampleValidator bioSampleValidator;
 
   private final AMIA2016DemoBioSampleTemplate2BioSampleConverter amia2016DemoBioSampleTemplate2BioSampleConverter;
@@ -44,10 +44,10 @@ public class AMIA2016DemoBioSampleServerResource
   @POST
   @Timed
   @Path("/validate-biosample")
-  public Response validate(
-      AMIA2016DemoBioSampleTemplate amia2016BioSampleInstance) throws CedarException {
+  public Response validate(AMIA2016DemoBioSampleTemplate amia2016BioSampleInstance) throws CedarException {
     CedarRequestContext c = CedarRequestContextFactory.fromRequest(request);
     c.must(c.user()).be(LoggedIn);
+    c.must(c.user()).have(CedarPermission.POST_SUBMISSION);
 
     try {
       String bioSampleSubmissionXML = this.amia2016DemoBioSampleTemplate2BioSampleConverter

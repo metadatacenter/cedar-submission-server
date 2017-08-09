@@ -9,6 +9,7 @@ import org.metadatacenter.config.CedarConfig;
 import org.metadatacenter.exception.CedarException;
 import org.metadatacenter.rest.context.CedarRequestContext;
 import org.metadatacenter.rest.context.CedarRequestContextFactory;
+import org.metadatacenter.server.security.model.auth.CedarPermission;
 import org.metadatacenter.submission.AIRRTemplate;
 import org.metadatacenter.submission.AIRRTemplate2SRAConverter;
 import org.metadatacenter.submission.BioSampleValidator;
@@ -72,11 +73,11 @@ public class NcbiAirrSubmissionServerResource extends CedarMicroserviceResource 
   @Timed
   @Path("/validate-airr")
   @Consumes(MediaType.APPLICATION_JSON)
-  public Response validate(
-      AIRRTemplate airrInstance) throws CedarException {
+  public Response validate(AIRRTemplate airrInstance) throws CedarException {
 
     CedarRequestContext c = CedarRequestContextFactory.fromRequest(request);
     c.must(c.user()).be(LoggedIn);
+    c.must(c.user()).have(CedarPermission.POST_SUBMISSION);
 
     try {
       String bioSampleSubmissionXML = this.airrTemplate2SRAConverter
@@ -102,6 +103,7 @@ public class NcbiAirrSubmissionServerResource extends CedarMicroserviceResource 
 
     CedarRequestContext c = CedarRequestContextFactory.fromRequest(request);
     c.must(c.user()).be(LoggedIn);
+    c.must(c.user()).have(CedarPermission.POST_SUBMISSION);
 
     // Check that this is a file upload request
     if (ServletFileUpload.isMultipartContent(request)) {

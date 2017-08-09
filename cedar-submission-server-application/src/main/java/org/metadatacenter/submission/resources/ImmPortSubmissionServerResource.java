@@ -24,6 +24,7 @@ import org.metadatacenter.exception.CedarException;
 import org.metadatacenter.model.trimmer.JsonLdDocument;
 import org.metadatacenter.rest.context.CedarRequestContext;
 import org.metadatacenter.rest.context.CedarRequestContextFactory;
+import org.metadatacenter.server.security.model.auth.CedarPermission;
 import org.metadatacenter.submission.CEDARSubmitResponse;
 import org.metadatacenter.submission.CEDARWorkspaceResponse;
 import org.metadatacenter.submission.Workspace;
@@ -58,8 +59,7 @@ import static org.metadatacenter.util.json.JsonMapper.MAPPER;
 
 @Path("/command")
 @Produces(MediaType.APPLICATION_JSON)
-public class ImmPortSubmissionServerResource
-    extends CedarMicroserviceResource {
+public class ImmPortSubmissionServerResource extends CedarMicroserviceResource {
   private final static Logger logger = LoggerFactory.getLogger(ImmPortSubmissionServerResource.class);
 
   private final String immPortSubmissionUrl;
@@ -140,10 +140,10 @@ public class ImmPortSubmissionServerResource
   @Timed
   @Path("/immport-workspaces")
   @Consumes(MediaType.MULTIPART_FORM_DATA)
-  public Response immPortWorkspaces()
-      throws CedarException {
+  public Response immPortWorkspaces() throws CedarException {
     CedarRequestContext c = CedarRequestContextFactory.fromRequest(request);
     c.must(c.user()).be(LoggedIn);
+    c.must(c.user()).have(CedarPermission.POST_SUBMISSION);
 
     Optional<String> immPortBearerToken = immPortUtil.getImmPortBearerToken();
     if (!immPortBearerToken.isPresent()) {
@@ -184,10 +184,10 @@ public class ImmPortSubmissionServerResource
   @Timed
   @Path("/immport-submit")
   @Consumes(MediaType.MULTIPART_FORM_DATA)
-  public Response submitImmPort()
-      throws CedarException {
+  public Response submitImmPort() throws CedarException {
     CedarRequestContext c = CedarRequestContextFactory.fromRequest(request);
     c.must(c.user()).be(LoggedIn);
+    c.must(c.user()).have(CedarPermission.POST_SUBMISSION);
 
     Optional<String> immPortBearerToken = immPortUtil.getImmPortBearerToken();
     if (!immPortBearerToken.isPresent()) {
@@ -264,10 +264,10 @@ public class ImmPortSubmissionServerResource
   @Timed
   @Path("/immport-submit-old")
   @Consumes(MediaType.MULTIPART_FORM_DATA)
-  public Response submitImmPortOld()
-      throws CedarException {
+  public Response submitImmPortOld() throws CedarException {
     CedarRequestContext c = CedarRequestContextFactory.fromRequest(request);
     c.must(c.user()).be(LoggedIn);
+    c.must(c.user()).have(CedarPermission.POST_SUBMISSION);
 
     String workspaceID = request.getParameter("workspaceId"); // TODO CEDAR constant for parameter
     if (workspaceID == null || workspaceID.isEmpty()) {
@@ -305,7 +305,8 @@ public class ImmPortSubmissionServerResource
           String userID = c.getCedarUser().getId();
           String statusURL = cedarSubmitResponse.getStatusURL();
           SubmissionStatusManager.getInstance()
-              .addSubmission(new ImmPortSubmissionStatusTask(submissionID, SubmissionType.IMMPORT, userID, statusURL, immPortUtil));
+              .addSubmission(new ImmPortSubmissionStatusTask(submissionID, SubmissionType.IMMPORT, userID, statusURL,
+                  immPortUtil));
           return Response.ok(cedarSubmitResponse).build();
         } else {
           logger.warn("Unexpected status code returned from " + immPortSubmissionUrl + ": " + response
