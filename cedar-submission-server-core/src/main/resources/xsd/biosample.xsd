@@ -1,14 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- $Id$ -->
 
-<!-- Modified to include SP.common from a local file -->
-
-<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:com="SP.common" xmlns:biosample="biosample" version="2.0" targetNamespace="biosample">
-
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:biosample="biosample" xmlns:com="SP.common" targetNamespace="biosample" version="2.0">
   <xs:import schemaLocation="SP.common.xsd" namespace="SP.common"/>
 
   <!-- BioSample object -->
-  <!--  <xs:element name="BioSample" type="biosample:typeBioSample"/> -->
+  <xs:element name="BioSample" type="biosample:typeBioSample"/>
 
   <xs:complexType name="typeBioSample">
     <xs:sequence>
@@ -44,9 +41,9 @@
       <xs:element name="Package" type="xs:string" minOccurs="1" maxOccurs="1">
         <xs:annotation>
           <xs:documentation>
-              Name of attribute package used to validate the sample, for example: MIGS.ba.air.4.0. 
-              See https://www.ncbi.nlm.nih.gov/biosample/docs/packages/ for the full list of available packages.
-           </xs:documentation>
+            Name of attribute package used to validate the sample, for example: MIGS.ba.air.4.0.
+            See https://www.ncbi.nlm.nih.gov/biosample/docs/packages/ for the full list of available packages.
+          </xs:documentation>
         </xs:annotation>
       </xs:element>
 
@@ -89,24 +86,20 @@
     <xs:sequence>
       <xs:annotation>
         <xs:documentation> Identifier placed on submitted object by submitter. This is used
-                    to tie the submitted object with assigned accession. </xs:documentation>
+          to tie the submitted object with assigned accession. </xs:documentation>
       </xs:annotation>
-
       <xs:element maxOccurs="1" minOccurs="0" name="PrimaryId" type="com:typePrimaryId">
         <xs:annotation>
           <xs:documentation>Used for updates: BioSample accession of the record being updated.</xs:documentation>
         </xs:annotation>
       </xs:element>
-
       <xs:element maxOccurs="unbounded" minOccurs="0" name="SPUID">
         <xs:annotation>
           <xs:documentation>An identifier from external database qualified by a namespace.</xs:documentation>
         </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
-
             <xs:extension base="com:typeSPUID">
-
               <xs:attribute name="label">
                 <xs:annotation>
                   <xs:documentation>Add this attribute to replace spuid_namespace value by 'Sample name'.</xs:documentation>
@@ -117,24 +110,21 @@
                   </xs:restriction>
                 </xs:simpleType>
               </xs:attribute>
-
               <xs:attribute name="display">
                 <xs:annotation>
                   <xs:documentation>Set to 'no' to not display SPUID on public web pages.</xs:documentation>
-                    </xs:annotation>
-                    <xs:simpleType>
-                        <xs:restriction base="xs:string">
-                            <xs:enumeration value="yes"/>
-                            <xs:enumeration value="no"/>
-                        </xs:restriction>
-                    </xs:simpleType>
-                </xs:attribute>
+                </xs:annotation>
+                <xs:simpleType>
+                  <xs:restriction base="xs:string">
+                    <xs:enumeration value="yes"/>
+                    <xs:enumeration value="no"/>
+                  </xs:restriction>
+                </xs:simpleType>
+              </xs:attribute>
             </xs:extension>
-
           </xs:complexContent>
         </xs:complexType>
       </xs:element>
-      
     </xs:sequence>
   </xs:complexType>
 </xs:schema>
