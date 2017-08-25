@@ -44,6 +44,13 @@
     "@context": {
       "type": "object",
       "properties": {
+        "rdfs": {
+          "type": "string",
+          "format": "uri",
+          "enum": [
+            "http://www.w3.org/2000/01/rdf-schema#"
+          ]
+        },
         "xsd": {
           "type": "string",
           "format": "uri",
@@ -285,7 +292,6 @@
     "sampleName": {
       "@type": "https://schema.metadatacenter.org/core/TemplateField",
       "@context": {
-        "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
         "xsd": "http://www.w3.org/2001/XMLSchema#",
         "pav": "http://purl.org/pav/",
         "oslc": "http://open-services.net/ns/core#",
@@ -388,7 +394,6 @@
     "tissue": {
       "@type": "https://schema.metadatacenter.org/core/TemplateField",
       "@context": {
-        "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
         "xsd": "http://www.w3.org/2001/XMLSchema#",
         "pav": "http://purl.org/pav/",
         "oslc": "http://open-services.net/ns/core#",
@@ -519,7 +524,6 @@
     "sex": {
       "@type": "https://schema.metadatacenter.org/core/TemplateField",
       "@context": {
-        "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
         "xsd": "http://www.w3.org/2001/XMLSchema#",
         "pav": "http://purl.org/pav/",
         "oslc": "http://open-services.net/ns/core#",
@@ -650,7 +654,6 @@
     "isolate": {
       "@type": "https://schema.metadatacenter.org/core/TemplateField",
       "@context": {
-        "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
         "xsd": "http://www.w3.org/2001/XMLSchema#",
         "pav": "http://purl.org/pav/",
         "oslc": "http://open-services.net/ns/core#",
@@ -753,7 +756,6 @@
     "age": {
       "@type": "https://schema.metadatacenter.org/core/TemplateField",
       "@context": {
-        "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
         "xsd": "http://www.w3.org/2001/XMLSchema#",
         "pav": "http://purl.org/pav/",
         "oslc": "http://open-services.net/ns/core#",
@@ -856,7 +858,6 @@
     "biomaterialProvider": {
       "@type": "https://schema.metadatacenter.org/core/TemplateField",
       "@context": {
-        "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
         "xsd": "http://www.w3.org/2001/XMLSchema#",
         "pav": "http://purl.org/pav/",
         "oslc": "http://open-services.net/ns/core#",
@@ -1088,7 +1089,6 @@
           "name": {
             "@type": "https://schema.metadatacenter.org/core/TemplateField",
             "@context": {
-              "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
               "xsd": "http://www.w3.org/2001/XMLSchema#",
               "pav": "http://purl.org/pav/",
               "oslc": "http://open-services.net/ns/core#",
@@ -1192,7 +1192,6 @@
           "value": {
             "@type": "https://schema.metadatacenter.org/core/TemplateField",
             "@context": {
-              "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
               "xsd": "http://www.w3.org/2001/XMLSchema#",
               "pav": "http://purl.org/pav/",
               "oslc": "http://open-services.net/ns/core#",
@@ -1311,7 +1310,6 @@
     "organism": {
       "@type": "https://schema.metadatacenter.org/core/TemplateField",
       "@context": {
-        "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
         "xsd": "http://www.w3.org/2001/XMLSchema#",
         "pav": "http://purl.org/pav/",
         "oslc": "http://open-services.net/ns/core#",
