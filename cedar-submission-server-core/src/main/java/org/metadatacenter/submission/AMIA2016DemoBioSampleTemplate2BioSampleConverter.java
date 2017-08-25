@@ -112,8 +112,8 @@ public class AMIA2016DemoBioSampleTemplate2BioSampleConverter {
     // Submission/Action/AddData/Data/XMLContent/BioSample/Organism
     TypeOrganism organism = spCommonObjectFactory.createTypeOrganism();
     bioSample.setOrganism(organism);
-    if (amia2016DemoBioSampleInstance.getOrganism().getValueLabel() != null) {
-      organism.setOrganismName(amia2016DemoBioSampleInstance.getOrganism().getValueLabel());
+    if (amia2016DemoBioSampleInstance.getOrganism().getRdfsLabel() != null) {
+      organism.setOrganismName(amia2016DemoBioSampleInstance.getOrganism().getRdfsLabel());
     } else {
       organism.setOrganismName("");
     }
@@ -151,7 +151,7 @@ public class AMIA2016DemoBioSampleTemplate2BioSampleConverter {
     attribute = bioSampleObjectFactory.createTypeAttribute();
     attributes.getAttribute().add(attribute);
     attribute.setAttributeName("sex");
-    attribute.setValue(amia2016DemoBioSampleInstance.getSex().getValueLabel());
+    attribute.setValue(amia2016DemoBioSampleInstance.getSex().getRdfsLabel());
 
     attribute = bioSampleObjectFactory.createTypeAttribute();
     attributes.getAttribute().add(attribute);
@@ -161,7 +161,7 @@ public class AMIA2016DemoBioSampleTemplate2BioSampleConverter {
     attribute = bioSampleObjectFactory.createTypeAttribute();
     attributes.getAttribute().add(attribute);
     attribute.setAttributeName("tissue");
-    attribute.setValue(amia2016DemoBioSampleInstance.getTissue().getValueLabel());
+    attribute.setValue(amia2016DemoBioSampleInstance.getTissue().getRdfsLabel());
 
     for (OptionalAttribute optionalAttribute : amia2016DemoBioSampleInstance.getOptionalAttribute()) {
       attribute = bioSampleObjectFactory.createTypeAttribute();
