@@ -14,6 +14,7 @@ import org.metadatacenter.submission.AIRRTemplate;
 import org.metadatacenter.submission.AIRRTemplate2SRAConverter;
 import org.metadatacenter.submission.BioSampleValidator;
 import org.metadatacenter.submission.Constants;
+import org.metadatacenter.submission.exception.SubmissionInstanceNotFoundException;
 import org.metadatacenter.submission.ncbiairr.NcbiAirrSubmission;
 import org.metadatacenter.submission.ncbiairr.NcbiAirrSubmissionUtil;
 import org.metadatacenter.submission.ncbiairr.queue.NcbiAirrSubmissionQueueService;
@@ -23,7 +24,6 @@ import org.metadatacenter.submission.upload.flow.SubmissionUploadManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.management.InstanceNotFoundException;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -150,7 +150,7 @@ public class NcbiAirrSubmissionServerResource extends CedarMicroserviceResource 
           SubmissionUploadManager.getInstance().removeSubmissionStatus(data.getSubmissionId());
         }
 
-      } catch (IOException | FileUploadException | InstanceNotFoundException | JAXBException |
+      } catch (IOException | FileUploadException | SubmissionInstanceNotFoundException | JAXBException |
           DatatypeConfigurationException e) {
         logger.error(e.getMessage(), e);
         return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();  // TODO CEDAR error response

@@ -1,6 +1,7 @@
 package org.metadatacenter.submission.upload.flow;
 
-import javax.management.InstanceNotFoundException;
+import org.metadatacenter.submission.exception.SubmissionInstanceNotFoundException;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -72,9 +73,9 @@ public class SubmissionUploadManager {
     }
   }
 
-  public boolean isSubmissionUploadComplete(String submissionId) throws InstanceNotFoundException {
+  public boolean isSubmissionUploadComplete(String submissionId) throws SubmissionInstanceNotFoundException {
     if (!submissionsUploadStatus.containsKey(submissionId)) {
-      throw new InstanceNotFoundException("Submission not found (submissionId = " + submissionId);
+      throw new SubmissionInstanceNotFoundException("Submission not found (submissionId = " + submissionId);
     }
     SubmissionUploadStatus submissionUploadStatus = submissionsUploadStatus.get(submissionId);
 
@@ -93,10 +94,10 @@ public class SubmissionUploadManager {
   }
 
   // Returns local file paths
-  public List<String> getSubmissionFilePaths(String submissionId) throws InstanceNotFoundException {
+  public List<String> getSubmissionFilePaths(String submissionId) throws SubmissionInstanceNotFoundException {
     List<String> filePaths = new ArrayList<>();
     if (!submissionsUploadStatus.containsKey(submissionId)) {
-      throw new InstanceNotFoundException("Submission not found (submissionId = " + submissionId);
+      throw new SubmissionInstanceNotFoundException("Submission not found (submissionId = " + submissionId);
     }
     if (!isSubmissionUploadComplete(submissionId)) {
       throw new InternalError("The submission upload is not complete (submissionId = " + submissionId);
