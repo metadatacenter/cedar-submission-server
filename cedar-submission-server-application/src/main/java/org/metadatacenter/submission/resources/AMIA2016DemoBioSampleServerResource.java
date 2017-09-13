@@ -83,13 +83,13 @@ public class AMIA2016DemoBioSampleServerResource extends CedarMicroserviceResour
    * instances the name and/or value fields in the optionalAttribute array contain controlled terms (@id field
    * instead of (at)value). These instances are not valid according to the BioSample template but we don't want to
    * remove them because we need them to feed our Value Recommender with as much as controlled terms as possible.
-   * For controlled fields, this method generates an (at)value field using _valueLabel.
+   * For controlled fields, this method generates an (at)value field using rdfs:label.
    */
   public JsonNode prepareForValidation(String instanceString) throws IOException {
 
     final String OPT_ATT_FIELD = "optionalAttribute";
     final String VALUE_FIELD = "@value";
-    final String VALUE_LABEL_FIELD = "_valueLabel";
+    final String VALUE_LABEL_FIELD = "rdfs:label";
     final String ATT_NAME_FIELD = "name";
     final String ATT_VALUE_FIELD = "value";
 
@@ -107,7 +107,7 @@ public class AMIA2016DemoBioSampleServerResource extends CedarMicroserviceResour
           if (entry.getKey().equals(ATT_NAME_FIELD) || entry.getKey().equals(ATT_VALUE_FIELD)) {
             ObjectNode newAttributeField = MAPPER.createObjectNode();
             if (entry.getValue().has(VALUE_LABEL_FIELD)) {
-              // Store _valueLabel into @value
+              // Store rdfs:label into @value
               newAttributeField.set(VALUE_FIELD, entry.getValue().get(VALUE_LABEL_FIELD));
             } else {
               newAttributeField = entry.getValue().deepCopy();

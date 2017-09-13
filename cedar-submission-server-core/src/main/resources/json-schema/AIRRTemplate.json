@@ -1,6 +1,5 @@
-
-  {
-    "@type": "https://schema.metadatacenter.org/core/Template",
+{
+  "@type": "https://schema.metadatacenter.org/core/Template",
   "@context": {
     "xsd": "http://www.w3.org/2001/XMLSchema#",
     "pav": "http://purl.org/pav/",
@@ -41,6 +40,13 @@
     "@context": {
       "type": "object",
       "properties": {
+        "rdfs": {
+          "type": "string",
+          "format": "uri",
+          "enum": [
+            "http://www.w3.org/2000/01/rdf-schema#"
+          ]
+        },
         "xsd": {
           "type": "string",
           "format": "uri",
@@ -498,7 +504,7 @@
                   "null"
                 ]
               },
-              "_valueLabel": {
+              "rdfs:label": {
                 "type": [
                   "string",
                   "null"
@@ -600,7 +606,7 @@
                   "null"
                 ]
               },
-              "_valueLabel": {
+              "rdfs:label": {
                 "type": [
                   "string",
                   "null"
@@ -702,7 +708,7 @@
                   "null"
                 ]
               },
-              "_valueLabel": {
+              "rdfs:label": {
                 "type": [
                   "string",
                   "null"
@@ -804,7 +810,7 @@
                   "null"
                 ]
               },
-              "_valueLabel": {
+              "rdfs:label": {
                 "type": [
                   "string",
                   "null"
@@ -906,7 +912,7 @@
                   "null"
                 ]
               },
-              "_valueLabel": {
+              "rdfs:label": {
                 "type": [
                   "string",
                   "null"
@@ -1008,7 +1014,7 @@
                   "null"
                 ]
               },
-              "_valueLabel": {
+              "rdfs:label": {
                 "type": [
                   "string",
                   "null"
@@ -1110,7 +1116,7 @@
                   "null"
                 ]
               },
-              "_valueLabel": {
+              "rdfs:label": {
                 "type": [
                   "string",
                   "null"
@@ -1212,7 +1218,7 @@
                   "null"
                 ]
               },
-              "_valueLabel": {
+              "rdfs:label": {
                 "type": [
                   "string",
                   "null"
@@ -1314,7 +1320,7 @@
                   "null"
                 ]
               },
-              "_valueLabel": {
+              "rdfs:label": {
                 "type": [
                   "string",
                   "null"
@@ -1416,7 +1422,7 @@
                   "null"
                 ]
               },
-              "_valueLabel": {
+              "rdfs:label": {
                 "type": [
                   "string",
                   "null"
@@ -1647,7 +1653,7 @@
                         "null"
                       ]
                     },
-                    "_valueLabel": {
+                    "rdfs:label": {
                       "type": [
                         "string",
                         "null"
@@ -1749,7 +1755,7 @@
                         "null"
                       ]
                     },
-                    "_valueLabel": {
+                    "rdfs:label": {
                       "type": [
                         "string",
                         "null"
@@ -2102,7 +2108,7 @@
                   "null"
                 ]
               },
-              "_valueLabel": {
+              "rdfs:label": {
                 "type": [
                   "string",
                   "null"
@@ -2210,7 +2216,7 @@
                   "null"
                 ]
               },
-              "_valueLabel": {
+              "rdfs:label": {
                 "type": [
                   "string",
                   "null"
@@ -2312,7 +2318,7 @@
                   "null"
                 ]
               },
-              "_valueLabel": {
+              "rdfs:label": {
                 "type": [
                   "string",
                   "null"
@@ -2421,7 +2427,7 @@
                   }
                 ]
               },
-              "_valueLabel": {
+              "rdfs:label": {
                 "type": [
                   "string",
                   "null"
@@ -2530,7 +2536,7 @@
                   "null"
                 ]
               },
-              "_valueLabel": {
+              "rdfs:label": {
                 "type": [
                   "string",
                   "null"
@@ -2632,7 +2638,7 @@
                   "null"
                 ]
               },
-              "_valueLabel": {
+              "rdfs:label": {
                 "type": [
                   "string",
                   "null"
@@ -2734,7 +2740,7 @@
                   "null"
                 ]
               },
-              "_valueLabel": {
+              "rdfs:label": {
                 "type": [
                   "string",
                   "null"
@@ -2836,7 +2842,7 @@
                   "null"
                 ]
               },
-              "_valueLabel": {
+              "rdfs:label": {
                 "type": [
                   "string",
                   "null"
@@ -2945,7 +2951,7 @@
                   }
                 ]
               },
-              "_valueLabel": {
+              "rdfs:label": {
                 "type": [
                   "string",
                   "null"
@@ -3061,7 +3067,7 @@
                   }
                 ]
               },
-              "_valueLabel": {
+              "rdfs:label": {
                 "type": [
                   "string",
                   "null"
@@ -3177,7 +3183,7 @@
                   }
                 ]
               },
-              "_valueLabel": {
+              "rdfs:label": {
                 "type": [
                   "string",
                   "null"
@@ -3286,7 +3292,7 @@
                   "null"
                 ]
               },
-              "_valueLabel": {
+              "rdfs:label": {
                 "type": [
                   "string",
                   "null"
@@ -3388,7 +3394,7 @@
                   "null"
                 ]
               },
-              "_valueLabel": {
+              "rdfs:label": {
                 "type": [
                   "string",
                   "null"
@@ -3490,7 +3496,7 @@
                   "null"
                 ]
               },
-              "_valueLabel": {
+              "rdfs:label": {
                 "type": [
                   "string",
                   "null"
@@ -3599,7 +3605,7 @@
                   }
                 ]
               },
-              "_valueLabel": {
+              "rdfs:label": {
                 "type": [
                   "string",
                   "null"
@@ -3837,7 +3843,7 @@
                         "null"
                       ]
                     },
-                    "_valueLabel": {
+                    "rdfs:label": {
                       "type": [
                         "string",
                         "null"
@@ -3939,7 +3945,7 @@
                         "null"
                       ]
                     },
-                    "_valueLabel": {
+                    "rdfs:label": {
                       "type": [
                         "string",
                         "null"
@@ -4287,7 +4293,7 @@
                 "null"
               ]
             },
-            "_valueLabel": {
+            "rdfs:label": {
               "type": [
                 "string",
                 "null"
@@ -4389,7 +4395,7 @@
                 "null"
               ]
             },
-            "_valueLabel": {
+            "rdfs:label": {
               "type": [
                 "string",
                 "null"
@@ -4491,7 +4497,7 @@
                 "null"
               ]
             },
-            "_valueLabel": {
+            "rdfs:label": {
               "type": [
                 "string",
                 "null"
@@ -4600,7 +4606,7 @@
                 }
               ]
             },
-            "_valueLabel": {
+            "rdfs:label": {
               "type": [
                 "string",
                 "null"
@@ -4709,7 +4715,7 @@
                 "null"
               ]
             },
-            "_valueLabel": {
+            "rdfs:label": {
               "type": [
                 "string",
                 "null"
@@ -4811,7 +4817,7 @@
                 "null"
               ]
             },
-            "_valueLabel": {
+            "rdfs:label": {
               "type": [
                 "string",
                 "null"
@@ -4913,7 +4919,7 @@
                 "null"
               ]
             },
-            "_valueLabel": {
+            "rdfs:label": {
               "type": [
                 "string",
                 "null"
@@ -5144,7 +5150,7 @@
                       "null"
                     ]
                   },
-                  "_valueLabel": {
+                  "rdfs:label": {
                     "type": [
                       "string",
                       "null"
@@ -5246,7 +5252,7 @@
                       "null"
                     ]
                   },
-                  "_valueLabel": {
+                  "rdfs:label": {
                     "type": [
                       "string",
                       "null"
@@ -5363,7 +5369,7 @@
                 "null"
               ]
             },
-            "_valueLabel": {
+            "rdfs:label": {
               "type": [
                 "string",
                 "null"
@@ -5465,7 +5471,7 @@
                 "null"
               ]
             },
-            "_valueLabel": {
+            "rdfs:label": {
               "type": [
                 "string",
                 "null"
@@ -5627,7 +5633,7 @@
                 "null"
               ]
             },
-            "_valueLabel": {
+            "rdfs:label": {
               "type": [
                 "string",
                 "null"
@@ -5750,7 +5756,7 @@
                 "null"
               ]
             },
-            "_valueLabel": {
+            "rdfs:label": {
               "type": [
                 "string",
                 "null"

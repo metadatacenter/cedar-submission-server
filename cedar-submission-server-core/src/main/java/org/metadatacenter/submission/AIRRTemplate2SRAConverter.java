@@ -159,7 +159,7 @@ public class AIRRTemplate2SRAConverter {
         bioSampleAttributes.getAttribute().add(attribute);
       }
 
-      value = ncbiBioSample.getOrganism().getValueLabel();
+      value = ncbiBioSample.getOrganism().getRdfsLabel();
       if (value != null) {
         TypeAttribute attribute = bioSampleObjectFactory.createTypeAttribute();
         attribute.setAttributeName("organism"); // XXX: Hard-coded
@@ -191,7 +191,7 @@ public class AIRRTemplate2SRAConverter {
         bioSampleAttributes.getAttribute().add(attribute);
       }
 
-      value = ncbiBioSample.getTissue().getValueLabel();
+      value = ncbiBioSample.getTissue().getRdfsLabel();
       if (value != null) {
         TypeAttribute attribute = bioSampleObjectFactory.createTypeAttribute();
         attribute.setAttributeName("tissue"); // XXX: Hard-coded
@@ -207,7 +207,7 @@ public class AIRRTemplate2SRAConverter {
         bioSampleAttributes.getAttribute().add(attribute);
       }
 
-      value = ncbiBioSample.getCellType().getValueLabel();
+      value = ncbiBioSample.getCellType().getRdfsLabel();
       if (value != null) {
         TypeAttribute attribute = bioSampleObjectFactory.createTypeAttribute();
         attribute.setAttributeName("cellType"); // XXX: Hard-coded
@@ -215,7 +215,7 @@ public class AIRRTemplate2SRAConverter {
         bioSampleAttributes.getAttribute().add(attribute);
       }
 
-      value = ncbiBioSample.getCellSubtype().getValueLabel();
+      value = ncbiBioSample.getCellSubtype().getRdfsLabel();
       if (value != null) {
         TypeAttribute attribute = bioSampleObjectFactory.createTypeAttribute();
         attribute.setAttributeName("cellSubType"); // XXX: Hard-coded
@@ -223,7 +223,7 @@ public class AIRRTemplate2SRAConverter {
         bioSampleAttributes.getAttribute().add(attribute);
       }
 
-      value = ncbiBioSample.getDisease().getValueLabel();
+      value = ncbiBioSample.getDisease().getRdfsLabel();
       if (value != null) {
         TypeAttribute attribute = bioSampleObjectFactory.createTypeAttribute();
         attribute.setAttributeName("disease"); // XXX: Hard-coded
