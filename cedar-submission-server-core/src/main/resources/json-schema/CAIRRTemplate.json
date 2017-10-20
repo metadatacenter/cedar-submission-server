@@ -6102,11 +6102,6 @@
                                     "https://schema.staging.metadatacenter.net/properties/targetSubstrateQuality"
                                 ]
                             },
-                            "Target Substrate1": {
-                                "enum": [
-                                    "https://schema.staging.metadatacenter.net/properties/targetSubstrate"
-                                ]
-                            },
                             "Template Amount": {
                                 "enum": [
                                     "https://schema.staging.metadatacenter.net/properties/nGTemplate"
