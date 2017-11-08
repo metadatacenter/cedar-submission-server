@@ -19,7 +19,6 @@
     <connection>scm:git:git@github.com:metadatacenter/cedar-submission-server.git</connection>
     <developerConnection>scm:git:git@github.com:metadatacenter/cedar-submission-server.git</developerConnection>
     <url>https://github.com/metadatacenter/cedar-submission-server</url>
-    <tag>HEAD</tag>
   </scm>
 
   <modules>

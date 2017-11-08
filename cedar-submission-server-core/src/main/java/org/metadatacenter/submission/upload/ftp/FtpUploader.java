@@ -6,7 +6,6 @@ import org.apache.commons.net.ftp.FTPReply;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.annotation.Nonnull;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -22,17 +21,17 @@ public class FtpUploader implements FileUploader {
   private final FTPClient ftpClient;
   private final String userDirectory;
 
-  public FtpUploader(@Nonnull FTPClient ftpClient) {
+  public FtpUploader(FTPClient ftpClient) {
     this(ftpClient, "/");
   }
 
-  public FtpUploader(@Nonnull FTPClient ftpClient, @Nonnull String userDirectory) {
+  public FtpUploader(FTPClient ftpClient, String userDirectory) {
     this.ftpClient = checkNotNull(ftpClient);
     this.userDirectory = checkNotNull(userDirectory);
   }
 
-  public static FtpUploader createNewUploader(@Nonnull String hostname, @Nonnull String username,
-                                              @Nonnull String password, @Nonnull Optional<String> userDirectory)
+  public static FtpUploader createNewUploader(String hostname, String username,
+                                              String password, Optional<String> userDirectory)
       throws UploaderCreationException {
     FTPClient ftpClient = new FTPClient();
     try {
