@@ -7,15 +7,15 @@ import org.metadatacenter.config.CedarConfig;
 import org.metadatacenter.model.ServerName;
 import org.metadatacenter.server.cache.util.CacheService;
 import org.metadatacenter.submission.health.SubmissionServerHealthCheck;
-import org.metadatacenter.submission.ncbiairr.queue.NcbiAirrSubmissionExecutorService;
-import org.metadatacenter.submission.ncbiairr.queue.NcbiAirrSubmissionQueueProcessor;
-import org.metadatacenter.submission.ncbiairr.queue.NcbiAirrSubmissionQueueService;
+import org.metadatacenter.submission.ncbi.queue.NcbiSubmissionExecutorService;
+import org.metadatacenter.submission.ncbi.queue.NcbiSubmissionQueueProcessor;
+import org.metadatacenter.submission.ncbi.queue.NcbiSubmissionQueueService;
 import org.metadatacenter.submission.notifications.StatusNotifier;
 import org.metadatacenter.submission.resources.*;
 
 public class SubmissionServerApplication extends CedarMicroserviceApplication<SubmissionServerConfiguration> {
 
-  private static NcbiAirrSubmissionExecutorService ncbiAirrSubmissionExecutorService;
+  private static NcbiSubmissionExecutorService ncbiSubmissionExecutorService;
   private static CacheService cacheService;
 
   public static void main(String[] args) throws Exception {
@@ -35,12 +35,13 @@ public class SubmissionServerApplication extends CedarMicroserviceApplication<Su
   public void initializeApp() {
     cacheService = new CacheService(cedarConfig.getCacheConfig().getPersistent());
 
-    NcbiAirrSubmissionQueueService ncbiAirrSubmissionQueueService =
-        new NcbiAirrSubmissionQueueService(cedarConfig.getCacheConfig().getPersistent());
+    NcbiSubmissionQueueService ncbiSubmissionQueueService =
+        new NcbiSubmissionQueueService(cedarConfig.getCacheConfig().getPersistent());
 
-    NcbiAirrSubmissionServerResource.injectServices(ncbiAirrSubmissionQueueService);
+    NcbiAirrSubmissionServerResource.injectServices(ncbiSubmissionQueueService);
+    NcbiCairrSubmissionServerResource.injectServices(ncbiSubmissionQueueService);
 
-    ncbiAirrSubmissionExecutorService = new NcbiAirrSubmissionExecutorService(cedarConfig);
+    ncbiSubmissionExecutorService = new NcbiSubmissionExecutorService(cedarConfig);
 
     StatusNotifier.initialize(cedarConfig);
   }
@@ -60,6 +61,10 @@ public class SubmissionServerApplication extends CedarMicroserviceApplication<Su
         new NcbiAirrSubmissionServerResource(cedarConfig);
     environment.jersey().register(airrSubmissionServerResource);
 
+    final NcbiCairrSubmissionServerResource cairrSubmissionServerResource =
+        new NcbiCairrSubmissionServerResource(cedarConfig);
+    environment.jersey().register(cairrSubmissionServerResource);
+
     final LincsSubmissionServerResource lincsSubmissionServerResource = new LincsSubmissionServerResource(cedarConfig);
     environment.jersey().register(lincsSubmissionServerResource);
 
@@ -70,9 +75,9 @@ public class SubmissionServerApplication extends CedarMicroserviceApplication<Su
     final SubmissionServerHealthCheck healthCheck = new SubmissionServerHealthCheck();
     environment.healthChecks().register("message", healthCheck);
 
-    // Submission processor
-    NcbiAirrSubmissionQueueProcessor ncbiAirrSubmissionProcessor = new NcbiAirrSubmissionQueueProcessor(cacheService,
-        cedarConfig.getCacheConfig().getPersistent(), ncbiAirrSubmissionExecutorService);
-    environment.lifecycle().manage(ncbiAirrSubmissionProcessor);
+    // NCBI submission processor
+    NcbiSubmissionQueueProcessor ncbiSubmissionProcessor = new NcbiSubmissionQueueProcessor(cacheService,
+        cedarConfig.getCacheConfig().getPersistent(), ncbiSubmissionExecutorService);
+    environment.lifecycle().manage(ncbiSubmissionProcessor);
   }
 }

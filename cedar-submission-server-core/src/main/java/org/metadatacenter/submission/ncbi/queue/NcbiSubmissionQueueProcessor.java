@@ -1,4 +1,4 @@
-package org.metadatacenter.submission.ncbiairr.queue;
+package org.metadatacenter.submission.ncbi.queue;
 
 import io.dropwizard.lifecycle.Managed;
 import org.metadatacenter.config.CacheServerPersistent;
@@ -13,38 +13,38 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-public class NcbiAirrSubmissionQueueProcessor implements Managed {
+public class NcbiSubmissionQueueProcessor implements Managed {
 
-  private static final Logger log = LoggerFactory.getLogger(NcbiAirrSubmissionExecutorService.class);
+  private static final Logger log = LoggerFactory.getLogger(NcbiSubmissionExecutorService.class);
 
   private final CacheService cacheService;
   private final CacheServerPersistent cacheConfig;
-  private final NcbiAirrSubmissionExecutorService ncbiAirrSubmissionExecutorService;
+  private final NcbiSubmissionExecutorService ncbiSubmissionExecutorService;
   private boolean doProcessing;
   private Jedis jedis;
 
-  public NcbiAirrSubmissionQueueProcessor(CacheService cacheService, CacheServerPersistent cacheConfig,
-                                          NcbiAirrSubmissionExecutorService ncbiAirrSubmissionExecutorService) {
+  public NcbiSubmissionQueueProcessor(CacheService cacheService, CacheServerPersistent cacheConfig,
+                                      NcbiSubmissionExecutorService ncbiSubmissionExecutorService) {
     this.cacheService = cacheService;
     this.cacheConfig = cacheConfig;
-    this.ncbiAirrSubmissionExecutorService = ncbiAirrSubmissionExecutorService;
+    this.ncbiSubmissionExecutorService = ncbiSubmissionExecutorService;
     doProcessing = true;
   }
 
   private void digestMessages() {
-    log.info("NcbiAirrSubmissionQueueProcessor.start()");
+    log.info("NcbiSubmissionQueueProcessor.start()");
     jedis = cacheService.getJedis();
     List<String> submissions = null;
-    String queueName = cacheConfig.getQueueName(NcbiAirrSubmissionQueueService.NCBI_SUBMISSION_QUEUE_ID);
+    String queueName = cacheConfig.getQueueName(NcbiSubmissionQueueService.NCBI_SUBMISSION_QUEUE_ID);
     while (doProcessing) {
-      log.info("Waiting for a submission in the NCBI-AIRR submission queue");
+      log.info("Waiting for a submission in the NCBI submission queue");
       submissions = jedis.blpop(0, queueName);
       log.info("Got the submission on: " + queueName);
       String value = submissions.get(1);
       //String value = submissions.get(0);
-      NcbiAirrSubmissionQueueEvent event = null;
+      NcbiSubmissionQueueEvent event = null;
       try {
-        event = JsonMapper.MAPPER.readValue(value, NcbiAirrSubmissionQueueEvent.class);
+        event = JsonMapper.MAPPER.readValue(value, NcbiSubmissionQueueEvent.class);
       } catch (IOException e) {
         log.error("There was an error while deserializing submission", e);
       }
@@ -52,7 +52,7 @@ public class NcbiAirrSubmissionQueueProcessor implements Managed {
         try {
           log.info("  no. files: " + event.getSubmission().getLocalFilePaths().size());
           log.info(" created at: " + event.getCreatedAt());
-          ncbiAirrSubmissionExecutorService.handleEvent(event);
+          ncbiSubmissionExecutorService.handleEvent(event);
         } catch (Exception e) {
           log.error("There was an error while handling the message", e);
         }
@@ -60,7 +60,7 @@ public class NcbiAirrSubmissionQueueProcessor implements Managed {
         log.error("Unable to handle message, it is null.");
       }
     }
-    log.info("NcbiAirrSubmissionQueueProcessor finished gracefully");
+    log.info("NcbiSubmissionQueueProcessor finished gracefully");
   }
 
   @Override
@@ -73,7 +73,7 @@ public class NcbiAirrSubmissionQueueProcessor implements Managed {
 
   @Override
   public void stop() throws Exception {
-    log.info("NcbiAirrSubmissionQueueProcessor.stop()");
+    log.info("NcbiSubmissionQueueProcessor.stop()");
     log.info("set looping flag to false");
     doProcessing = false;
     log.info("close Jedis");

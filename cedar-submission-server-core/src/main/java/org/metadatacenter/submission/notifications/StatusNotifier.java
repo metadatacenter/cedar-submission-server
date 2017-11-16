@@ -68,8 +68,8 @@ public class StatusNotifier {
     if (submissionStatusDescriptor.getSubmissionStatusTask().getSubmissionType().equals(SubmissionType.IMMPORT)) {
       processId = "submission.IMMPORT";
     } else if (submissionStatusDescriptor.getSubmissionStatusTask().getSubmissionType().equals(SubmissionType
-        .NCBI_AIRR)) {
-      processId = "submission.AIRR";
+        .NCBI)) {
+      processId = "submission.NCBI";
     }
 
     from.put("processId", processId);

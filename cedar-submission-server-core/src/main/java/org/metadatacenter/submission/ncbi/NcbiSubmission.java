@@ -1,8 +1,8 @@
-package org.metadatacenter.submission.ncbiairr;
+package org.metadatacenter.submission.ncbi;
 
 import java.util.Collection;
 
-public class NcbiAirrSubmission {
+public class NcbiSubmission {
 
   private String id;
   private String cedarUserId;
@@ -10,10 +10,10 @@ public class NcbiAirrSubmission {
   private String submissionFolder;
   private boolean uploadSubmitReadyFile;
 
-  public NcbiAirrSubmission() {
+  public NcbiSubmission() {
   }
 
-  public NcbiAirrSubmission(String id, String cedarUserId, Collection<String> localFilePaths, String
+  public NcbiSubmission(String id, String cedarUserId, Collection<String> localFilePaths, String
       submissionFolder, boolean uploadSubmitReadyFile) {
     this.id = id;
     this.cedarUserId = cedarUserId;
@@ -64,7 +64,7 @@ public class NcbiAirrSubmission {
 
   @Override
   public String toString() {
-    return "NcbiAirrSubmission{" +
+    return "NcbiSubmission{" +
         "id='" + id + '\'' +
         ", cedarUserId='" + cedarUserId + '\'' +
         ", localFilePaths=" + localFilePaths +

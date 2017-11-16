@@ -1,8 +1,8 @@
-package org.metadatacenter.submission.ncbiairr.status;
+package org.metadatacenter.submission.ncbi.status;
 
-import org.metadatacenter.submission.Constants;
-import org.metadatacenter.submission.ncbiairr.status.report.NcbiAirrSubmissionState;
-import org.metadatacenter.submission.ncbiairr.status.report.NcbiAirrSubmissionStatusReport;
+import org.metadatacenter.submission.ncbi.NcbiConstants;
+import org.metadatacenter.submission.ncbi.status.report.NcbiSubmissionState;
+import org.metadatacenter.submission.ncbi.status.report.NcbiSubmissionStatusReport;
 import org.metadatacenter.submission.status.SubmissionState;
 import org.metadatacenter.submission.status.SubmissionStatus;
 import org.metadatacenter.submission.status.SubmissionStatusUtil;
@@ -18,17 +18,17 @@ import javax.xml.transform.stream.StreamSource;
 import java.io.InputStream;
 import java.io.StringWriter;
 
-public class NcbiAirrSubmissionStatusUtil {
+public class NcbiSubmissionStatusUtil {
 
-  public static SubmissionStatus toSubmissionStatus(String submissionId, NcbiAirrSubmissionStatusReport report) {
+  public static SubmissionStatus toSubmissionStatus(String submissionId, NcbiSubmissionStatusReport report) {
     SubmissionState submissionState = null;
-    if (report.getState().equals(NcbiAirrSubmissionState.SUBMITTED)) {
+    if (report.getState().equals(NcbiSubmissionState.SUBMITTED)) {
       submissionState = SubmissionState.PROCESSING;
-    } else if (report.getState().equals(NcbiAirrSubmissionState.PROCESSING)) {
+    } else if (report.getState().equals(NcbiSubmissionState.PROCESSING)) {
       submissionState = SubmissionState.PROCESSING;
-    } else if (report.getState().equals(NcbiAirrSubmissionState.PROCESSED_ERROR)) {
+    } else if (report.getState().equals(NcbiSubmissionState.PROCESSED_ERROR)) {
       submissionState = SubmissionState.ERROR;
-    } else if (report.getState().equals(NcbiAirrSubmissionState.FAILED)) {
+    } else if (report.getState().equals(NcbiSubmissionState.FAILED)) {
       submissionState = SubmissionState.REJECTED;
     }
     // TODO: complete with all NCBI states
@@ -45,7 +45,7 @@ public class NcbiAirrSubmissionStatusUtil {
   public static String generatePlainTextReport(Document xmlReport) throws TransformerException {
     TransformerFactory factory = TransformerFactory.newInstance();
     InputStream inputStream =
-        NcbiAirrSubmissionStatusUtil.class.getClassLoader().getResourceAsStream(Constants.NCBI_AIRR_XSLT_PATH);
+        NcbiSubmissionStatusUtil.class.getClassLoader().getResourceAsStream(NcbiConstants.NCBI_XSLT_PATH);
     Source xslSource = new StreamSource(inputStream);
     Transformer transformer = factory.newTransformer(xslSource);
     StringWriter writer = new StringWriter();

@@ -1,10 +1,10 @@
-package org.metadatacenter.submission.ncbiairr.queue;
+package org.metadatacenter.submission.ncbi.queue;
 
 import org.metadatacenter.config.CedarConfig;
-import org.metadatacenter.submission.Constants;
-import org.metadatacenter.submission.ncbiairr.NcbiAirrSubmission;
-import org.metadatacenter.submission.ncbiairr.status.NcbiAirrSubmissionStatusTask;
-import org.metadatacenter.submission.ncbiairr.upload.NcbiAirrFtpUploadService;
+import org.metadatacenter.submission.ncbi.NcbiConstants;
+import org.metadatacenter.submission.ncbi.NcbiSubmission;
+import org.metadatacenter.submission.ncbi.status.NcbiSubmissionStatusTask;
+import org.metadatacenter.submission.ncbi.upload.NcbiFtpUploadService;
 import org.metadatacenter.submission.status.SubmissionStatusManager;
 import org.metadatacenter.submission.status.SubmissionType;
 import org.metadatacenter.submission.upload.ftp.UploaderCreationException;
@@ -16,21 +16,21 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class NcbiAirrSubmissionExecutorService {
+public class NcbiSubmissionExecutorService {
 
-  private static final Logger logger = LoggerFactory.getLogger(NcbiAirrSubmissionExecutorService.class);
+  private static final Logger logger = LoggerFactory.getLogger(NcbiSubmissionExecutorService.class);
   private final CedarConfig cedarConfig;
 
-  public NcbiAirrSubmissionExecutorService(CedarConfig cedarConfig) {
+  public NcbiSubmissionExecutorService(CedarConfig cedarConfig) {
     this.cedarConfig = cedarConfig;
   }
 
   // Main entry point
-  public void handleEvent(NcbiAirrSubmissionQueueEvent event) {
+  public void handleEvent(NcbiSubmissionQueueEvent event) {
     submit(event.getSubmission());
   }
 
-  private void submit(NcbiAirrSubmission submission) {
+  private void submit(NcbiSubmission submission) {
     try {
       // Read files
       List<File> filesToSubmit = new ArrayList<>();
@@ -41,19 +41,19 @@ public class NcbiAirrSubmissionExecutorService {
       logger.info("Uploading to NCBI...");
 
       // Track the submission status
-      NcbiAirrSubmissionStatusTask submissionStatusTask = new NcbiAirrSubmissionStatusTask(submission.getId(),
-          SubmissionType.NCBI_AIRR, submission.getCedarUserId(), null, cedarConfig.getSubmissionConfig().getNcbi()
+      NcbiSubmissionStatusTask submissionStatusTask = new NcbiSubmissionStatusTask(submission.getId(),
+          SubmissionType.NCBI, submission.getCedarUserId(), null, cedarConfig.getSubmissionConfig().getNcbi()
           .getSra().getFtp(),
           submission.getSubmissionFolder());
       SubmissionStatusManager.getInstance().addSubmission(submissionStatusTask);
       SubmissionStatusManager.getInstance().setCedarConfig(cedarConfig);
 
-      if (Constants.NCBI_AIRR_SUBMIT) { // real submission
-        NcbiAirrFtpUploadService.uploadToNcbi(submission.getSubmissionFolder(),
+      if (NcbiConstants.NCBI_SUBMIT) { // real submission
+        NcbiFtpUploadService.uploadToNcbi(submission.getSubmissionFolder(),
             filesToSubmit, cedarConfig.getSubmissionConfig().getNcbi().getSra().getFtp(), submission
                 .getUploadSubmitReadyFile());
       } else { // simulated submission
-        Thread.sleep(Constants.NCBI_AIRR_SIMULATION_MODE_TIMEOUT);
+        Thread.sleep(NcbiConstants.NCBI_SIMULATION_MODE_TIMEOUT);
       }
 
       logger.info("Submission to the NCBI completed! Submission id: " + submission.getId() + "; No. files: " +

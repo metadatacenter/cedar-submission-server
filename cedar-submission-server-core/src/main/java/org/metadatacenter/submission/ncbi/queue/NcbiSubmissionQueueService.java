@@ -1,8 +1,8 @@
-package org.metadatacenter.submission.ncbiairr.queue;
+package org.metadatacenter.submission.ncbi.queue;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.metadatacenter.config.CacheServerPersistent;
-import org.metadatacenter.submission.ncbiairr.NcbiAirrSubmission;
+import org.metadatacenter.submission.ncbi.NcbiSubmission;
 import org.metadatacenter.util.json.JsonMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -10,25 +10,25 @@ import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
 
-public class NcbiAirrSubmissionQueueService {
+public class NcbiSubmissionQueueService {
 
-  public final static String NCBI_SUBMISSION_QUEUE_ID = "ncbiAirrSubmission";
-  protected static final Logger log = LoggerFactory.getLogger(NcbiAirrSubmissionQueueService.class);
+  public final static String NCBI_SUBMISSION_QUEUE_ID = "NCBISubmission";
+  protected static final Logger log = LoggerFactory.getLogger(NcbiSubmissionQueueService.class);
   private final CacheServerPersistent cacheConfig;
   private JedisPool pool;
 
-  public NcbiAirrSubmissionQueueService(CacheServerPersistent cacheConfig) {
+  public NcbiSubmissionQueueService(CacheServerPersistent cacheConfig) {
     this.cacheConfig = cacheConfig;
     pool = new JedisPool(new JedisPoolConfig(), cacheConfig.getConnection().getHost(),
         cacheConfig.getConnection().getPort(), cacheConfig.getConnection().getTimeout());
   }
 
-  public void enqueueSubmission(NcbiAirrSubmission submission) {
-    NcbiAirrSubmissionQueueEvent event = new NcbiAirrSubmissionQueueEvent(submission);
+  public void enqueueSubmission(NcbiSubmission submission) {
+    NcbiSubmissionQueueEvent event = new NcbiSubmissionQueueEvent(submission);
     enqueueEvent(event);
   }
 
-  private void enqueueEvent(NcbiAirrSubmissionQueueEvent event) {
+  private void enqueueEvent(NcbiSubmissionQueueEvent event) {
     Jedis jedis = pool.getResource();
     String json = null;
     try {

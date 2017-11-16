@@ -1,21 +1,21 @@
-package org.metadatacenter.submission.ncbiairr.status.report;
+package org.metadatacenter.submission.ncbi.status.report;
 
 /**
  * This class represents the submission status extracted from a report.[number].xml file
  */
-public class NcbiAirrSubmissionStatusReport {
+public class NcbiSubmissionStatusReport {
 
-  private final NcbiAirrSubmissionState state;
+  private final NcbiSubmissionState state;
   private final String xmlReport;
   private final String textReport; // generated from the xml report
 
-  public NcbiAirrSubmissionStatusReport(NcbiAirrSubmissionState state, String xmlReport, String textReport) {
+  public NcbiSubmissionStatusReport(NcbiSubmissionState state, String xmlReport, String textReport) {
     this.state = state;
     this.xmlReport = xmlReport;
     this.textReport = textReport;
   }
 
-  public NcbiAirrSubmissionState getState() {
+  public NcbiSubmissionState getState() {
     return state;
   }
 

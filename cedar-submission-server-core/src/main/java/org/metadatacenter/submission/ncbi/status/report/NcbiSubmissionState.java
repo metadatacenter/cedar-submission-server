@@ -1,16 +1,16 @@
-package org.metadatacenter.submission.ncbiairr.status.report;
+package org.metadatacenter.submission.ncbi.status.report;
 
-public enum NcbiAirrSubmissionState {
+public enum NcbiSubmissionState {
   SUBMITTED("submitted"), PROCESSING("processing"), PROCESSED_ERROR("processed-error"), FAILED("failed");
 
   private final String value;
 
-  NcbiAirrSubmissionState(String value) {
+  NcbiSubmissionState(String value) {
     this.value = value;
   }
 
-  public static NcbiAirrSubmissionState fromString(String state) {
-    for (NcbiAirrSubmissionState s : NcbiAirrSubmissionState.values()) {
+  public static NcbiSubmissionState fromString(String state) {
+    for (NcbiSubmissionState s : NcbiSubmissionState.values()) {
       if (s.getValue().equals(state)) {
         return s;
       }

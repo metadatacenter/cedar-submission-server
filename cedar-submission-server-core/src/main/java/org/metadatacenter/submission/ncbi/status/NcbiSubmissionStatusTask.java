@@ -1,20 +1,20 @@
-package org.metadatacenter.submission.ncbiairr.status;
+package org.metadatacenter.submission.ncbi.status;
 
 import org.metadatacenter.config.FTPConfig;
 import org.metadatacenter.submission.status.SubmissionStatus;
 import org.metadatacenter.submission.status.SubmissionStatusTask;
 import org.metadatacenter.submission.status.SubmissionType;
 
-public class NcbiAirrSubmissionStatusTask extends SubmissionStatusTask {
+public class NcbiSubmissionStatusTask extends SubmissionStatusTask {
 
   private FTPConfig ftpConfig;
   private String submissionFolder;
   private String lastStatusReportFile;
 
   // TODO: keep the statusURL in the parent. Not needed here.
-  public NcbiAirrSubmissionStatusTask(String submissionID, SubmissionType submissionType, String userID, String
+  public NcbiSubmissionStatusTask(String submissionID, SubmissionType submissionType, String userID, String
       statusURL,
-                                      FTPConfig ftpConfig, String submissionFolder) {
+                                  FTPConfig ftpConfig, String submissionFolder) {
     super(submissionID, submissionType, userID, statusURL);
     this.ftpConfig = ftpConfig;
     this.submissionFolder = submissionFolder;
@@ -22,7 +22,7 @@ public class NcbiAirrSubmissionStatusTask extends SubmissionStatusTask {
 
   @Override
   protected SubmissionStatus callSubmissionStatusEndpoint() throws Exception {
-    return NcbiAirrFtpStatusChecker.getNcbiAirrSubmissionStatus(getSubmissionID(), ftpConfig, submissionFolder,
+    return NcbiFtpStatusChecker.getNcbiSubmissionStatus(getSubmissionID(), ftpConfig, submissionFolder,
         lastStatusReportFile);
   }
 

@@ -1,13 +1,13 @@
-package org.metadatacenter.submission.ncbiairr.status;
+package org.metadatacenter.submission.ncbi.status;
 
 import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPFile;
 import org.apache.commons.net.ftp.FTPReply;
 import org.metadatacenter.config.FTPConfig;
-import org.metadatacenter.submission.Constants;
-import org.metadatacenter.submission.ncbiairr.status.report.NcbiAirrSubmissionState;
-import org.metadatacenter.submission.ncbiairr.status.report.NcbiAirrSubmissionStatusReport;
+import org.metadatacenter.submission.ncbi.NcbiConstants;
+import org.metadatacenter.submission.ncbi.status.report.NcbiSubmissionState;
+import org.metadatacenter.submission.ncbi.status.report.NcbiSubmissionStatusReport;
 import org.metadatacenter.submission.status.*;
 import org.metadatacenter.submission.upload.ftp.UploaderCreationException;
 import org.slf4j.Logger;
@@ -24,12 +24,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Optional;
 
-public class NcbiAirrFtpStatusChecker {
+public class NcbiFtpStatusChecker {
 
-  final static Logger logger = LoggerFactory.getLogger(NcbiAirrFtpStatusChecker.class);
+  final static Logger logger = LoggerFactory.getLogger(NcbiFtpStatusChecker.class);
 
-  public static SubmissionStatus getNcbiAirrSubmissionStatus(String submissionID, FTPConfig ftpConfig,
-                                                             String submissionFolder, String lastStatusReportFile)
+  public static SubmissionStatus getNcbiSubmissionStatus(String submissionID, FTPConfig ftpConfig,
+                                                         String submissionFolder, String lastStatusReportFile)
       throws SAXException, ParserConfigurationException, TransformerException, UploaderCreationException,
       IOException, InterruptedException {
 
@@ -46,8 +46,8 @@ public class NcbiAirrFtpStatusChecker {
           ftpConfig.getPassword());
 
       // TODO: remove this block. It is used for testing
-      if (!Constants.NCBI_AIRR_SUBMIT || !Constants.NCBI_AIRR_UPLOAD_SUBMIT_READY_FILE) {
-        submissionPath = Constants.NCBI_AIRR_TEST_SUBMISSION_PATH;
+      if (!NcbiConstants.NCBI_SUBMIT || !NcbiConstants.NCBI_UPLOAD_SUBMIT_READY_FILE) {
+        submissionPath = NcbiConstants.NCBI_TEST_SUBMISSION_PATH;
       }
 
       // Go to the submission folder
@@ -74,14 +74,14 @@ public class NcbiAirrFtpStatusChecker {
           // update the variable that stores the name of the last report checked
           SubmissionStatusDescriptor submissionStatusDescriptor = SubmissionStatusManager.getInstance()
               .getCurrentSubmissions().get(submissionID);
-          NcbiAirrSubmissionStatusTask statusTask = (NcbiAirrSubmissionStatusTask) submissionStatusDescriptor
+          NcbiSubmissionStatusTask statusTask = (NcbiSubmissionStatusTask) submissionStatusDescriptor
               .getSubmissionStatusTask();
           statusTask.setLastStatusReportFile(mostRecentReportFileName.get());
 
           // generate submission status from the most recent report file
           InputStream inputStream = ftpClient.retrieveFileStream(mostRecentReportFileName.get());
-          NcbiAirrSubmissionStatusReport statusFromReport = getSubmissionStatusFromReport(inputStream);
-          submissionStatus = NcbiAirrSubmissionStatusUtil.toSubmissionStatus(submissionID, statusFromReport);
+          NcbiSubmissionStatusReport statusFromReport = getSubmissionStatusFromReport(inputStream);
+          submissionStatus = NcbiSubmissionStatusUtil.toSubmissionStatus(submissionID, statusFromReport);
           logger.info("The submission status has been updated (submissionId = " + submissionID + ")");
           logger.info(submissionStatus.toString());
         } else { // the report file has already been checked so the status will be the same
@@ -115,7 +115,7 @@ public class NcbiAirrFtpStatusChecker {
     int lastReportNumber = -1;
     for (FTPFile file : files) {
       if (file.isFile()) {
-        if (file.getName().matches(Constants.NCBI_AIRR_REPORT_REGEX)) {
+        if (file.getName().matches(NcbiConstants.NCBI_REPORT_REGEX)) {
           int currentReportNumber = getReportNumber(file.getName());
           if (currentReportNumber > lastReportNumber) {
             lastReportFileName = file.getName();
@@ -136,7 +136,7 @@ public class NcbiAirrFtpStatusChecker {
     return Integer.parseInt(fileName.substring(index1 + 1, index2));
   }
 
-  private static NcbiAirrSubmissionStatusReport getSubmissionStatusFromReport(InputStream inputStream)
+  private static NcbiSubmissionStatusReport getSubmissionStatusFromReport(InputStream inputStream)
       throws ParserConfigurationException, IOException, SAXException, TransformerException {
 
     DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
@@ -147,9 +147,9 @@ public class NcbiAirrFtpStatusChecker {
     Node submissionStatus = statusReport.getElementsByTagName("SubmissionStatus").item(0);
     String status = submissionStatus.getAttributes().getNamedItem("status").getNodeValue();
     // Generate plain text report
-    String textReport = NcbiAirrSubmissionStatusUtil.generatePlainTextReport(statusReport);
+    String textReport = NcbiSubmissionStatusUtil.generatePlainTextReport(statusReport);
 
-    return new NcbiAirrSubmissionStatusReport(NcbiAirrSubmissionState.fromString(status), statusReport.toString(),
+    return new NcbiSubmissionStatusReport(NcbiSubmissionState.fromString(status), statusReport.toString(),
         textReport);
   }
 

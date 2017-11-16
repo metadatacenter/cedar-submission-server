@@ -1,10 +1,11 @@
-package org.metadatacenter.submission;
+package org.metadatacenter.submission.ncbi.airr;
 
 import biosample.TypeAttribute;
 import biosample.TypeBioSample;
 import biosample.TypeBioSampleIdentifier;
 import common.sp.*;
 import generated.*;
+import org.metadatacenter.submission.*;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
@@ -25,7 +26,7 @@ import java.util.UUID;
 /**
  * Convert a CEDAR JSON Schema-based AIRR template instance into a BioProject/BioSample/SRA XML-based submission.
  */
-public class AIRRTemplate2SRAConverter {
+public class AIRRTemplateInstance2SRAXMLConverter {
   private List<String> bioSampleIds = new ArrayList<>();
   private List<String> sraIds = new ArrayList<>();
 
@@ -34,11 +35,11 @@ public class AIRRTemplate2SRAConverter {
    * AIRRTemplate.json JSON Schema file in the resources directory.
    *
    * @param airrInstance An AIRR template instance
-   * @return A string containing a BioSample-conformant XML representation of the supplied AIRR instance
+   * @return A string containing a SRA-conformant XML representation of the supplied AIRR instance
    * @throws DatatypeConfigurationException If a configuration error occurs during processing
    * @throws JAXBException                  If a JAXB error occurs during processing
    */
-  public String generateSRASubmissionXMLFromAIRRTemplateInstance(AIRRTemplate airrInstance)
+  public String convertTemplateInstanceToXML(AIRRTemplate airrInstance)
       throws DatatypeConfigurationException, JAXBException {
     final generated.ObjectFactory submissionObjectFactory = new generated.ObjectFactory();
     final common.sp.ObjectFactory spCommonObjectFactory = new common.sp.ObjectFactory();
