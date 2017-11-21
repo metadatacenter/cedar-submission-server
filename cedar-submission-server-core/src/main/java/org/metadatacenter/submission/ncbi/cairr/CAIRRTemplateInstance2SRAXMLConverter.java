@@ -96,7 +96,7 @@ public class CAIRRTemplateInstance2SRAXMLConverter {
     // TODO Other BioProject fields need to be set
 
     // Retrieve the biosamples from the CAIRR instance
-    for (BioSample1 bioSample : cairrInstance.getBioSample1()) {
+    for (BioSample bioSample : cairrInstance.getBioSample()) {
       // Start <BioSample> section
       TypeBioSample ncbiBioSample = bioSampleObjectFactory.createTypeBioSample();
       ncbiBioSample.setSchemaVersion("2.0"); // XXX: Hard-coded
@@ -560,7 +560,7 @@ public class CAIRRTemplateInstance2SRAXMLConverter {
 
     // Retrieve the SRAs from the CAIRR instance
     int sraIndex = 0; // to track the corresponding BioSample record for this SRA entry
-    for (SequenceReadArchive1 sequenceReadArchive : cairrInstance.getSequenceReadArchive1()) {
+    for (SequenceReadArchive sequenceReadArchive : cairrInstance.getSequenceReadArchive()) {
 
       // AddFiles
       Submission.Action.AddFiles sraAddFiles = submissionObjectFactory.createSubmissionActionAddFiles();
