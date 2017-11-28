@@ -4046,7 +4046,7 @@
                                     "properties": {
                                         "name": {
                                             "enum": [
-                                                "https://schema.staging.metadatacenter.net/properties/ba4e2444-7b42-49e3-bb56-3ba9491b7c1e"
+                                                "https://schema.staging.metadatacenter.net/properties/name"
                                             ]
                                         },
                                         "value": {
