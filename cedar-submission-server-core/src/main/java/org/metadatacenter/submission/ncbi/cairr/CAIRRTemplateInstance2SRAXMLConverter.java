@@ -68,15 +68,15 @@ public class CAIRRTemplateInstance2SRAXMLConverter {
      * Object construction for the submission <Description> section
      */
     TypeName contactName = spCommonObjectFactory.createTypeName();
-    contactName.setFirst(bioProject.getFirstGivenName1().getValue());
-    contactName.setLast(bioProject.getLastFamilyName1().getValue());
+    contactName.setFirst(bioProject.getFirstGivenName().getValue());
+    contactName.setLast(bioProject.getLastFamilyName().getValue());
 
     TypeContactInfo contactInfo = spCommonObjectFactory.createTypeContactInfo();
-    contactInfo.setEmail(bioProject.getEMail1().getValue());
+    contactInfo.setEmail(bioProject.getEMail().getValue());
     contactInfo.setName(contactName);
 
     TypeOrganization.Name organizationName = submissionObjectFactory.createTypeOrganizationName();
-    organizationName.setValue(bioProject.getSubmittingOrganization1().getValue());
+    organizationName.setValue(bioProject.getSubmittingOrganization().getValue());
 
     TypeAccount contactSubmitter = submissionObjectFactory.createTypeAccount();
     contactSubmitter.setUserName("ahmadchan@gmail.com"); // TODO
@@ -237,7 +237,7 @@ public class CAIRRTemplateInstance2SRAXMLConverter {
 
 
       // Relation to other Subject
-      String RelationToOtherSubject1Value = bioSample.getRelationToOtherSubject1().getValue();
+      String RelationToOtherSubject1Value = bioSample.getRelationToOtherSubject().getValue();
       if (RelationToOtherSubject1Value != null) {
         TypeAttribute attribute = bioSampleObjectFactory.createTypeAttribute();
         attribute.setAttributeName("RelationToOtherSubject1");
@@ -246,7 +246,7 @@ public class CAIRRTemplateInstance2SRAXMLConverter {
       }
 
       // Relation Type
-      String RelationType1Value = bioSample.getRelationType1().getValue();
+      String RelationType1Value = bioSample.getRelationType().getValue();
       if (RelationType1Value != null) {
         TypeAttribute attribute = bioSampleObjectFactory.createTypeAttribute();
         attribute.setAttributeName("RelationType1");
@@ -256,7 +256,7 @@ public class CAIRRTemplateInstance2SRAXMLConverter {
 
 
       // Projected Release Date
-      String ProjectedReleaseDate1Value = bioSample.getProjectedReleaseDate1().getValue();
+      String ProjectedReleaseDate1Value = bioSample.getProjectedReleaseDate().getValue();
       if (ProjectedReleaseDate1Value != null) {
         TypeAttribute attribute = bioSampleObjectFactory.createTypeAttribute();
         attribute.setAttributeName("ProjectedReleaseDate1");
@@ -380,7 +380,7 @@ public class CAIRRTemplateInstance2SRAXMLConverter {
         bioSampleAttributes.getAttribute().add(attribute);
       }
       // Disease State of Sample
-      String DiseaseStateOfSample1value = bioSample.getDiseaseStateOfSample1().getValue();
+      String DiseaseStateOfSample1value = bioSample.getDiseaseStateOfSample().getValue();
       if (DiseaseStateOfSample1value != null) {
         TypeAttribute attribute = bioSampleObjectFactory.createTypeAttribute();
         attribute.setAttributeName("DiseaseStateOfSample1");
@@ -389,7 +389,7 @@ public class CAIRRTemplateInstance2SRAXMLConverter {
       }
 
       // Sample Collection Time
-      String SampleCollectionTime1Value = bioSample.getSampleCollectionTime1().getValue();
+      String SampleCollectionTime1Value = bioSample.getSampleCollectionTime().getValue();
       if (SampleCollectionTime1Value != null) {
         TypeAttribute attribute = bioSampleObjectFactory.createTypeAttribute();
         attribute.setAttributeName("SampleCollectionTime1");
@@ -398,7 +398,7 @@ public class CAIRRTemplateInstance2SRAXMLConverter {
       }
 
       // Collection Time Event T01
-      String CollectionTimeEventT01Value = bioSample.getCollectionTimeEventT01().getValue();
+      String CollectionTimeEventT01Value = bioSample.getCollectionTimeEventT0().getValue();
       if (CollectionTimeEventT01Value != null) {
         TypeAttribute attribute = bioSampleObjectFactory.createTypeAttribute();
         attribute.setAttributeName("CollectionTimeEventT01");
@@ -452,7 +452,7 @@ public class CAIRRTemplateInstance2SRAXMLConverter {
       }
 
       // Single-cell Sort
-      String SingleCellSort1Value = bioSample.getSingleCellSort1().getValue();
+      String SingleCellSort1Value = bioSample.getSingleCellSort().getValue();
       if (SingleCellSort1Value != null) {
         TypeAttribute attribute = bioSampleObjectFactory.createTypeAttribute();
         attribute.setAttributeName("SingleCellSort1");
@@ -461,7 +461,7 @@ public class CAIRRTemplateInstance2SRAXMLConverter {
       }
 
       // Number of Cells in Experiment
-      String NumberOfCellsInExperiment1Value = bioSample.getNumberOfCellsInExperiment1().getValue();
+      String NumberOfCellsInExperiment1Value = bioSample.getNumberOfCellsInExperiment().getValue();
       if (NumberOfCellsInExperiment1Value != null) {
         TypeAttribute attribute = bioSampleObjectFactory.createTypeAttribute();
         attribute.setAttributeName("NumberOfCellsInExperiment1");
@@ -470,7 +470,7 @@ public class CAIRRTemplateInstance2SRAXMLConverter {
       }
 
       // Number of Cells per Sequencing Reaction1
-      String NumberOfCellsPerSequencingReaction1Value = bioSample.getNumberOfCellsPerSequencingReaction1().getValue();
+      String NumberOfCellsPerSequencingReaction1Value = bioSample.getNumberOfCellsPerSequencingReaction().getValue();
       if (NumberOfCellsPerSequencingReaction1Value != null) {
         TypeAttribute attribute = bioSampleObjectFactory.createTypeAttribute();
         attribute.setAttributeName("NumberOfCellsPerSequencingReaction1");
@@ -480,7 +480,7 @@ public class CAIRRTemplateInstance2SRAXMLConverter {
 
 
       // Cell Storage1
-      String CellStorage1Value = bioSample.getCellStorage1().getValue();
+      String CellStorage1Value = bioSample.getCellStorage().getValue();
       if (CellStorage1Value != null) {
         TypeAttribute attribute = bioSampleObjectFactory.createTypeAttribute();
         attribute.setAttributeName("CellStorage1");
@@ -570,10 +570,10 @@ public class CAIRRTemplateInstance2SRAXMLConverter {
 
 
       // File
-      for (SRAMultipleFileUploadAttributes1 sraFileUploadAttribute : sequenceReadArchive
-          .getSRAMultipleFileUploadAttributes1()) {
+      for (SRAMultipleFileUploadAttribute sraFileUploadAttribute : sequenceReadArchive
+          .getSRAMultipleFileUploadAttributes()) {
 
-        _6d3f0b409f8b40ecB9040186aeba4194 fileName = sraFileUploadAttribute.get6d3f0b409f8b40ecB9040186aeba4194();
+        FileName fileName = sraFileUploadAttribute.getFileName();
 
         String fileType = sraFileUploadAttribute.getType().toString();
 
@@ -589,27 +589,27 @@ public class CAIRRTemplateInstance2SRAXMLConverter {
 
       // library ID
 
-      String LibraryID1Value = sequenceReadArchive.getLibraryID1().getValue();
-      if (LibraryID1Value != null) {
+      String libraryIDValue = sequenceReadArchive.getLibraryID().getValue();
+      if (libraryIDValue != null) {
         TypeFileAttribute fileAttribute = submissionObjectFactory.createTypeFileAttribute();
-        fileAttribute.setName("LibraryID1");
-        fileAttribute.setValue(LibraryID1Value);
+        fileAttribute.setName("LibraryID");
+        fileAttribute.setValue(libraryIDValue);
         sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(fileAttribute);
       }
 
       // Library Name
 
-      String LibraryName1Value = sequenceReadArchive.getLibraryName1().getValue();
-      if (LibraryName1Value != null) {
+      String libraryNameValue = sequenceReadArchive.getLibraryName().getValue();
+      if (libraryNameValue != null) {
         TypeFileAttribute fileAttribute = submissionObjectFactory.createTypeFileAttribute();
-        fileAttribute.setName("LibraryName1");
-        fileAttribute.setValue(LibraryName1Value);
+        fileAttribute.setName("LibraryName");
+        fileAttribute.setValue(libraryNameValue);
         sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(fileAttribute);
       }
 
       // Library instruement
 
-      String LibraryInstrument1Value = sequenceReadArchive.getLibraryInstrument1().getValue();
+      String LibraryInstrument1Value = sequenceReadArchive.getLibraryInstrument().getValue();
       if (LibraryInstrument1Value != null) {
         TypeFileAttribute fileAttribute = submissionObjectFactory.createTypeFileAttribute();
         fileAttribute.setName("LibraryInstrument");
@@ -619,10 +619,10 @@ public class CAIRRTemplateInstance2SRAXMLConverter {
 
       // Library Startegy
 
-      String LibraryStrategy1Value = sequenceReadArchive.getLibraryStrategy1().getValue();
+      String LibraryStrategy1Value = sequenceReadArchive.getLibraryStrategy().getValue();
       if (LibraryStrategy1Value != null) {
         TypeFileAttribute fileAttribute = submissionObjectFactory.createTypeFileAttribute();
-        fileAttribute.setName("LibraryStrategy1");
+        fileAttribute.setName("LibraryStrategy");
         fileAttribute.setValue(LibraryStrategy1Value);
         sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(fileAttribute);
       }
@@ -630,93 +630,93 @@ public class CAIRRTemplateInstance2SRAXMLConverter {
 
 // Library Source
 
-      String LibrarySource1Value = sequenceReadArchive.getLibrarySource1().getValue();
-      if (LibrarySource1Value != null) {
+      String librarySourceValue = sequenceReadArchive.getLibrarySource().getValue();
+      if (librarySourceValue != null) {
         TypeFileAttribute fileAttribute = submissionObjectFactory.createTypeFileAttribute();
-        fileAttribute.setName("LibrarySource1");
-        fileAttribute.setValue(LibrarySource1Value);
+        fileAttribute.setName("LibrarySource");
+        fileAttribute.setValue(librarySourceValue);
         sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(fileAttribute);
       }
 
 
       // Library Selection
 
-      String LibrarySelection1Value = sequenceReadArchive.getLibrarySelection1().getValue();
-      if (LibrarySelection1Value != null) {
+      String librarySelectionValue = sequenceReadArchive.getLibrarySelection().getValue();
+      if (librarySelectionValue != null) {
         TypeFileAttribute fileAttribute = submissionObjectFactory.createTypeFileAttribute();
-        fileAttribute.setName("LibrarySelection1");
-        fileAttribute.setValue(LibrarySelection1Value);
+        fileAttribute.setName("LibrarySelection");
+        fileAttribute.setValue(librarySelectionValue);
         sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(fileAttribute);
       }
 
       // Library Layout
 
-      String LibraryLayout1Value = sequenceReadArchive.getLibraryLayout1().getValue();
-      if (LibraryLayout1Value != null) {
+      String libraryLayoutValue = sequenceReadArchive.getLibraryLayout().getValue();
+      if (libraryLayoutValue != null) {
         TypeFileAttribute fileAttribute = submissionObjectFactory.createTypeFileAttribute();
-        fileAttribute.setName("LibraryLayout1");
-        fileAttribute.setValue(LibraryLayout1Value);
+        fileAttribute.setName("LibraryLayout");
+        fileAttribute.setValue(libraryLayoutValue);
         sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(fileAttribute);
       }
       // Library Construction Protocol
 
-      String LibraryConstructionProtocol1Value = sequenceReadArchive.getLibraryConstructionProtocol1().getValue();
-      if (LibraryConstructionProtocol1Value != null) {
+      String libraryConstructionProtocolValue = sequenceReadArchive.getLibraryConstructionProtocol().getValue();
+      if (libraryConstructionProtocolValue != null) {
         TypeFileAttribute fileAttribute = submissionObjectFactory.createTypeFileAttribute();
-        fileAttribute.setName("LibraryConstructionProtocol1");
-        fileAttribute.setValue(LibraryConstructionProtocol1Value);
+        fileAttribute.setName("LibraryConstructionProtocol");
+        fileAttribute.setValue(libraryConstructionProtocolValue);
         sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(fileAttribute);
       }
 
 
       // Design Description
 
-      String DesignDescription1Value = sequenceReadArchive.getDesignDescription1().getValue();
-      if (DesignDescription1Value != null) {
+      String designDescriptionValue = sequenceReadArchive.getDesignDescription().getValue();
+      if (designDescriptionValue != null) {
         TypeFileAttribute fileAttribute = submissionObjectFactory.createTypeFileAttribute();
-        fileAttribute.setName("DesignDescription1");
-        fileAttribute.setValue(DesignDescription1Value);
+        fileAttribute.setName("DesignDescription");
+        fileAttribute.setValue(designDescriptionValue);
         sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(fileAttribute);
       }
 
 
       // Target Substrate
 
-      String TargetSubstrate1Value = sequenceReadArchive.getTargetSubstrate1().getValue();
-      if (TargetSubstrate1Value != null) {
+      String targetSubstrateValue = sequenceReadArchive.getTargetSubstrate().getValue();
+      if (targetSubstrateValue != null) {
         TypeFileAttribute fileAttribute = submissionObjectFactory.createTypeFileAttribute();
-        fileAttribute.setName("TargetSubstrate1");
-        fileAttribute.setValue(TargetSubstrate1Value);
+        fileAttribute.setName("TargetSubstrate");
+        fileAttribute.setValue(targetSubstrateValue);
         sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(fileAttribute);
       }
 
       // Target Substrate Quality
 
-      String TargetSubstrateQuality1Value = sequenceReadArchive.getTargetSubstrateQuality1().getValue();
-      if (TargetSubstrateQuality1Value != null) {
+      String targetSubstrateQualityValue = sequenceReadArchive.getTargetSubstrateQuality().getValue();
+      if (targetSubstrateQualityValue != null) {
         TypeFileAttribute fileAttribute = submissionObjectFactory.createTypeFileAttribute();
-        fileAttribute.setName("TargetSubstrateQuality1");
-        fileAttribute.setValue(TargetSubstrateQuality1Value);
+        fileAttribute.setName("TargetSubstrateQuality");
+        fileAttribute.setValue(targetSubstrateQualityValue);
         sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(fileAttribute);
       }
 
       // Library Generation Method
 
-      String LibraryGenerationMethod1Value = sequenceReadArchive.getLibraryGenerationMethod1().getValue();
-      if (LibraryGenerationMethod1Value != null) {
+      String libraryGenerationMethodValue = sequenceReadArchive.getLibraryGenerationMethod().getValue();
+      if (libraryGenerationMethodValue != null) {
         TypeFileAttribute fileAttribute = submissionObjectFactory.createTypeFileAttribute();
-        fileAttribute.setName("LibraryGenerationMethod1");
-        fileAttribute.setValue(LibraryGenerationMethod1Value);
+        fileAttribute.setName("LibraryGenerationMethod");
+        fileAttribute.setValue(libraryGenerationMethodValue);
         sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(fileAttribute);
       }
 
       // Library Generation Protocol
 
-      String LibraryGenerationProtocol1Value = sequenceReadArchive.getLibraryGenerationProtocol1().getValue();
-      if (LibraryGenerationProtocol1Value != null) {
+      String libraryGenerationProtocolValue = sequenceReadArchive.getLibraryGenerationProtocol().getValue();
+      if (libraryGenerationProtocolValue != null) {
         TypeFileAttribute fileAttribute = submissionObjectFactory.createTypeFileAttribute();
-        fileAttribute.setName("LibraryGenerationProtocol1");
-        fileAttribute.setValue(LibraryGenerationProtocol1Value);
+        fileAttribute.setName("LibraryGenerationProtocol");
+        fileAttribute.setValue(libraryGenerationProtocolValue);
         sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(fileAttribute);
       }
 
@@ -733,42 +733,42 @@ public class CAIRRTemplateInstance2SRAXMLConverter {
 
       // Forward PCR Primer Target Location
 
-      String ForwardPCRPrimerTargetLocation1Value = sequenceReadArchive.getForwardPCRPrimerTargetLocation1().getValue();
-      if (ForwardPCRPrimerTargetLocation1Value != null) {
+      String forwardPCRPrimerTargetLocationValue = sequenceReadArchive.getForwardPCRPrimerTargetLocation().getValue();
+      if (forwardPCRPrimerTargetLocationValue != null) {
         TypeFileAttribute fileAttribute = submissionObjectFactory.createTypeFileAttribute();
-        fileAttribute.setName("ForwardPCRPrimerTargetLocation1");
-        fileAttribute.setValue(ForwardPCRPrimerTargetLocation1Value);
+        fileAttribute.setName("ForwardPCRPrimerTargetLocation");
+        fileAttribute.setValue(forwardPCRPrimerTargetLocationValue);
         sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(fileAttribute);
       }
 
       // Reverse PCR Primer Target Location
 
-      String ReversePCRPrimerTargetLocation1Value = sequenceReadArchive.getReversePCRPrimerTargetLocation1().getValue();
-      if (ReversePCRPrimerTargetLocation1Value != null) {
+      String reversePCRPrimerTargetLocationValue = sequenceReadArchive.getReversePCRPrimerTargetLocation().getValue();
+      if (reversePCRPrimerTargetLocationValue != null) {
         TypeFileAttribute fileAttribute = submissionObjectFactory.createTypeFileAttribute();
-        fileAttribute.setName("ReversePCRPrimerTargetLocation1");
-        fileAttribute.setValue(ReversePCRPrimerTargetLocation1Value);
+        fileAttribute.setName("ReversePCRPrimerTargetLocation");
+        fileAttribute.setValue(reversePCRPrimerTargetLocationValue);
         sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(fileAttribute);
       }
 
 
       // Complete Sequence
 
-      String CompleteSequence1Value = sequenceReadArchive.getCompleteSequence1().getValue();
-      if (CompleteSequence1Value != null) {
+      String completeSequenceValue = sequenceReadArchive.getCompleteSequence().getValue();
+      if (completeSequenceValue != null) {
         TypeFileAttribute fileAttribute = submissionObjectFactory.createTypeFileAttribute();
-        fileAttribute.setName("CompleteSequence1");
-        fileAttribute.setValue(CompleteSequence1Value);
+        fileAttribute.setName("CompleteSequence");
+        fileAttribute.setValue(completeSequenceValue);
         sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(fileAttribute);
       }
 
       // Physical Linkage of Different Loci
 
-      String PhysicalLinkageOfDifferentLociValue = sequenceReadArchive.getPhysicalLinkageOfDifferentLoci().getValue();
-      if (PhysicalLinkageOfDifferentLociValue != null) {
+      String physicalLinkageOfDifferentLociValue = sequenceReadArchive.getPhysicalLinkageOfDifferentLoci().getValue();
+      if (physicalLinkageOfDifferentLociValue != null) {
         TypeFileAttribute fileAttribute = submissionObjectFactory.createTypeFileAttribute();
         fileAttribute.setName("PhysicalLinkageOfDifferentLoci");
-        fileAttribute.setValue(PhysicalLinkageOfDifferentLociValue);
+        fileAttribute.setValue(physicalLinkageOfDifferentLociValue);
         sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(fileAttribute);
       }
 
@@ -785,83 +785,82 @@ public class CAIRRTemplateInstance2SRAXMLConverter {
 
       // Total Reads Passing QC Filter1
 
-      String TotalReadsPassingQCFilter1Value = sequenceReadArchive.getTotalReadsPassingQCFilter1().getValue();
-      if (TotalReadsPassingQCFilter1Value != null) {
+      String totalReadsPassingQCFilterValue = sequenceReadArchive.getTotalReadsPassingQCFilter().getValue();
+      if (totalReadsPassingQCFilterValue != null) {
         TypeFileAttribute fileAttribute = submissionObjectFactory.createTypeFileAttribute();
-        fileAttribute.setName("TotalReadsPassingQCFilter1");
-        fileAttribute.setValue(TotalReadsPassingQCFilter1Value);
+        fileAttribute.setName("TotalReadsPassingQCFilter");
+        fileAttribute.setValue(totalReadsPassingQCFilterValue);
         sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(fileAttribute);
       }
 
       // Protocol ID
 
-      String ProtocolID1Value = sequenceReadArchive.getProtocolID1().getValue();
-      if (ProtocolID1Value != null) {
+      String protocolIDValue = sequenceReadArchive.getProtocolID().getValue();
+      if (protocolIDValue != null) {
         TypeFileAttribute fileAttribute = submissionObjectFactory.createTypeFileAttribute();
-        fileAttribute.setName("ProtocolID1");
-        fileAttribute.setValue(ProtocolID1Value);
+        fileAttribute.setName("ProtocolID");
+        fileAttribute.setValue(protocolIDValue);
         sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(fileAttribute);
       }
 
 
       // Sequencing Platform
 
-      String SequencingPlatform1Value = sequenceReadArchive.getSequencingPlatform1().getValue();
-      if (SequencingPlatform1Value != null) {
+      String sequencingPlatformValue = sequenceReadArchive.getSequencingPlatform().getValue();
+      if (sequencingPlatformValue != null) {
         TypeFileAttribute fileAttribute = submissionObjectFactory.createTypeFileAttribute();
         fileAttribute.setName("SequencingPlatform1");
-        fileAttribute.setValue(SequencingPlatform1Value);
+        fileAttribute.setValue(sequencingPlatformValue);
         sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(fileAttribute);
       }
 
 
       // Sequencing Read Lengths
 
-      String ReadLengthsValue = sequenceReadArchive.getReadLengths().getValue();
-      if (ReadLengthsValue != null) {
+      String readLengthsValue = sequenceReadArchive.getReadLengths().getValue();
+      if (readLengthsValue != null) {
         TypeFileAttribute fileAttribute = submissionObjectFactory.createTypeFileAttribute();
         fileAttribute.setName("ReadLengths");
-        fileAttribute.setValue(ReadLengthsValue);
+        fileAttribute.setValue(readLengthsValue);
         sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(fileAttribute);
       }
 
       // Sequencing Facility
 
-      String SequencingFacility1Value = sequenceReadArchive.getSequencingFacility1().getValue();
-      if (SequencingFacility1Value != null) {
+      String sequencingFacilityValue = sequenceReadArchive.getSequencingFacility().getValue();
+      if (sequencingFacilityValue != null) {
         TypeFileAttribute fileAttribute = submissionObjectFactory.createTypeFileAttribute();
         fileAttribute.setName("SequencingFacility1");
-        fileAttribute.setValue(SequencingFacility1Value);
+        fileAttribute.setValue(sequencingFacilityValue);
         sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(fileAttribute);
       }
 
       // Batch Number
 
-      String BatchNumber1Value = sequenceReadArchive.getBatchNumber1().getValue();
-      if (BatchNumber1Value != null) {
+      String batchNumberValue = sequenceReadArchive.getBatchNumber().getValue();
+      if (batchNumberValue != null) {
         TypeFileAttribute fileAttribute = submissionObjectFactory.createTypeFileAttribute();
         fileAttribute.setName("BatchNumber1");
-        fileAttribute.setValue(BatchNumber1Value);
+        fileAttribute.setValue(batchNumberValue);
         sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(fileAttribute);
       }
 
       // Date of Sequencing Run
 
-      String DateOfSequencingRunValue = sequenceReadArchive.getDateOfSequencingRun().getValue();
-      if (DateOfSequencingRunValue != null) {
+      String dateOfSequencingRunValue = sequenceReadArchive.getDateOfSequencingRun().getValue();
+      if (dateOfSequencingRunValue != null) {
         TypeFileAttribute fileAttribute = submissionObjectFactory.createTypeFileAttribute();
         fileAttribute.setName("DateOfSequencingRun");
-        fileAttribute.setValue(DateOfSequencingRunValue);
+        fileAttribute.setValue(dateOfSequencingRunValue);
         sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(fileAttribute);
       }
 
       // Sequencing Kit
-
-      String SequencingKit1Value = sequenceReadArchive.getSequencingKit1().getValue();
-      if (SequencingKit1Value != null) {
+      String sequencingKitValue = sequenceReadArchive.getSequencingKit().getValue();
+      if (sequencingKitValue != null) {
         TypeFileAttribute fileAttribute = submissionObjectFactory.createTypeFileAttribute();
         fileAttribute.setName("SequencingKit1");
-        fileAttribute.setValue(SequencingKit1Value);
+        fileAttribute.setValue(sequencingKitValue);
         sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(fileAttribute);
       }
 
