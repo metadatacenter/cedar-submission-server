@@ -140,378 +140,379 @@ public class CAIRRTemplateInstance2SRAXMLConverter {
       TypeBioSample.Attributes bioSampleAttributes = bioSampleObjectFactory.createTypeBioSampleAttributes();
 
 
-      // Following are the AIRR BioSample Elements/attrubites
+      // Following are the CAIRR BioSample Elements/attributes
 
       // Subject ID
-      String SubjectIdValue = bioSample.getSubjectId().getValue();
-      if (SubjectIdValue != null) {
+      String subjectIdValue = bioSample.getSubjectId().getValue();
+      if (subjectIdValue != null) {
         TypeAttribute attribute = bioSampleObjectFactory.createTypeAttribute();
         attribute.setAttributeName("SubjectId");
-        attribute.setValue(SubjectIdValue);
+        attribute.setValue(subjectIdValue);
         bioSampleAttributes.getAttribute().add(attribute);
       }
 
       // Synthetic Library
-      String SyntheticLibraryValue = ((TypeAttribute) bioSample.getSyntheticLibrary()).getValue();
-      if (SyntheticLibraryValue != null) {
-        TypeAttribute attribute = bioSampleObjectFactory.createTypeAttribute();
-        attribute.setAttributeName("SyntheticLibrary");
-        attribute.setValue(SyntheticLibraryValue);
-        bioSampleAttributes.getAttribute().add(attribute);
+      if (bioSample.getSyntheticLibrary().size() > 1) {
+        String syntheticLibraryValue = bioSample.getSyntheticLibrary().get(0).getValue();
+        if (syntheticLibraryValue != null) {
+          TypeAttribute attribute = bioSampleObjectFactory.createTypeAttribute();
+          attribute.setAttributeName("SyntheticLibrary");
+          attribute.setValue(syntheticLibraryValue);
+          bioSampleAttributes.getAttribute().add(attribute);
+        }
       }
 
       // Organism
-      String OrganismValue = bioSample.getOrganism().toString();
-      if (OrganismValue != null) {
+      String organismValue = bioSample.getOrganism().toString();
+      if (organismValue != null) {
         TypeAttribute attribute = bioSampleObjectFactory.createTypeAttribute();
         attribute.setAttributeName("Organism");
-        attribute.setValue(OrganismValue);
+        attribute.setValue(organismValue);
         bioSampleAttributes.getAttribute().add(attribute);
       }
 
-
       // Sex
-      String SexValue = bioSample.getSex().getValue();
-      if (SexValue != null) {
+      String sexValue = bioSample.getSex().getValue();
+      if (sexValue != null) {
         TypeAttribute attribute = bioSampleObjectFactory.createTypeAttribute();
         attribute.setAttributeName("Sex");
-        attribute.setValue(SexValue);
+        attribute.setValue(sexValue);
         bioSampleAttributes.getAttribute().add(attribute);
       }
 
       // Age
-      String AgeValue = bioSample.getAge().getValue();
-      if (AgeValue != null) {
+      String ageValue = bioSample.getAge().getValue();
+      if (ageValue != null) {
         TypeAttribute attribute = bioSampleObjectFactory.createTypeAttribute();
         attribute.setAttributeName("Age");
-        attribute.setValue(AgeValue);
+        attribute.setValue(ageValue);
         bioSampleAttributes.getAttribute().add(attribute);
       }
 
       // Age Event
-      String AgeEventValue = bioSample.getAgeEvent().getValue();
-      if (AgeEventValue != null) {
+      String ageEventValue = bioSample.getAgeEvent().getValue();
+      if (ageEventValue != null) {
         TypeAttribute attribute = bioSampleObjectFactory.createTypeAttribute();
         attribute.setAttributeName("AgeEvent");
-        attribute.setValue(AgeEventValue);
+        attribute.setValue(ageEventValue);
         bioSampleAttributes.getAttribute().add(attribute);
       }
 
 
       // Ancestry Population
-      String AncestryPopulationValue = bioSample.getAncestryPopulation().getValue();
-      if (AncestryPopulationValue != null) {
+      String ancestryPopulationValue = bioSample.getAncestryPopulation().getValue();
+      if (ancestryPopulationValue != null) {
         TypeAttribute attribute = bioSampleObjectFactory.createTypeAttribute();
         attribute.setAttributeName("AncestryPopulation");
-        attribute.setValue(AncestryPopulationValue);
+        attribute.setValue(ancestryPopulationValue);
         bioSampleAttributes.getAttribute().add(attribute);
       }
 
 
       // Ethnicity
-      String EthnicityValue = bioSample.getEthnicity().getValue();
-      if (EthnicityValue != null) {
+      String ethnicityValue = bioSample.getEthnicity().getValue();
+      if (ethnicityValue != null) {
         TypeAttribute attribute = bioSampleObjectFactory.createTypeAttribute();
         attribute.setAttributeName("Ethnicity");
-        attribute.setValue(EthnicityValue);
+        attribute.setValue(ethnicityValue);
         bioSampleAttributes.getAttribute().add(attribute);
       }
 
       // Race
-      String RaceValue = bioSample.getRace().getValue();
-      if (RaceValue != null) {
+      String raceValue = bioSample.getRace().getValue();
+      if (raceValue != null) {
         TypeAttribute attribute = bioSampleObjectFactory.createTypeAttribute();
         attribute.setAttributeName("Race");
-        attribute.setValue(RaceValue);
+        attribute.setValue(raceValue);
         bioSampleAttributes.getAttribute().add(attribute);
       }
 
       // StarinName
-      String StarinNameValue = bioSample.getStarinName().getValue();
-      if (StarinNameValue != null) {
+      String starinNameValue = bioSample.getStarinName().getValue();
+      if (starinNameValue != null) {
         TypeAttribute attribute = bioSampleObjectFactory.createTypeAttribute();
         attribute.setAttributeName("StarinName");
-        attribute.setValue(StarinNameValue);
+        attribute.setValue(starinNameValue);
         bioSampleAttributes.getAttribute().add(attribute);
       }
 
 
       // Relation to other Subject
-      String RelationToOtherSubject1Value = bioSample.getRelationToOtherSubject().getValue();
-      if (RelationToOtherSubject1Value != null) {
+      String relationToOtherSubject1Value = bioSample.getRelationToOtherSubject().getValue();
+      if (relationToOtherSubject1Value != null) {
         TypeAttribute attribute = bioSampleObjectFactory.createTypeAttribute();
         attribute.setAttributeName("RelationToOtherSubject1");
-        attribute.setValue(RelationToOtherSubject1Value);
+        attribute.setValue(relationToOtherSubject1Value);
         bioSampleAttributes.getAttribute().add(attribute);
       }
 
       // Relation Type
-      String RelationType1Value = bioSample.getRelationType().getValue();
-      if (RelationType1Value != null) {
+      String relationType1Value = bioSample.getRelationType().getValue();
+      if (relationType1Value != null) {
         TypeAttribute attribute = bioSampleObjectFactory.createTypeAttribute();
         attribute.setAttributeName("RelationType1");
-        attribute.setValue(RelationType1Value);
+        attribute.setValue(relationType1Value);
         bioSampleAttributes.getAttribute().add(attribute);
       }
 
 
       // Projected Release Date
-      String ProjectedReleaseDate1Value = bioSample.getProjectedReleaseDate().getValue();
-      if (ProjectedReleaseDate1Value != null) {
+      String projectedReleaseDate1Value = bioSample.getProjectedReleaseDate().getValue();
+      if (projectedReleaseDate1Value != null) {
         TypeAttribute attribute = bioSampleObjectFactory.createTypeAttribute();
         attribute.setAttributeName("ProjectedReleaseDate1");
-        attribute.setValue(ProjectedReleaseDate1Value);
+        attribute.setValue(projectedReleaseDate1Value);
         bioSampleAttributes.getAttribute().add(attribute);
       }
       // Isolate
-      String IsolateValue = bioSample.getIsolate().getValue();
-      if (IsolateValue != null) {
+      String isolateValue = bioSample.getIsolate().getValue();
+      if (isolateValue != null) {
         TypeAttribute attribute = bioSampleObjectFactory.createTypeAttribute();
         attribute.setAttributeName("Isolate");
-        attribute.setValue(IsolateValue);
+        attribute.setValue(isolateValue);
         bioSampleAttributes.getAttribute().add(attribute);
       }
 
       // Diagnosis
-      String Diagnosis2Value = bioSample.getDiagnosis2().toString();
-      if (Diagnosis2Value != null) {
+      String diagnosis2Value = bioSample.getDiagnosis2().toString();
+      if (diagnosis2Value != null) {
         TypeAttribute attribute = bioSampleObjectFactory.createTypeAttribute();
         attribute.setAttributeName("Diagnosis2");
-        attribute.setValue(Diagnosis2Value);
+        attribute.setValue(diagnosis2Value);
         bioSampleAttributes.getAttribute().add(attribute);
       }
       // StudyGroupDescription
-      String StudyGroupDescriptionValue = bioSample.getStudyGroupDescription().getValue();
-      if (StudyGroupDescriptionValue != null) {
+      String studyGroupDescriptionValue = bioSample.getStudyGroupDescription().getValue();
+      if (studyGroupDescriptionValue != null) {
         TypeAttribute attribute = bioSampleObjectFactory.createTypeAttribute();
         attribute.setAttributeName("StudyGroupDescription");
-        attribute.setValue(StudyGroupDescriptionValue);
+        attribute.setValue(studyGroupDescriptionValue);
         bioSampleAttributes.getAttribute().add(attribute);
       }
 
       // Length of Disease
-      String LengthOfDiseaseValue = bioSample.getLengthOfDisease().getValue();
-      if (LengthOfDiseaseValue != null) {
+      String lengthOfDiseaseValue = bioSample.getLengthOfDisease().getValue();
+      if (lengthOfDiseaseValue != null) {
         TypeAttribute attribute = bioSampleObjectFactory.createTypeAttribute();
         attribute.setAttributeName("LengthOfDisease");
-        attribute.setValue(LengthOfDiseaseValue);
+        attribute.setValue(lengthOfDiseaseValue);
         bioSampleAttributes.getAttribute().add(attribute);
       }
 
       // Disease stage
-      String DiseaseStageValue = bioSample.getDiseaseStage().getValue();
-      if (DiseaseStageValue != null) {
+      String diseaseStageValue = bioSample.getDiseaseStage().getValue();
+      if (diseaseStageValue != null) {
         TypeAttribute attribute = bioSampleObjectFactory.createTypeAttribute();
         attribute.setAttributeName("DiseaseStage");
-        attribute.setValue(DiseaseStageValue);
+        attribute.setValue(diseaseStageValue);
         bioSampleAttributes.getAttribute().add(attribute);
       }
 
       // Prior Therapies For Primary Disease Under Study
-      String PriorTherapiesForPrimaryDiseaseUnderStudyValue = bioSample.getPriorTherapiesForPrimaryDiseaseUnderStudy
+      String priorTherapiesForPrimaryDiseaseUnderStudyValue = bioSample.getPriorTherapiesForPrimaryDiseaseUnderStudy
           ().getValue();
-      if (PriorTherapiesForPrimaryDiseaseUnderStudyValue != null) {
+      if (priorTherapiesForPrimaryDiseaseUnderStudyValue != null) {
         TypeAttribute attribute = bioSampleObjectFactory.createTypeAttribute();
         attribute.setAttributeName("PriorTherapiesForPrimaryDiseaseUnderStudy");
-        attribute.setValue(PriorTherapiesForPrimaryDiseaseUnderStudyValue);
+        attribute.setValue(priorTherapiesForPrimaryDiseaseUnderStudyValue);
         bioSampleAttributes.getAttribute().add(attribute);
       }
 
 
       // Immunogen
-      String ImmunogenValue = bioSample.getImmunogen().getValue();
-      if (ImmunogenValue != null) {
+      String immunogenValue = bioSample.getImmunogen().getValue();
+      if (immunogenValue != null) {
         TypeAttribute attribute = bioSampleObjectFactory.createTypeAttribute();
         attribute.setAttributeName("Immunogen");
-        attribute.setValue(ImmunogenValue);
+        attribute.setValue(immunogenValue);
         bioSampleAttributes.getAttribute().add(attribute);
       }
 
       // Intervention Definition
-      String InterventionDefinitionValue = bioSample.getInterventionDefinition().getValue();
-      if (InterventionDefinitionValue != null) {
+      String interventionDefinitionValue = bioSample.getInterventionDefinition().getValue();
+      if (interventionDefinitionValue != null) {
         TypeAttribute attribute = bioSampleObjectFactory.createTypeAttribute();
         attribute.setAttributeName("InterventionDefinition");
-        attribute.setValue(InterventionDefinitionValue);
+        attribute.setValue(interventionDefinitionValue);
         bioSampleAttributes.getAttribute().add(attribute);
       }
 
       // Other Relevant Medical History
-      String OtherRelevantMedicalHistoryValue = bioSample.getOtherRelevantMedicalHistory().getValue();
-      if (OtherRelevantMedicalHistoryValue != null) {
+      String otherRelevantMedicalHistoryValue = bioSample.getOtherRelevantMedicalHistory().getValue();
+      if (otherRelevantMedicalHistoryValue != null) {
         TypeAttribute attribute = bioSampleObjectFactory.createTypeAttribute();
         attribute.setAttributeName("OtherRelevantMedicalHistory");
-        attribute.setValue(OtherRelevantMedicalHistoryValue);
+        attribute.setValue(otherRelevantMedicalHistoryValue);
         bioSampleAttributes.getAttribute().add(attribute);
       }
 
       // Sample Name
-      String SampleNameValue = bioSample.getSampleName().getValue();
-      if (SampleNameValue != null) {
+      String sampleNameValue = bioSample.getSampleName().getValue();
+      if (sampleNameValue != null) {
         TypeAttribute attribute = bioSampleObjectFactory.createTypeAttribute();
         attribute.setAttributeName("SampleName");
-        attribute.setValue(SampleNameValue);
+        attribute.setValue(sampleNameValue);
         bioSampleAttributes.getAttribute().add(attribute);
       }
 
       // Sample Type
-      String SampleTypeValue = bioSample.getSampleType().getValue();
-      if (SampleTypeValue != null) {
+      String sampleTypeValue = bioSample.getSampleType().getValue();
+      if (sampleTypeValue != null) {
         TypeAttribute attribute = bioSampleObjectFactory.createTypeAttribute();
         attribute.setAttributeName("SampleType");
-        attribute.setValue(SampleTypeValue);
+        attribute.setValue(sampleTypeValue);
         bioSampleAttributes.getAttribute().add(attribute);
       }
       // Tissue
-      String TissueValue = bioSample.getTissue().toString();
-      if (TissueValue != null) {
+      String tissueValue = bioSample.getTissue().toString();
+      if (tissueValue != null) {
         TypeAttribute attribute = bioSampleObjectFactory.createTypeAttribute();
         attribute.setAttributeName("Tissue");
-        attribute.setValue(TissueValue);
+        attribute.setValue(tissueValue);
         bioSampleAttributes.getAttribute().add(attribute);
       }
 
       // Anatomic Site
-      String AnatomicSiteValue = bioSample.getAnatomicSite().getValue();
-      if (AnatomicSiteValue != null) {
+      String anatomicSiteValue = bioSample.getAnatomicSite().getValue();
+      if (anatomicSiteValue != null) {
         TypeAttribute attribute = bioSampleObjectFactory.createTypeAttribute();
         attribute.setAttributeName("AnatomicSite");
-        attribute.setValue(AnatomicSiteValue);
+        attribute.setValue(anatomicSiteValue);
         bioSampleAttributes.getAttribute().add(attribute);
       }
       // Disease State of Sample
-      String DiseaseStateOfSample1value = bioSample.getDiseaseStateOfSample().getValue();
-      if (DiseaseStateOfSample1value != null) {
+      String diseaseStateOfSample1value = bioSample.getDiseaseStateOfSample().getValue();
+      if (diseaseStateOfSample1value != null) {
         TypeAttribute attribute = bioSampleObjectFactory.createTypeAttribute();
         attribute.setAttributeName("DiseaseStateOfSample1");
-        attribute.setValue(DiseaseStateOfSample1value);
+        attribute.setValue(diseaseStateOfSample1value);
         bioSampleAttributes.getAttribute().add(attribute);
       }
 
       // Sample Collection Time
-      String SampleCollectionTime1Value = bioSample.getSampleCollectionTime().getValue();
-      if (SampleCollectionTime1Value != null) {
+      String sampleCollectionTime1Value = bioSample.getSampleCollectionTime().getValue();
+      if (sampleCollectionTime1Value != null) {
         TypeAttribute attribute = bioSampleObjectFactory.createTypeAttribute();
         attribute.setAttributeName("SampleCollectionTime1");
-        attribute.setValue(SampleCollectionTime1Value);
+        attribute.setValue(sampleCollectionTime1Value);
         bioSampleAttributes.getAttribute().add(attribute);
       }
 
       // Collection Time Event T01
-      String CollectionTimeEventT01Value = bioSample.getCollectionTimeEventT0().getValue();
-      if (CollectionTimeEventT01Value != null) {
+      String collectionTimeEventT01Value = bioSample.getCollectionTimeEventT0().getValue();
+      if (collectionTimeEventT01Value != null) {
         TypeAttribute attribute = bioSampleObjectFactory.createTypeAttribute();
         attribute.setAttributeName("CollectionTimeEventT01");
-        attribute.setValue(CollectionTimeEventT01Value);
+        attribute.setValue(collectionTimeEventT01Value);
         bioSampleAttributes.getAttribute().add(attribute);
       }
 
       // Biomaterial Provider
-      String BiomaterialProviderValue = bioSample.getBiomaterialProvider().getValue();
-      if (BiomaterialProviderValue != null) {
+      String biomaterialProviderValue = bioSample.getBiomaterialProvider().getValue();
+      if (biomaterialProviderValue != null) {
         TypeAttribute attribute = bioSampleObjectFactory.createTypeAttribute();
         attribute.setAttributeName("BiomaterialProvider");
-        attribute.setValue(BiomaterialProviderValue);
+        attribute.setValue(biomaterialProviderValue);
         bioSampleAttributes.getAttribute().add(attribute);
       }
 
       // Geolocation Name
-      String GeolocationNameValue = bioSample.getGeolocationName().getValue();
-      if (GeolocationNameValue != null) {
+      String geolocationNameValue = bioSample.getGeolocationName().getValue();
+      if (geolocationNameValue != null) {
         TypeAttribute attribute = bioSampleObjectFactory.createTypeAttribute();
         attribute.setAttributeName("GeolocationName");
-        attribute.setValue(GeolocationNameValue);
+        attribute.setValue(geolocationNameValue);
         bioSampleAttributes.getAttribute().add(attribute);
       }
 
       // Tissue Processing
-      String TissueProcessingValue = bioSample.getTissueProcessing().getValue();
-      if (TissueProcessingValue != null) {
+      String tissueProcessingValue = bioSample.getTissueProcessing().getValue();
+      if (tissueProcessingValue != null) {
         TypeAttribute attribute = bioSampleObjectFactory.createTypeAttribute();
         attribute.setAttributeName("TissueProcessing");
-        attribute.setValue(TissueProcessingValue);
+        attribute.setValue(tissueProcessingValue);
         bioSampleAttributes.getAttribute().add(attribute);
       }
 
       // Cell Subset
-      String CellSubsetValue = bioSample.getCellSubset().toString();
-      if (CellSubsetValue != null) {
+      String cellSubsetValue = bioSample.getCellSubset().toString();
+      if (cellSubsetValue != null) {
         TypeAttribute attribute = bioSampleObjectFactory.createTypeAttribute();
         attribute.setAttributeName("CellSubset");
-        attribute.setValue(CellSubsetValue);
+        attribute.setValue(cellSubsetValue);
         bioSampleAttributes.getAttribute().add(attribute);
       }
 
       // Cell Subset Phenotype
-      String CellSubsetPhenotypeValue = bioSample.getCellSubsetPhenotype().getValue();
-      if (CellSubsetPhenotypeValue != null) {
+      String cellSubsetPhenotypeValue = bioSample.getCellSubsetPhenotype().getValue();
+      if (cellSubsetPhenotypeValue != null) {
         TypeAttribute attribute = bioSampleObjectFactory.createTypeAttribute();
         attribute.setAttributeName("CellSubsetPhenotype");
-        attribute.setValue(CellSubsetPhenotypeValue);
+        attribute.setValue(cellSubsetPhenotypeValue);
         bioSampleAttributes.getAttribute().add(attribute);
       }
 
       // Single-cell Sort
-      String SingleCellSort1Value = bioSample.getSingleCellSort().getValue();
-      if (SingleCellSort1Value != null) {
+      String singleCellSortValue = bioSample.getSingleCellSort().getValue();
+      if (singleCellSortValue != null) {
         TypeAttribute attribute = bioSampleObjectFactory.createTypeAttribute();
-        attribute.setAttributeName("SingleCellSort1");
-        attribute.setValue(SingleCellSort1Value);
+        attribute.setAttributeName("SingleCellSort");
+        attribute.setValue(singleCellSortValue);
         bioSampleAttributes.getAttribute().add(attribute);
       }
 
       // Number of Cells in Experiment
-      String NumberOfCellsInExperiment1Value = bioSample.getNumberOfCellsInExperiment().getValue();
-      if (NumberOfCellsInExperiment1Value != null) {
+      String numberOfCellsInExperiment1Value = bioSample.getNumberOfCellsInExperiment().getValue();
+      if (numberOfCellsInExperiment1Value != null) {
         TypeAttribute attribute = bioSampleObjectFactory.createTypeAttribute();
-        attribute.setAttributeName("NumberOfCellsInExperiment1");
-        attribute.setValue(NumberOfCellsInExperiment1Value);
+        attribute.setAttributeName("NumberOfCellsInExperiment");
+        attribute.setValue(numberOfCellsInExperiment1Value);
         bioSampleAttributes.getAttribute().add(attribute);
       }
 
       // Number of Cells per Sequencing Reaction1
-      String NumberOfCellsPerSequencingReaction1Value = bioSample.getNumberOfCellsPerSequencingReaction().getValue();
-      if (NumberOfCellsPerSequencingReaction1Value != null) {
+      String numberOfCellsPerSequencingReaction1Value = bioSample.getNumberOfCellsPerSequencingReaction().getValue();
+      if (numberOfCellsPerSequencingReaction1Value != null) {
         TypeAttribute attribute = bioSampleObjectFactory.createTypeAttribute();
-        attribute.setAttributeName("NumberOfCellsPerSequencingReaction1");
-        attribute.setValue(NumberOfCellsPerSequencingReaction1Value);
+        attribute.setAttributeName("NumberOfCellsPerSequencingReaction");
+        attribute.setValue(numberOfCellsPerSequencingReaction1Value);
         bioSampleAttributes.getAttribute().add(attribute);
       }
 
 
       // Cell Storage1
-      String CellStorage1Value = bioSample.getCellStorage().getValue();
-      if (CellStorage1Value != null) {
+      String cellStorage1Value = bioSample.getCellStorage().getValue();
+      if (cellStorage1Value != null) {
         TypeAttribute attribute = bioSampleObjectFactory.createTypeAttribute();
-        attribute.setAttributeName("CellStorage1");
-        attribute.setValue(CellStorage1Value);
+        attribute.setAttributeName("CellStorage");
+        attribute.setValue(cellStorage1Value);
         bioSampleAttributes.getAttribute().add(attribute);
       }
 
       // Cell Quality
-      String CellQualityValue = bioSample.getCellQuality().getValue();
-      if (CellQualityValue != null) {
+      String cellQualityValue = bioSample.getCellQuality().getValue();
+      if (cellQualityValue != null) {
         TypeAttribute attribute = bioSampleObjectFactory.createTypeAttribute();
         attribute.setAttributeName("CellQuality");
-        attribute.setValue(CellQualityValue);
+        attribute.setValue(cellQualityValue);
         bioSampleAttributes.getAttribute().add(attribute);
       }
 
       // Cell Isolation
-      String CellIsolationValue = bioSample.getCellIsolation().getValue();
-      if (CellIsolationValue != null) {
+      String cellIsolationValue = bioSample.getCellIsolation().getValue();
+      if (cellIsolationValue != null) {
         TypeAttribute attribute = bioSampleObjectFactory.createTypeAttribute();
         attribute.setAttributeName("CellIsolation");
-        attribute.setValue(CellIsolationValue);
+        attribute.setValue(cellIsolationValue);
         bioSampleAttributes.getAttribute().add(attribute);
       }
 
       // Processing Protocol
-      String ProcessingProtocolValue = bioSample.getProcessingProtocol().getValue();
-      if (ProcessingProtocolValue != null) {
+      String processingProtocolValue = bioSample.getProcessingProtocol().getValue();
+      if (processingProtocolValue != null) {
         TypeAttribute attribute = bioSampleObjectFactory.createTypeAttribute();
         attribute.setAttributeName("ProcessingProtocol");
-        attribute.setValue(ProcessingProtocolValue);
+        attribute.setValue(processingProtocolValue);
         bioSampleAttributes.getAttribute().add(attribute);
       }
 
