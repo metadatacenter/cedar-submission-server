@@ -34,6 +34,9 @@ public class NcbiFtpUploadService {
       uploadSubmitReadyFile) throws IOException,
       UploaderCreationException {
     FileUploader uploader = null;
+
+    logger.info("Submission upload, submissionDir = " + submissionDir + ", conf.submissionDir " + ftpConfig.getSubmissionDirectory());
+
     try {
       uploader = FtpUploader.createNewUploader(
           ftpConfig.getHost(),

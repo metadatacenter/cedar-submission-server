@@ -45,8 +45,8 @@ public class NcbiSubmissionExecutorService {
           SubmissionType.NCBI, submission.getCedarUserId(), null, cedarConfig.getSubmissionConfig().getNcbi()
           .getSra().getFtp(),
           submission.getSubmissionFolder());
-      SubmissionStatusManager.getInstance().addSubmission(submissionStatusTask);
       SubmissionStatusManager.getInstance().setCedarConfig(cedarConfig);
+      SubmissionStatusManager.getInstance().addSubmission(submissionStatusTask);
 
       if (NcbiConstants.NCBI_SUBMIT) { // real submission
         NcbiFtpUploadService.uploadToNcbi(submission.getSubmissionFolder(),
