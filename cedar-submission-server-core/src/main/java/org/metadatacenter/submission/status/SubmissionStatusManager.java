@@ -1,7 +1,6 @@
 package org.metadatacenter.submission.status;
 
 import org.metadatacenter.config.CedarConfig;
-import org.metadatacenter.submission.notifications.StatusNotifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -129,6 +128,6 @@ public class SubmissionStatusManager {
         + submissionStatusDescriptor.getSubmissionStatus().getSubmissionState() + ", message = "
         + submissionStatusDescriptor.getSubmissionStatus().getStatusMessage());
 
-    StatusNotifier.getInstance().sendMessage(submissionStatusDescriptor);
+    //StatusNotifier.getInstance().sendMessage(submissionStatusDescriptor);
   }
 }
