@@ -163,7 +163,7 @@ public class CAIRRTemplateInstance2SRAXMLConverter {
       }
 
       // Organism
-      String organismValue = bioSample.getOrganism().toString();
+      String organismValue = bioSample.getOrganism().getId().toString();
       if (organismValue != null) {
         TypeAttribute attribute = bioSampleObjectFactory.createTypeAttribute();
         attribute.setAttributeName("Organism");
@@ -367,7 +367,7 @@ public class CAIRRTemplateInstance2SRAXMLConverter {
         bioSampleAttributes.getAttribute().add(attribute);
       }
       // Tissue
-      String tissueValue = bioSample.getTissue().toString();
+      String tissueValue = bioSample.getTissue().getId().toString();
       if (tissueValue != null) {
         TypeAttribute attribute = bioSampleObjectFactory.createTypeAttribute();
         attribute.setAttributeName("Tissue");
@@ -438,7 +438,7 @@ public class CAIRRTemplateInstance2SRAXMLConverter {
       }
 
       // Cell Subset
-      String cellSubsetValue = bioSample.getCellSubset().toString();
+      String cellSubsetValue = bioSample.getCellSubset().getId().toString());
       if (cellSubsetValue != null) {
         TypeAttribute attribute = bioSampleObjectFactory.createTypeAttribute();
         attribute.setAttributeName("CellSubset");
