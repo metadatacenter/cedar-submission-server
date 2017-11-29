@@ -12,13 +12,15 @@ import redis.clients.jedis.JedisPoolConfig;
 
 public class NcbiSubmissionQueueService {
 
-  public final static String NCBI_SUBMISSION_QUEUE_ID = "NCBISubmission";
+  public final static String NCBI_SUBMISSION_QUEUE_ID = "ncbiSubmission";
+  private final String ncbiSubmissionQueueName;
   protected static final Logger log = LoggerFactory.getLogger(NcbiSubmissionQueueService.class);
   private final CacheServerPersistent cacheConfig;
   private JedisPool pool;
 
   public NcbiSubmissionQueueService(CacheServerPersistent cacheConfig) {
     this.cacheConfig = cacheConfig;
+    ncbiSubmissionQueueName = cacheConfig.getQueueName(NCBI_SUBMISSION_QUEUE_ID);
     pool = new JedisPool(new JedisPoolConfig(), cacheConfig.getConnection().getHost(),
         cacheConfig.getConnection().getPort(), cacheConfig.getConnection().getTimeout());
   }
@@ -36,7 +38,7 @@ public class NcbiSubmissionQueueService {
     } catch (JsonProcessingException e) {
       log.error("Error while enqueueing event", e);
     }
-    jedis.rpush(cacheConfig.getQueueName(NCBI_SUBMISSION_QUEUE_ID), json);
+    jedis.rpush(ncbiSubmissionQueueName, json);
     jedis.close();
   }
 
