@@ -438,7 +438,7 @@ public class CAIRRTemplateInstance2SRAXMLConverter {
       }
 
       // Cell Subset
-      String cellSubsetValue = bioSample.getCellSubset().getId().toString());
+      String cellSubsetValue = bioSample.getCellSubset().getId().toString();
       if (cellSubsetValue != null) {
         TypeAttribute attribute = bioSampleObjectFactory.createTypeAttribute();
         attribute.setAttributeName("CellSubset");
