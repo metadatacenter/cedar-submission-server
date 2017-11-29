@@ -260,7 +260,7 @@ public class CAIRRTemplateInstance2SRAXMLConverter {
       String projectedReleaseDate1Value = bioSample.getProjectedReleaseDate().getValue();
       if (projectedReleaseDate1Value != null) {
         TypeAttribute attribute = bioSampleObjectFactory.createTypeAttribute();
-        attribute.setAttributeName("ProjectedReleaseDate1");
+        attribute.setAttributeName("ProjectedReleaseDate");
         attribute.setValue(projectedReleaseDate1Value);
         bioSampleAttributes.getAttribute().add(attribute);
       }
@@ -274,13 +274,16 @@ public class CAIRRTemplateInstance2SRAXMLConverter {
       }
 
       // Diagnosis
-      String diagnosis2Value = bioSample.getDiagnosis2().toString();
-      if (diagnosis2Value != null) {
-        TypeAttribute attribute = bioSampleObjectFactory.createTypeAttribute();
-        attribute.setAttributeName("Diagnosis2");
-        attribute.setValue(diagnosis2Value);
-        bioSampleAttributes.getAttribute().add(attribute);
+      if (bioSample.getDiagnosis2() != null) {
+        String diagnosisValue = bioSample.getDiagnosis2().toString();
+        if (diagnosisValue != null) {
+          TypeAttribute attribute = bioSampleObjectFactory.createTypeAttribute();
+          attribute.setAttributeName("Diagnosis");
+          attribute.setValue(diagnosisValue);
+          bioSampleAttributes.getAttribute().add(attribute);
+        }
       }
+
       // StudyGroupDescription
       String studyGroupDescriptionValue = bioSample.getStudyGroupDescription().getValue();
       if (studyGroupDescriptionValue != null) {
