@@ -44,6 +44,8 @@ public class NcbiFtpUploadService {
       if (uploadSubmitReadyFile) {
         uploadSubmitReadyFile(uploader, submissionDir);
       }
+    } catch (IOException e) {
+      logger.warn("Submission upload failed: ", e.getMessage());
     } finally {
       if (uploader != null) {
         try {
