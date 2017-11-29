@@ -106,10 +106,12 @@ public class FtpUploader implements FileUploader {
         if (!dirExists) {
           if (!ftpClient.makeDirectory(dir)) {
             showServerReply(ftpClient);
+            logger.warn("Unable to create remote directory: " + directory);
             throw new IOException("Unable to create remote directory: " + directory);
           }
           if (!ftpClient.changeWorkingDirectory(dir)) {
             showServerReply(ftpClient);
+            logger.warn("Unable to create remote directory: " + directory);
             throw new IOException("Unable to change the working remote directory: " + directory);
           }
         }

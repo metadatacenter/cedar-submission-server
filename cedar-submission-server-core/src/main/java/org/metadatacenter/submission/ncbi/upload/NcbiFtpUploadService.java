@@ -64,6 +64,9 @@ public class NcbiFtpUploadService {
   private static void uploadResourceFiles(FileUploader uploader, String submissionDir, Collection<File> listOfFiles)
       throws
       IOException {
+
+    logger.info("uploadResourceFiles.submissionDir " + submissionDir);
+
     for (File file : listOfFiles) {
       Stopwatch stopwatch = Stopwatch.createStarted();
       logger.info("Submission in progress: Uploading '{}' file...", file.getName());
