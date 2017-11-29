@@ -582,8 +582,8 @@ public class CAIRRTemplateInstance2SRAXMLConverter {
 
         if (fileName != null && fileType != null) {
           Submission.Action.AddFiles.File sraFile = submissionObjectFactory.createSubmissionActionAddFilesFile();
-          sraFile.setFilePath(fileName.toString());
-          sraFile.setDataType(fileType.toString());
+          sraFile.setFilePath(fileName.getValue());
+          sraFile.setDataType(fileType.getValue());
           sraAddFiles.getFile().add(sraFile);
         }
       }
