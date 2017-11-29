@@ -238,30 +238,30 @@ public class CAIRRTemplateInstance2SRAXMLConverter {
 
 
       // Relation to other Subject
-      String relationToOtherSubject1Value = bioSample.getRelationToOtherSubject().getValue();
-      if (relationToOtherSubject1Value != null) {
+      String relationToOtherSubjectValue = bioSample.getRelationToOtherSubject().getValue();
+      if (relationToOtherSubjectValue != null) {
         TypeAttribute attribute = bioSampleObjectFactory.createTypeAttribute();
-        attribute.setAttributeName("RelationToOtherSubject1");
-        attribute.setValue(relationToOtherSubject1Value);
+        attribute.setAttributeName("RelationToOtherSubject");
+        attribute.setValue(relationToOtherSubjectValue);
         bioSampleAttributes.getAttribute().add(attribute);
       }
 
       // Relation Type
-      String relationType1Value = bioSample.getRelationType().getValue();
-      if (relationType1Value != null) {
+      String relationTypeValue = bioSample.getRelationType().getValue();
+      if (relationTypeValue != null) {
         TypeAttribute attribute = bioSampleObjectFactory.createTypeAttribute();
-        attribute.setAttributeName("RelationType1");
-        attribute.setValue(relationType1Value);
+        attribute.setAttributeName("RelationType");
+        attribute.setValue(relationTypeValue);
         bioSampleAttributes.getAttribute().add(attribute);
       }
 
 
       // Projected Release Date
-      String projectedReleaseDate1Value = bioSample.getProjectedReleaseDate().getValue();
-      if (projectedReleaseDate1Value != null) {
+      String projectedReleaseDateValue = bioSample.getProjectedReleaseDate().getValue();
+      if (projectedReleaseDateValue != null) {
         TypeAttribute attribute = bioSampleObjectFactory.createTypeAttribute();
         attribute.setAttributeName("ProjectedReleaseDate");
-        attribute.setValue(projectedReleaseDate1Value);
+        attribute.setValue(projectedReleaseDateValue);
         bioSampleAttributes.getAttribute().add(attribute);
       }
       // Isolate
@@ -578,10 +578,8 @@ public class CAIRRTemplateInstance2SRAXMLConverter {
           .getSRAMultipleFileUploadAttributes()) {
 
         FileName fileName = sraFileUploadAttribute.getFileName();
-
-        String fileType = sraFileUploadAttribute.getType().toString();
-
-
+        FileType fileType = sraFileUploadAttribute.getFileType();
+        
         if (fileName != null && fileType != null) {
           Submission.Action.AddFiles.File sraFile = submissionObjectFactory.createSubmissionActionAddFilesFile();
           sraFile.setFilePath(fileName.toString());
