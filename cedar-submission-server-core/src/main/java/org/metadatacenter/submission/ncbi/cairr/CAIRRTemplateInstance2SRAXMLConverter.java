@@ -579,7 +579,7 @@ public class CAIRRTemplateInstance2SRAXMLConverter {
 
         FileName fileName = sraFileUploadAttribute.getFileName();
         FileType fileType = sraFileUploadAttribute.getFileType();
-        
+
         if (fileName != null && fileType != null) {
           Submission.Action.AddFiles.File sraFile = submissionObjectFactory.createSubmissionActionAddFilesFile();
           sraFile.setFilePath(fileName.toString());
@@ -587,7 +587,6 @@ public class CAIRRTemplateInstance2SRAXMLConverter {
           sraAddFiles.getFile().add(sraFile);
         }
       }
-
 
       // library ID
 
@@ -609,7 +608,7 @@ public class CAIRRTemplateInstance2SRAXMLConverter {
         sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(fileAttribute);
       }
 
-      // Library instruement
+      // Library instrument
 
       String LibraryInstrument1Value = sequenceReadArchive.getLibraryInstrument().getValue();
       if (LibraryInstrument1Value != null) {
@@ -619,7 +618,7 @@ public class CAIRRTemplateInstance2SRAXMLConverter {
         sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(fileAttribute);
       }
 
-      // Library Startegy
+      // Library Strategy
 
       String LibraryStrategy1Value = sequenceReadArchive.getLibraryStrategy().getValue();
       if (LibraryStrategy1Value != null) {
