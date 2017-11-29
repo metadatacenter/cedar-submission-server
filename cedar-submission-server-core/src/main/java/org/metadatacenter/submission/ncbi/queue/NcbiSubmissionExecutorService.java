@@ -7,12 +7,10 @@ import org.metadatacenter.submission.ncbi.status.NcbiSubmissionStatusTask;
 import org.metadatacenter.submission.ncbi.upload.NcbiFtpUploadService;
 import org.metadatacenter.submission.status.SubmissionStatusManager;
 import org.metadatacenter.submission.status.SubmissionType;
-import org.metadatacenter.submission.upload.ftp.UploaderCreationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -64,7 +62,7 @@ public class NcbiSubmissionExecutorService {
       // Delete the submission local folder
       //FileUtils.deleteDirectory(new File(submission.getSubmissionFolder()));
 
-    } catch (IOException | UploaderCreationException | InterruptedException e) {
+    } catch (Exception e) {
       logger.error("Error submitting the data to the NCBI.");
       logger.error(e.getMessage());
     }
