@@ -81,8 +81,6 @@ public class StatusNotifier {
 
     Response response = client.target(url).request().header("Authorization", adminUserAuthHeader).post(postContent);
 
-    logger.info("Authentication header:" + adminUserAuthHeader);
-
     if (response.getStatus() != Response.Status.OK.getStatusCode()) {
       logger.warn("Internal error, statusCode=" + response.getStatus() + " postContent=" + postContent);
       throw new InternalError("Error sending message to user");
