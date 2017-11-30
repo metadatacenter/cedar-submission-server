@@ -83,7 +83,7 @@ public class CAIRRTemplateInstance2SRAXMLConverter {
 
     TypeOrganization contactOrganization = submissionObjectFactory.createTypeOrganization();
     contactOrganization.setType("lab"); // TODO
-    contactOrganization.setRole("Data submitter"); // TODO
+    contactOrganization.setRole("owner"); // TODO
     contactOrganization.setName(organizationName);
     contactOrganization.getContact().add(contactInfo);
 
