@@ -82,7 +82,7 @@ public class CAIRRTemplateInstance2SRAXMLConverter {
     contactSubmitter.setUserName("ahmadchan@gmail.com"); // TODO
 
     TypeOrganization contactOrganization = submissionObjectFactory.createTypeOrganization();
-    contactOrganization.setType("Academia"); // TODO
+    contactOrganization.setType("lab"); // TODO
     contactOrganization.setRole("Data submitter"); // TODO
     contactOrganization.setName(organizationName);
     contactOrganization.getContact().add(contactInfo);
@@ -831,7 +831,7 @@ public class CAIRRTemplateInstance2SRAXMLConverter {
       String sequencingFacilityValue = sequenceReadArchive.getSequencingFacility().getValue();
       if (sequencingFacilityValue != null) {
         TypeFileAttribute fileAttribute = submissionObjectFactory.createTypeFileAttribute();
-        fileAttribute.setName("SequencingFacility1");
+        fileAttribute.setName("SequencingFacility");
         fileAttribute.setValue(sequencingFacilityValue);
         sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(fileAttribute);
       }
@@ -841,7 +841,7 @@ public class CAIRRTemplateInstance2SRAXMLConverter {
       String batchNumberValue = sequenceReadArchive.getBatchNumber().getValue();
       if (batchNumberValue != null) {
         TypeFileAttribute fileAttribute = submissionObjectFactory.createTypeFileAttribute();
-        fileAttribute.setName("BatchNumber1");
+        fileAttribute.setName("BatchNumber");
         fileAttribute.setValue(batchNumberValue);
         sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(fileAttribute);
       }
@@ -860,7 +860,7 @@ public class CAIRRTemplateInstance2SRAXMLConverter {
       String sequencingKitValue = sequenceReadArchive.getSequencingKit().getValue();
       if (sequencingKitValue != null) {
         TypeFileAttribute fileAttribute = submissionObjectFactory.createTypeFileAttribute();
-        fileAttribute.setName("SequencingKit1");
+        fileAttribute.setName("SequencingKit");
         fileAttribute.setValue(sequencingKitValue);
         sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(fileAttribute);
       }

@@ -96,6 +96,7 @@ public class NcbiFtpStatusChecker {
       ftpClient.logout();
     } catch (IOException | ParserConfigurationException | TransformerException | SAXException |
         UploaderCreationException e) {
+      logger.info("Exception checking submission status (submissionId = " + submissionID + "): " + e.getMessage());
       throw e;
     } finally {
       // Close the FTP connection
