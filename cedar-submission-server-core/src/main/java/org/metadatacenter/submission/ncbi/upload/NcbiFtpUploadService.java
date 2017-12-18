@@ -1,4 +1,4 @@
-package org.metadatacenter.submission.ncbiairr.upload;
+package org.metadatacenter.submission.ncbi.upload;
 
 import com.google.common.base.Stopwatch;
 import com.google.common.io.Files;
@@ -15,9 +15,9 @@ import java.util.Collection;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
-public class NcbiAirrFtpUploadService {
+public class NcbiFtpUploadService {
 
-  final static Logger logger = LoggerFactory.getLogger(NcbiAirrFtpUploadService.class);
+  final static Logger logger = LoggerFactory.getLogger(NcbiFtpUploadService.class);
 
   /**
    * Upload a list of files to the NCBI server via the FTP protocol. For the NCBI submission, the files
@@ -34,6 +34,9 @@ public class NcbiAirrFtpUploadService {
       uploadSubmitReadyFile) throws IOException,
       UploaderCreationException {
     FileUploader uploader = null;
+
+    logger.info("Submission upload, submissionDir = " + submissionDir + ", conf.submissionDir " + ftpConfig.getSubmissionDirectory());
+
     try {
       uploader = FtpUploader.createNewUploader(
           ftpConfig.getHost(),
@@ -44,6 +47,8 @@ public class NcbiAirrFtpUploadService {
       if (uploadSubmitReadyFile) {
         uploadSubmitReadyFile(uploader, submissionDir);
       }
+    } catch (IOException e) {
+      logger.warn("Submission upload failed: ", e.getMessage());
     } finally {
       if (uploader != null) {
         try {
@@ -59,6 +64,9 @@ public class NcbiAirrFtpUploadService {
   private static void uploadResourceFiles(FileUploader uploader, String submissionDir, Collection<File> listOfFiles)
       throws
       IOException {
+
+    logger.info("uploadResourceFiles.submissionDir " + submissionDir);
+
     for (File file : listOfFiles) {
       Stopwatch stopwatch = Stopwatch.createStarted();
       logger.info("Submission in progress: Uploading '{}' file...", file.getName());

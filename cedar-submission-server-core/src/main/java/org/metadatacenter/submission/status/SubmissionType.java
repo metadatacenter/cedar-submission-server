@@ -1,7 +1,7 @@
 package org.metadatacenter.submission.status;
 
 public enum SubmissionType {
-  IMMPORT("ImmPort"), NCBI_AIRR("NCBI-AIRR");
+  IMMPORT("ImmPort"), NCBI("NCBI");
 
   private final String value;
 

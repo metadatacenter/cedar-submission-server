@@ -68,8 +68,8 @@ public class StatusNotifier {
     if (submissionStatusDescriptor.getSubmissionStatusTask().getSubmissionType().equals(SubmissionType.IMMPORT)) {
       processId = "submission.IMMPORT";
     } else if (submissionStatusDescriptor.getSubmissionStatusTask().getSubmissionType().equals(SubmissionType
-        .NCBI_AIRR)) {
-      processId = "submission.AIRR";
+        .NCBI)) {
+      processId = "submission.AIRR"; // TODO Temporary to align with name in messaging server
     }
 
     from.put("processId", processId);
@@ -82,8 +82,8 @@ public class StatusNotifier {
     Response response = client.target(url).request().header("Authorization", adminUserAuthHeader).post(postContent);
 
     if (response.getStatus() != Response.Status.OK.getStatusCode()) {
+      logger.warn("Internal error, statusCode=" + response.getStatus() + " postContent=" + postContent);
       throw new InternalError("Error sending message to user");
     }
   }
-
 }

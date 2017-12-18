@@ -1,4 +1,4 @@
-package org.metadatacenter.submission;
+package org.metadatacenter.submission.ncbi;
 
 import generated.BioSampleValidate;
 import generated.TypeActionStatus;
@@ -10,6 +10,7 @@ import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
+import org.metadatacenter.submission.CEDARBioSampleValidationResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

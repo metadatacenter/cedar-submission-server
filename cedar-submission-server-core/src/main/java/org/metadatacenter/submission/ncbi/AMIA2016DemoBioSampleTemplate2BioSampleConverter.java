@@ -1,4 +1,4 @@
-package org.metadatacenter.submission;
+package org.metadatacenter.submission.ncbi;
 
 import biosample.TypeAttribute;
 import biosample.TypeBioSample;
@@ -7,6 +7,8 @@ import common.sp.*;
 import generated.Submission;
 import generated.TypeOrganization;
 import generated.TypeTargetDb;
+import org.metadatacenter.submission.AMIA2016DemoBioSampleTemplate;
+import org.metadatacenter.submission.OptionalAttribute;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
