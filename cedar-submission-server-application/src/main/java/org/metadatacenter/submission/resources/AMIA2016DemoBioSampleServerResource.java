@@ -9,10 +9,9 @@ import org.metadatacenter.config.CedarConfig;
 import org.metadatacenter.exception.CedarException;
 import org.metadatacenter.rest.context.CedarRequestContext;
 import org.metadatacenter.rest.context.CedarRequestContextFactory;
-import org.metadatacenter.server.security.model.auth.CedarPermission;
 import org.metadatacenter.submission.AMIA2016DemoBioSampleTemplate;
-import org.metadatacenter.submission.AMIA2016DemoBioSampleTemplate2BioSampleConverter;
-import org.metadatacenter.submission.BioSampleValidator;
+import org.metadatacenter.submission.ncbi.AMIA2016DemoBioSampleTemplate2BioSampleConverter;
+import org.metadatacenter.submission.ncbi.BioSampleValidator;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;

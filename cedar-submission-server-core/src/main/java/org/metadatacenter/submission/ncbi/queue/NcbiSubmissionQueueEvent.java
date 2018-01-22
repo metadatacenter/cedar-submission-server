@@ -1,20 +1,20 @@
-package org.metadatacenter.submission.ncbiairr.queue;
+package org.metadatacenter.submission.ncbi.queue;
 
 import org.metadatacenter.constant.CedarConstants;
-import org.metadatacenter.submission.ncbiairr.NcbiAirrSubmission;
+import org.metadatacenter.submission.ncbi.NcbiSubmission;
 
 import java.time.Instant;
 
-public class NcbiAirrSubmissionQueueEvent {
+public class NcbiSubmissionQueueEvent {
 
   private String createdAt;
   private long createdAtTS;
-  private NcbiAirrSubmission submission;
+  private NcbiSubmission submission;
 
-  public NcbiAirrSubmissionQueueEvent() {
+  public NcbiSubmissionQueueEvent() {
   }
 
-  public NcbiAirrSubmissionQueueEvent(NcbiAirrSubmission submission) {
+  public NcbiSubmissionQueueEvent(NcbiSubmission submission) {
     Instant now = Instant.now();
     this.createdAt = CedarConstants.xsdDateTimeFormatter.format(now);
     this.createdAtTS = now.getEpochSecond();
@@ -29,7 +29,7 @@ public class NcbiAirrSubmissionQueueEvent {
     return createdAtTS;
   }
 
-  public NcbiAirrSubmission getSubmission() {
+  public NcbiSubmission getSubmission() {
     return submission;
   }
 

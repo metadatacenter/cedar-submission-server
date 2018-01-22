@@ -2,10 +2,7 @@
 
 To run the server
 
-    java \
-      -jar $CEDAR_HOME/cedar-submission-server/cedar-submission-server-application/target/cedar-submission-server-application-*.jar \
-      server \
-      "$CEDAR_HOME/cedar-submission-server/cedar-submission-server-application/config.yml"
+    java -jar $CEDAR_HOME/cedar-submission-server/cedar-submission-server-application/target/cedar-submission-server-application-*.jar server
 
 To access the application:
 
