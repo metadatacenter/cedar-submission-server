@@ -10,7 +10,7 @@
 
   <groupId>org.metadatacenter</groupId>
   <artifactId>cedar-submission-server</artifactId>
-  <version>1.5.1-SNAPSHOT</version>
+  <version>1.6.0</version>
   <packaging>pom</packaging>
 
   <name>CEDAR Submission Server</name>
@@ -19,6 +19,7 @@
     <connection>scm:git:git@github.com:metadatacenter/cedar-submission-server.git</connection>
     <developerConnection>scm:git:git@github.com:metadatacenter/cedar-submission-server.git</developerConnection>
     <url>https://github.com/metadatacenter/cedar-submission-server</url>
+    <tag>release-1.6.0</tag>
   </scm>
 
   <modules>
