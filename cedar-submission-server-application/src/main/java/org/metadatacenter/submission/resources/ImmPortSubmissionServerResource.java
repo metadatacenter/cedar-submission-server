@@ -28,6 +28,7 @@ import org.metadatacenter.server.security.model.auth.CedarPermission;
 import org.metadatacenter.submission.CEDARSubmitResponse;
 import org.metadatacenter.submission.CEDARWorkspaceResponse;
 import org.metadatacenter.submission.Workspace;
+import org.metadatacenter.submission.exception.SubmissionInstanceNotFoundException;
 import org.metadatacenter.submission.immport.ImmPortConstants;
 import org.metadatacenter.submission.immport.ImmPortSubmissionStatusTask;
 import org.metadatacenter.submission.immport.ImmPortUtil;
@@ -40,7 +41,6 @@ import org.metadatacenter.submission.upload.flow.SubmissionUploadManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.management.InstanceNotFoundException;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -249,7 +249,8 @@ public class ImmPortSubmissionServerResource extends CedarMicroserviceResource {
         logger.warn("No form data supplied");
         return Response.status(Response.Status.BAD_REQUEST).build(); // TODO CEDAR error response
       }
-    } catch (IOException | InstanceNotFoundException | IllegalAccessException | FileUploadException | JAXBException |
+    } catch (IOException | SubmissionInstanceNotFoundException | IllegalAccessException | FileUploadException |
+        JAXBException |
         DatatypeConfigurationException e) {
       logger.warn("Exception submitting to ImmPort: " + e.getMessage());
       return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build(); // TODO CEDAR error response

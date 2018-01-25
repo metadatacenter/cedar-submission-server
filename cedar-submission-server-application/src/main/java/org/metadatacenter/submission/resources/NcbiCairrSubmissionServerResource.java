@@ -11,6 +11,7 @@ import org.metadatacenter.rest.context.CedarRequestContext;
 import org.metadatacenter.rest.context.CedarRequestContextFactory;
 import org.metadatacenter.server.security.model.auth.CedarPermission;
 import org.metadatacenter.submission.CAIRRTemplate;
+import org.metadatacenter.submission.exception.SubmissionInstanceNotFoundException;
 import org.metadatacenter.submission.ncbi.BioSampleValidator;
 import org.metadatacenter.submission.ncbi.NcbiConstants;
 import org.metadatacenter.submission.ncbi.NcbiSubmission;
@@ -24,7 +25,6 @@ import org.metadatacenter.submission.upload.flow.SubmissionUploadManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.management.InstanceNotFoundException;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -155,7 +155,7 @@ public class NcbiCairrSubmissionServerResource extends CedarMicroserviceResource
           SubmissionUploadManager.getInstance().removeSubmissionStatus(data.getSubmissionId());
         }
 
-      } catch (IOException | FileUploadException | InstanceNotFoundException | JAXBException |
+      } catch (IOException | FileUploadException | SubmissionInstanceNotFoundException | JAXBException |
           DatatypeConfigurationException e) {
         logger.error(e.getMessage(), e);
         return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
