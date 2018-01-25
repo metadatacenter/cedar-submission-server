@@ -55,7 +55,6 @@ public class LincsSubmissionServerResource extends CedarMicroserviceResource {
   public Response validateInstance() throws CedarException {
     CedarRequestContext c = CedarRequestContextFactory.fromRequest(request);
     c.must(c.user()).be(LoggedIn);
-    c.must(c.user()).have(CedarPermission.POST_SUBMISSION);
 
     String payload = c.request().getRequestBody().asJsonString();
 
