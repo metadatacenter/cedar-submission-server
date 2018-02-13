@@ -12,10 +12,13 @@ import java.io.StringWriter;
 
 /**
  * Convert a CAIRR BioProject element instance into a BioProject XML-based submission.
+ *
+ * An example BioProject submission can be found here:
+ * https://www.ncbi.nlm.nih.gov/viewvc/v1/trunk/submit/public-docs/bioproject/samples/bp.submission.xml?view=markup
  */
 public class CAIRRBioProjectElementInstance2BioProjectXMLConverter
 {
-  public String generateNCBIBioProjectSubmissionXML(BioProject cairrBioProjectElement)
+  public String generateNCBIBioProjectSubmissionXML(BioProject cairrBioProjectElementInstance)
     throws DatatypeConfigurationException, JAXBException
   {
     final generated.ObjectFactory ncbiObjectFactory = new generated.ObjectFactory();

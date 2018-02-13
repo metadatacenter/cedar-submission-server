@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:com="SP.common" version="2.0">
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:com="SP.common" version="2.0" >
     <xs:import schemaLocation="SP.common.xsd" namespace="SP.common"/>
     <!-- BioProject object -->
     <xs:element name="Project" type="typeProject"> </xs:element>

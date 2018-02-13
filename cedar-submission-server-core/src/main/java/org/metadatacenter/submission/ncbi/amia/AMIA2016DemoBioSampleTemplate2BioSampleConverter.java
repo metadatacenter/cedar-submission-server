@@ -1,4 +1,4 @@
-package org.metadatacenter.submission.ncbi;
+package org.metadatacenter.submission.ncbi.amia;
 
 import biosample.TypeAttribute;
 import biosample.TypeBioSample;
