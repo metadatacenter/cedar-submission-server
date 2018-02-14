@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:com="SP.common" version="2.0" >
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:com="SP.common" xmlns:bioproject="bioproject" targetNamespace="bioproject" version="2.0">
     <xs:import schemaLocation="SP.common.xsd" namespace="SP.common"/>
     <!-- BioProject object -->
-    <xs:element name="Project" type="typeProject"> </xs:element>
+    <xs:element name="Project" type="bioproject:typeProject"> </xs:element>
 
     <!-- BioProject type -->
     <xs:complexType name="typeProject">
@@ -350,7 +350,7 @@
 
     <xs:complexType name="typeLocusTagPrefix">
         <xs:simpleContent>
-            <xs:extension base="typeLocusTagPrefixText">
+            <xs:extension base="bioproject:typeLocusTagPrefixText">
                 <xs:attribute name="biosample_id" type="xs:token"/>
             </xs:extension>
         </xs:simpleContent>

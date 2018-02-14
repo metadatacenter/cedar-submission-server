@@ -1,7 +1,6 @@
 package org.metadatacenter.submission.ncbi.cairr;
 
 import generated.Submission;
-import generated.TypeProject;
 import org.metadatacenter.submission.BioProject;
 
 import javax.xml.bind.JAXBContext;
@@ -21,9 +20,9 @@ public class CAIRRBioProjectElementInstance2BioProjectXMLConverter
   public String generateNCBIBioProjectSubmissionXML(BioProject cairrBioProjectElementInstance)
     throws DatatypeConfigurationException, JAXBException
   {
-    final generated.ObjectFactory ncbiObjectFactory = new generated.ObjectFactory();
+    final bioproject.ObjectFactory bioProjectObjectFactory = new bioproject.ObjectFactory();
 
-    TypeProject ncbiBioProjectSubmission = ncbiObjectFactory.createTypeProject();
+    bioproject.TypeProject ncbiBioProjectSubmission = bioProjectObjectFactory.createTypeProject();
 
     // TODO
 

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:com="SP.common" xmlns:biosample="biosample" version="2.0">
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:com="SP.common" xmlns:biosample="biosample" xmlns:bioproject="bioproject" version="2.0">
   <xs:import schemaLocation="SP.common.xsd" namespace="SP.common"/>
-  <xs:import schemaLocation="bioproject.xsd"/>
+  <xs:import schemaLocation="bioproject.xsd" namespace="bioproject"/>
   <xs:import schemaLocation="biosample.xsd" namespace="biosample"/>
 
   <!-- Main Submission XML -->
@@ -441,7 +441,7 @@
             <xs:sequence>
               
               <!-- Here we modified the original XML Schema to hard code BioProject and BioSample content -->             
-              <xs:element name="BioProject" type="typeProject"/>
+              <xs:element name="BioProject" type="bioproject:typeProject"/>
               <xs:element name="BioSample" type="biosample:typeBioSample"/>
 
               <xs:any namespace="##any" processContents="skip" maxOccurs="unbounded">

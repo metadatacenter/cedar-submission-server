@@ -13,7 +13,7 @@ Common attributes used by NCBI submissions. Used as is.
 
 bioproject.xsd:
 
-Description of a BioProject submission. Modified to include SP.common.xsd from a local file.
+Description of a BioProject submission. Modified to include SP.common.xsd from a local file and to use the 'bioproject' namespace.
 
 biosample.xsd:
 
@@ -21,7 +21,9 @@ Description of a BioSample part of a submission. Modified to include SP.common.x
 
 submission.xsd
 
-Description of an SRA submission. Modifed to fix some namespace issues.
+Description of an SRA submission. Modifed to fix some namespace issues. In particualur, imports from
+SP.common.xsd, bioproject.xsd, and biosample.xsd are assigned namespaces.
+
 Modified to hard code biosample.xsd as the submission data in the Action/AddData/Data/XMLContent element.
 Also modified to replace AddFiles element definition with one in schema received from 
 Ahmad at Yale (./examples/submission-com.xsd).
