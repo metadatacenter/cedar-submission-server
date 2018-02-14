@@ -137,6 +137,7 @@
         <artifactId>maven-jaxb2-plugin</artifactId>
         <configuration>
           <schemaDirectory>${basedir}/src/main/resources/xsd</schemaDirectory>
+          <!-- <generatePackage>org.metadatacenter.submission</generatePackage> -->
         </configuration>
         <executions>
           <execution>
