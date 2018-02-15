@@ -57,6 +57,7 @@ public class CAIRRTemplateInstance2SRAXMLConverter {
     final generated.ObjectFactory submissionObjectFactory = new generated.ObjectFactory();
     final common.sp.ObjectFactory spCommonObjectFactory = new common.sp.ObjectFactory();
     final biosample.ObjectFactory bioSampleObjectFactory = new biosample.ObjectFactory();
+    final bioproject.ObjectFactory bioProjectObjectFactory = new bioproject.ObjectFactory();
 
     // This is the NCBI SRA submission. We will generate SRA XML from this submission.
     Submission submission = submissionObjectFactory.createSubmission();
@@ -580,7 +581,7 @@ public class CAIRRTemplateInstance2SRAXMLConverter {
         FileName fileName = sraFileUploadAttribute.getFileName();
         FileType fileType = sraFileUploadAttribute.getFileType();
 
-        if (fileName != null && fileType != null) {
+        if (fileName != null || fileType != null) {
           Submission.Action.AddFiles.File sraFile = submissionObjectFactory.createSubmissionActionAddFilesFile();
           sraFile.setFilePath(fileName.getValue());
           sraFile.setDataType(fileType.getValue());
