@@ -89,7 +89,7 @@ public class NcbiCairrSubmissionServerResource extends CedarMicroserviceResource
           .convertTemplateInstanceToXML(cairrInstance);
 
       return Response.ok(this.bioSampleValidator.validateBioSampleSubmission(bioSampleSubmissionXML)).build();
-    } catch (JAXBException | DatatypeConfigurationException e) {
+    } catch (JAXBException e) {
       return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
     }
   }
