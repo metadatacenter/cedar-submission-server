@@ -51,6 +51,9 @@ public class CAIRRTemplateInstance2SRAXMLConverter
    * <p>
    * See https://github.com/airr-community/airr-standards/blob/master/NCBI_implementation/mapping_MiAIRR_BioProject.tsv
    * for CAIRR BioProject element to NCBI BioProject element mapping.
+   * <p>
+   * An example BioProject submission can be found here:
+   * https://www.ncbi.nlm.nih.gov/viewvc/v1/trunk/submit/public-docs/bioproject/samples/bp.submission.xml?view=markup
    *
    * @param cairrInstance A CAIRR template instance
    * @return A string containing a SRA-conformant XML representation of the supplied CAIRR instance

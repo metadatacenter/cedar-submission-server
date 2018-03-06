@@ -17,6 +17,7 @@ import org.metadatacenter.submission.ncbi.NcbiConstants;
 import org.metadatacenter.submission.ncbi.NcbiSubmission;
 import org.metadatacenter.submission.ncbi.NcbiSubmissionUtil;
 import org.metadatacenter.submission.ncbi.cairr.CAIRRTemplateInstance2SRAXMLConverter;
+import org.metadatacenter.submission.ncbi.cairr.CAIRRValidator;
 import org.metadatacenter.submission.ncbi.cairr.NcbiCairrSubmissionXMLFileGenerator;
 import org.metadatacenter.submission.ncbi.queue.NcbiSubmissionQueueService;
 import org.metadatacenter.submission.upload.flow.FlowData;
@@ -53,12 +54,14 @@ public class NcbiCairrSubmissionServerResource extends CedarMicroserviceResource
   private final BioSampleValidator bioSampleValidator;
   private final CAIRRTemplateInstance2SRAXMLConverter cairrTemplate2SRAXMLConverter;
   private final NcbiCairrSubmissionXMLFileGenerator ncbiCairrSubmissionXMLFileGenerator;
+  private final CAIRRValidator cairrValidator;
 
   public NcbiCairrSubmissionServerResource(CedarConfig cedarConfig) {
     super(cedarConfig);
     this.bioSampleValidator = new BioSampleValidator();
     this.cairrTemplate2SRAXMLConverter = new CAIRRTemplateInstance2SRAXMLConverter();
     this.ncbiCairrSubmissionXMLFileGenerator = new NcbiCairrSubmissionXMLFileGenerator();
+    this.cairrValidator = new CAIRRValidator();
   }
 
   public static void injectServices(NcbiSubmissionQueueService ncbiSubmissionQueueService) {
@@ -85,6 +88,8 @@ public class NcbiCairrSubmissionServerResource extends CedarMicroserviceResource
     c.must(c.user()).have(CedarPermission.POST_SUBMISSION);
 
     try {
+
+
       String bioSampleSubmissionXML = this.cairrTemplate2SRAXMLConverter
           .convertTemplateInstanceToXML(cairrInstance);
 
@@ -95,7 +100,7 @@ public class NcbiCairrSubmissionServerResource extends CedarMicroserviceResource
   }
 
   /**
-   * This endpoint receives multiple chunks of a submission package and assemblies them. The submission may be
+   * This endpoint receives multiple chunks of a submission package and assembles them. The submission may be
    * composed by one or multiple files. When the upload is complete, this method triggers the upload of all files that
    * are part of the submission to the NCBI via FTP. Submissions are processed sequentially using a queue.
    */
@@ -118,7 +123,7 @@ public class NcbiCairrSubmissionServerResource extends CedarMicroserviceResource
         FlowData data = FlowUploadUtil.getFlowData(request);
         // The submission to the NCBI must contain one (and only one) metadata file (instance)
         if (data.getMetadataFiles().size() != 1) {
-          String message = "Wrong number of metadata files (submissionId = " +
+          String message = "Incorrect number of metadata files (submissionId = " +
               data.getSubmissionId() + "; metadataFiles = " + data.getMetadataFiles().size();
           logger.info(message);
           return Response.status(Response.Status.BAD_REQUEST).build();
@@ -167,6 +172,5 @@ public class NcbiCairrSubmissionServerResource extends CedarMicroserviceResource
       return Response.status(Response.Status.BAD_REQUEST).build();
     }
   }
-
 }
 
