@@ -236,12 +236,12 @@ public class CAIRRTemplateInstance2SRAXMLConverter
         bioSampleAttributes.getAttribute().add(attribute);
       }
 
-      // StarinName
-      String starinNameValue = bioSample.getStarinName().getValue();
-      if (starinNameValue != null) {
+      // StrainName
+      String strainNameValue = bioSample.getStrainName().getValue();
+      if (strainNameValue != null) {
         TypeAttribute attribute = bioSampleObjectFactory.createTypeAttribute();
-        attribute.setAttributeName("StarinName");
-        attribute.setValue(starinNameValue);
+        attribute.setAttributeName("StrainName");
+        attribute.setValue(strainNameValue);
         bioSampleAttributes.getAttribute().add(attribute);
       }
 
@@ -281,8 +281,8 @@ public class CAIRRTemplateInstance2SRAXMLConverter
       }
 
       // Diagnosis
-      if (bioSample.getDiagnosis2() != null) {
-        String diagnosisValue = bioSample.getDiagnosis2().toString();
+      if (bioSample.getDiagnosis() != null) {
+        String diagnosisValue = bioSample.getDiagnosis().toString();
         if (diagnosisValue != null) {
           TypeAttribute attribute = bioSampleObjectFactory.createTypeAttribute();
           attribute.setAttributeName("Diagnosis");
@@ -524,6 +524,7 @@ public class CAIRRTemplateInstance2SRAXMLConverter
         bioSampleAttributes.getAttribute().add(attribute);
       }
 
+      /*
       // Optional attributes
       for (OptionalBioSampleAttribute optionalAttribute : bioSample.getOptionalBioSampleAttribute()) {
         TypeAttribute attribute = bioSampleObjectFactory.createTypeAttribute();
@@ -531,6 +532,7 @@ public class CAIRRTemplateInstance2SRAXMLConverter
         attribute.setValue(optionalAttribute.getValue().getValue());
         bioSampleAttributes.getAttribute().add(attribute);
       }
+      */
 
       ncbiBioSample.setAttributes(bioSampleAttributes);
 
@@ -574,8 +576,8 @@ public class CAIRRTemplateInstance2SRAXMLConverter
       Submission.Action.AddFiles sraAddFiles = submissionObjectFactory.createSubmissionActionAddFiles();
       sraAddFiles.setTargetDb(TypeTargetDb.SRA);
 
-      // TODO Process each SRA section
 
+      /*
       // File
       for (SRAMultipleFileUploadAttribute sraFileUploadAttribute : sequenceReadArchive
         .getSRAMultipleFileUploadAttributes()) {
@@ -590,6 +592,7 @@ public class CAIRRTemplateInstance2SRAXMLConverter
           sraAddFiles.getFile().add(sraFile);
         }
       }
+      */
 
       // library ID
 
