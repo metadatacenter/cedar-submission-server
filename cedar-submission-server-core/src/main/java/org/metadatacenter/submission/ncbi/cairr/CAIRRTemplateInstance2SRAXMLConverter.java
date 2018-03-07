@@ -91,10 +91,10 @@ public class CAIRRTemplateInstance2SRAXMLConverter
     organizationName.setValue(cairrBioProject.getSubmittingOrganization().getValue());
 
     TypeAccount contactSubmitter = submissionObjectFactory.createTypeAccount();
-    contactSubmitter.setUserName("ahmadchan@gmail.com"); // TODO
+    contactSubmitter.setUserName(cairrBioProject.getContactInformationCorrespondingAuthorEMail().getValue());
 
     TypeOrganization contactOrganization = submissionObjectFactory.createTypeOrganization();
-    contactOrganization.setType("lab"); // TODO
+    contactOrganization.setType("lab");
     contactOrganization.setRole("owner"); // TODO
     contactOrganization.setName(organizationName);
     contactOrganization.getContact().add(contactInfo);
