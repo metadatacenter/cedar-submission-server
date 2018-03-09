@@ -21,6 +21,8 @@ import org.metadatacenter.submission.BioProject;
 import org.metadatacenter.submission.BioSample;
 import org.metadatacenter.submission.CAIRRTemplate;
 import org.metadatacenter.submission.SequenceReadArchive;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
@@ -44,6 +46,8 @@ import java.util.UUID;
  */
 public class CAIRRTemplateInstance2SRAXMLConverter
 {
+  final static Logger logger = LoggerFactory.getLogger(CAIRRTemplateInstance2SRAXMLConverter.class);
+
   private List<String> bioSampleIds = new ArrayList<>();
   private List<String> sraIds = new ArrayList<>();
 
@@ -605,6 +609,7 @@ public class CAIRRTemplateInstance2SRAXMLConverter
 
         for (String fileAttributeName : fileAttributeNames) {
           if (additionalProperties.containsKey(fileAttributeName)) {
+            logger.info("attrubte " + fileAttributeName + " object " + additionalProperties.get(fileAttributeName).getClass());
             String fileName = additionalProperties.get(fileAttributeName).toString();
 
             if (fileName != null || fileType != null) {
