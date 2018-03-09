@@ -174,7 +174,7 @@ public class CAIRRTemplateInstance2SRAXMLConverter
       }
 
       // Organism
-      if (bioSample.getOrganism() != null) {
+      if (bioSample.getOrganism() != null && bioSample.getOrganism().getId() != null) {
         String organismValue = bioSample.getOrganism().getId().toString();
         if (organismValue != null) {
           TypeAttribute attribute = bioSampleObjectFactory.createTypeAttribute();
