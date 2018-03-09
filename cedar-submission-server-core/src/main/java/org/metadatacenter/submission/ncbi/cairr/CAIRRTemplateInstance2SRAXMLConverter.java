@@ -888,7 +888,7 @@ public class CAIRRTemplateInstance2SRAXMLConverter
       TypeIdentifier sraIdentifier = spCommonObjectFactory.createTypeIdentifier();
       sraIdentifier.setLocalId(localSraId);
 
-      sraAddFiles.setIdentifier(sraIdentifier);
+      //sraAddFiles.setIdentifier(sraIdentifier);
 
       // Action
       Submission.Action sraAction = submissionObjectFactory.createSubmissionAction();
