@@ -299,7 +299,7 @@ public class CAIRRTemplateInstance2SRAXMLConverter
 
       // Diagnosis
       if (bioSample.getDiagnosis() != null) {
-        String diagnosisValue = bioSample.getDiagnosis().toString();
+        String diagnosisValue = bioSample.getDiagnosis().getValue();
         if (diagnosisValue != null) {
           TypeAttribute attribute = bioSampleObjectFactory.createTypeAttribute();
           attribute.setAttributeName("Diagnosis");
