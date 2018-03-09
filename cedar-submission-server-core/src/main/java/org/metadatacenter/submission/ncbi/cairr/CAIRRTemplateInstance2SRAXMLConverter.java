@@ -595,8 +595,7 @@ public class CAIRRTemplateInstance2SRAXMLConverter
 
     // Retrieve the SRAs from the CAIRR instance
     int sraIndex = 0; // to track the corresponding BioSample record for this SRA entry
-    for (SequenceReadArchive sequenceReadArchive : cairrInstance.getSequenceReadArchive())
-    {
+    for (SequenceReadArchive sequenceReadArchive : cairrInstance.getSequenceReadArchive()) {
       // AddFiles
       Submission.Action.AddFiles sraAddFiles = submissionObjectFactory.createSubmissionActionAddFiles();
       sraAddFiles.setTargetDb(TypeTargetDb.SRA);
@@ -609,14 +608,19 @@ public class CAIRRTemplateInstance2SRAXMLConverter
 
         for (String fileAttributeName : fileAttributeNames) {
           if (additionalProperties.containsKey(fileAttributeName)) {
-            logger.info("attrubte " + fileAttributeName + " object " + additionalProperties.get(fileAttributeName).getClass());
-            String fileName = additionalProperties.get(fileAttributeName).toString();
+            logger.info(
+              "attribte " + fileAttributeName + " object " + additionalProperties.get(fileAttributeName).getClass());
+            Map<String, Object> fileNameObject = (Map<String, Object>)additionalProperties.get(fileAttributeName);
 
-            if (fileName != null || fileType != null) {
-              Submission.Action.AddFiles.File sraFile = submissionObjectFactory.createSubmissionActionAddFilesFile();
-              sraFile.setFilePath(fileName);
-              sraFile.setDataType(fileType);
-              sraAddFiles.getFile().add(sraFile);
+            if (fileNameObject.containsKey("@value")) {
+              String fileName = fileNameObject.get("@value").toString();
+              if (fileName != null || fileType != null) {
+                Submission.Action.AddFiles.File sraFile = submissionObjectFactory.createSubmissionActionAddFilesFile();
+                sraFile.setFilePath(fileName);
+                sraFile.setDataType(fileType);
+                sraAddFiles.getFile().add(sraFile);
+
+              }
             }
           }
         }
