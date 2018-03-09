@@ -96,11 +96,9 @@ import static org.metadatacenter.rest.assertion.GenericAssertions.LoggedIn;
         return Response.ok(validationResponse).build();
 
       else {
-        String bioSampleSubmissionXML = this.cairrTemplate2SRAXMLConverter.convertTemplateInstanceToXML(cairrInstance);
+        String submissionXML = this.cairrTemplate2SRAXMLConverter.convertTemplateInstanceToXML(cairrInstance);
 
-        logger.info("XML: " + bioSampleSubmissionXML);
-
-        return Response.ok(this.bioSampleValidator.validateBioSampleSubmission(bioSampleSubmissionXML)).build();
+        return Response.ok(this.bioSampleValidator.validateBioSampleSubmission(submissionXML)).build();
       }
     } catch (JAXBException e) {
       return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
