@@ -8,7 +8,6 @@ import common.sp.TypeBlock;
 import common.sp.TypeContactInfo;
 import common.sp.TypeDescriptor;
 import common.sp.TypeIdentifier;
-import common.sp.TypeLocalId;
 import common.sp.TypeName;
 import common.sp.TypeOrganism;
 import common.sp.TypeSPUID;
@@ -18,7 +17,10 @@ import generated.TypeFileAttribute;
 import generated.TypeInlineData;
 import generated.TypeOrganization;
 import generated.TypeTargetDb;
-import org.metadatacenter.submission.*;
+import org.metadatacenter.submission.BioProject;
+import org.metadatacenter.submission.BioSample;
+import org.metadatacenter.submission.CAIRRTemplate;
+import org.metadatacenter.submission.SequenceReadArchive;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
@@ -28,11 +30,11 @@ import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
 import javax.xml.namespace.QName;
-
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.GregorianCalendar;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 // TODO Very brittle. Need to do a lot more testing for empty values
@@ -593,23 +595,25 @@ public class CAIRRTemplateInstance2SRAXMLConverter
       Submission.Action.AddFiles sraAddFiles = submissionObjectFactory.createSubmissionActionAddFiles();
       sraAddFiles.setTargetDb(TypeTargetDb.SRA);
 
+      if (sequenceReadArchive.getFileType() != null) {
+        String fileType = sequenceReadArchive.getFileType().getValue();
 
-      /*
-      // File
-      for (SRAMultipleFileUploadAttribute sraFileUploadAttribute : sequenceReadArchive
-        .getSRAMultipleFileUploadAttributes()) {
+        List<String> fileAttributeNames = sequenceReadArchive.getFilename();
+        Map<String, Object> additionalProperties = sequenceReadArchive.getAdditionalProperties();
 
-        FileName fileName = sraFileUploadAttribute.getFileName();
-        FileType fileType = sraFileUploadAttribute.getFileType();
+        for (String fileAttributeName : fileAttributeNames) {
+          if (additionalProperties.containsKey(fileAttributeName)) {
+            String fileName = additionalProperties.get(fileAttributeName).toString();
 
-        if (fileName != null || fileType != null) {
-          Submission.Action.AddFiles.File sraFile = submissionObjectFactory.createSubmissionActionAddFilesFile();
-          sraFile.setFilePath(fileName.getValue());
-          sraFile.setDataType(fileType.getValue());
-          sraAddFiles.getFile().add(sraFile);
+            if (fileName != null || fileType != null) {
+              Submission.Action.AddFiles.File sraFile = submissionObjectFactory.createSubmissionActionAddFilesFile();
+              sraFile.setFilePath(fileName);
+              sraFile.setDataType(fileType);
+              sraAddFiles.getFile().add(sraFile);
+            }
+          }
         }
       }
-      */
 
       // library ID
 
@@ -881,14 +885,6 @@ public class CAIRRTemplateInstance2SRAXMLConverter
 
       ///End of AIRR SRA Elements
 
-      //      // Identifier
-      //      TypeSPUID bioSampleSpuid = ncbiCommonObjectFactory.createTypeSPUID();
-      //      bioSampleSpuid.setSpuidNamespace("CEDAR"); // TODO
-      //      bioSampleSpuid.setValue(bioSampleId);
-      //
-      //      TypeIdentifier bioSampleIdentifier = ncbiCommonObjectFactory.createTypeIdentifier();
-      //      bioSampleIdentifier.setSPUID(bioSampleSpuid);
-
       TypeSPUID sraSampleSpuid = ncbiCommonObjectFactory.createTypeSPUID();
       sraSampleSpuid.setSpuidNamespace("CEDAR"); // TODO
       sraSampleSpuid.setValue(createNewSraId());
@@ -948,5 +944,4 @@ public class CAIRRTemplateInstance2SRAXMLConverter
   {
     return sraIds.get(index);
   }
-
 }
