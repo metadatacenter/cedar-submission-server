@@ -163,8 +163,8 @@ public class CAIRRTemplateInstance2SRAXMLConverter
       }
 
       // Synthetic Library
-      if (bioSample.getSyntheticLibrary().size() > 1) {
-        String syntheticLibraryValue = bioSample.getSyntheticLibrary().get(0).getValue();
+      if (bioSample.getSyntheticLibrary() !=  null) {
+        String syntheticLibraryValue = bioSample.getSyntheticLibrary().getValue();
         if (syntheticLibraryValue != null) {
           TypeAttribute attribute = bioSampleObjectFactory.createTypeAttribute();
           attribute.setAttributeName("SyntheticLibrary");
@@ -373,7 +373,7 @@ public class CAIRRTemplateInstance2SRAXMLConverter
         bioSampleAttributes.getAttribute().add(attribute);
       }
       // Tissue
-      String tissueValue = bioSample.getTissue().getId().toString();
+      String tissueValue = bioSample.getTissue().getValue();
       if (tissueValue != null) {
         TypeAttribute attribute = bioSampleObjectFactory.createTypeAttribute();
         attribute.setAttributeName("Tissue");
@@ -444,7 +444,7 @@ public class CAIRRTemplateInstance2SRAXMLConverter
       }
 
       // Cell Subset
-      String cellSubsetValue = bioSample.getCellSubset().getId().toString();
+      String cellSubsetValue = bioSample.getCellSubsetPhenotype().getValue();
       if (cellSubsetValue != null) {
         TypeAttribute attribute = bioSampleObjectFactory.createTypeAttribute();
         attribute.setAttributeName("CellSubset");
@@ -705,10 +705,10 @@ public class CAIRRTemplateInstance2SRAXMLConverter
 
       // Library Generation Method
 
-      String libraryGenerationMethodValue = sequenceReadArchive.getLibraryGenerationMethod().getValue();
+      String libraryGenerationMethodValue = sequenceReadArchive.getLibraryGenerationProtocol().getValue();
       if (libraryGenerationMethodValue != null) {
         TypeFileAttribute fileAttribute = submissionObjectFactory.createTypeFileAttribute();
-        fileAttribute.setName("LibraryGenerationMethod");
+        fileAttribute.setName("LibraryGenerationProtocol");
         fileAttribute.setValue(libraryGenerationMethodValue);
         sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(fileAttribute);
       }
