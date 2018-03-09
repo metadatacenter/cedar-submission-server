@@ -392,12 +392,14 @@ public class CAIRRTemplateInstance2SRAXMLConverter
         bioSampleAttributes.getAttribute().add(attribute);
       }
       // Tissue
-      String tissueValue = bioSample.getTissue().getValue();
-      if (tissueValue != null) {
-        TypeAttribute attribute = bioSampleObjectFactory.createTypeAttribute();
-        attribute.setAttributeName("Tissue");
-        attribute.setValue(tissueValue);
-        bioSampleAttributes.getAttribute().add(attribute);
+      if (bioSample.getTissue() != null && bioSample.getTissue().getId() != null) {
+        String tissueValue = bioSample.getTissue().getId().toString();
+        if (tissueValue != null) {
+          TypeAttribute attribute = bioSampleObjectFactory.createTypeAttribute();
+          attribute.setAttributeName("Tissue");
+          attribute.setValue(tissueValue);
+          bioSampleAttributes.getAttribute().add(attribute);
+        }
       }
 
       // Anatomic Site
@@ -589,8 +591,8 @@ public class CAIRRTemplateInstance2SRAXMLConverter
 
     // Retrieve the SRAs from the CAIRR instance
     int sraIndex = 0; // to track the corresponding BioSample record for this SRA entry
-    for (SequenceReadArchive sequenceReadArchive : cairrInstance.getSequenceReadArchive()) {
-
+    for (SequenceReadArchive sequenceReadArchive : cairrInstance.getSequenceReadArchive())
+    {
       // AddFiles
       Submission.Action.AddFiles sraAddFiles = submissionObjectFactory.createSubmissionActionAddFiles();
       sraAddFiles.setTargetDb(TypeTargetDb.SRA);
