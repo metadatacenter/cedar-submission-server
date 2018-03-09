@@ -1841,7 +1841,7 @@
                 ]
               }
             },
-            "additionalProperties": false,
+            "additionalProperties": true,
             "required": [
               "Subject id",
               "Synthetic Library",
@@ -5410,7 +5410,7 @@
           "Cell Isolation",
           "Processing Protocol"
         ],
-        "additionalProperties": false,
+        "additionalProperties": true,
         "pav:createdOn": "2018-03-09T08:49:43-0800",
         "pav:createdBy": "https://metadatacenter.org/users/bcec3d33-faf5-447a-ac96-683d8bf8c7b8",
         "pav:lastUpdatedOn": "2018-03-09T08:49:43-0800",
@@ -5663,7 +5663,7 @@
                 ]
               }
             },
-            "additionalProperties": false,
+            "additionalProperties": true,
             "required": [
               "Sample Name",
               "Library ID",
@@ -8026,7 +8026,7 @@
           "Sequencing Kit",
           "File Type"
         ],
-        "additionalProperties": false,
+        "additionalProperties": true,
         "pav:createdOn": "2018-03-09T08:49:43-0800",
         "pav:createdBy": "https://metadatacenter.org/users/bcec3d33-faf5-447a-ac96-683d8bf8c7b8",
         "pav:lastUpdatedOn": "2018-03-09T08:49:43-0800",
