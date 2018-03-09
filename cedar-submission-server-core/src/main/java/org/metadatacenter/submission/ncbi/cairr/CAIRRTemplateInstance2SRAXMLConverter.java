@@ -63,7 +63,7 @@ public class CAIRRTemplateInstance2SRAXMLConverter
   public String convertTemplateInstanceToXML(CAIRRTemplate cairrInstance) throws JAXBException
   {
     final generated.ObjectFactory submissionObjectFactory = new generated.ObjectFactory();
-    final common.sp.ObjectFactory spCommonObjectFactory = new common.sp.ObjectFactory();
+    final common.sp.ObjectFactory ncbiCommonObjectFactory = new common.sp.ObjectFactory();
     final biosample.ObjectFactory bioSampleObjectFactory = new biosample.ObjectFactory();
     final bioproject.ObjectFactory bioProjectObjectFactory = new bioproject.ObjectFactory();
 
@@ -79,11 +79,11 @@ public class CAIRRTemplateInstance2SRAXMLConverter
     /*
      * Object construction for the submission <Description> section
      */
-    TypeName contactName = spCommonObjectFactory.createTypeName();
+    TypeName contactName = ncbiCommonObjectFactory.createTypeName();
     contactName.setFirst(cairrBioProject.getFirstGivenName().getValue());
     contactName.setLast(cairrBioProject.getLastFamilyName().getValue());
 
-    TypeContactInfo contactInfo = spCommonObjectFactory.createTypeContactInfo();
+    TypeContactInfo contactInfo = ncbiCommonObjectFactory.createTypeContactInfo();
     contactInfo.setEmail(cairrBioProject.getEMail().getValue());
     contactInfo.setName(contactName);
 
@@ -128,10 +128,10 @@ public class CAIRRTemplateInstance2SRAXMLConverter
       JAXBElement descriptionElement = new JAXBElement(new QName("p"), String.class,
         "AIRR (myasthenia gravis) data " + "to the NCBI using the CAIRR"); // TODO
 
-      TypeBlock sampleDescription = spCommonObjectFactory.createTypeBlock();
+      TypeBlock sampleDescription = ncbiCommonObjectFactory.createTypeBlock();
       sampleDescription.getPOrUlOrOl().add(descriptionElement);
 
-      TypeDescriptor sampleDescriptor = spCommonObjectFactory.createTypeDescriptor();
+      TypeDescriptor sampleDescriptor = ncbiCommonObjectFactory.createTypeDescriptor();
       sampleDescriptor.setTitle("AIRR (myasthenia gravis) data to the NCBI using the CAIRR"); // XXX: Hard-coded due
       // to no corresponding entry in
       // the AIRR instance
@@ -140,7 +140,7 @@ public class CAIRRTemplateInstance2SRAXMLConverter
       ncbiBioSample.setDescriptor(sampleDescriptor);
 
       // Organism
-      TypeOrganism sampleOrganism = spCommonObjectFactory.createTypeOrganism();
+      TypeOrganism sampleOrganism = ncbiCommonObjectFactory.createTypeOrganism();
       sampleOrganism.setOrganismName("Homo sapiens"); // TODO
 
       ncbiBioSample.setOrganism(sampleOrganism);
@@ -163,7 +163,7 @@ public class CAIRRTemplateInstance2SRAXMLConverter
       }
 
       // Synthetic Library
-      if (bioSample.getSyntheticLibrary() !=  null) {
+      if (bioSample.getSyntheticLibrary() != null) {
         String syntheticLibraryValue = bioSample.getSyntheticLibrary().getValue();
         if (syntheticLibraryValue != null) {
           TypeAttribute attribute = bioSampleObjectFactory.createTypeAttribute();
@@ -195,7 +195,7 @@ public class CAIRRTemplateInstance2SRAXMLConverter
       }
 
       // Age
-      if (bioSample.getAge()!= null) {
+      if (bioSample.getAge() != null) {
         String ageValue = bioSample.getAge().getValue();
         if (ageValue != null) {
           TypeAttribute attribute = bioSampleObjectFactory.createTypeAttribute();
@@ -565,11 +565,11 @@ public class CAIRRTemplateInstance2SRAXMLConverter
       bioSampleData.setXmlContent(xmlContent);
 
       // Identifier
-      TypeSPUID bioSampleSpuid = spCommonObjectFactory.createTypeSPUID();
+      TypeSPUID bioSampleSpuid = ncbiCommonObjectFactory.createTypeSPUID();
       bioSampleSpuid.setSpuidNamespace("CEDAR"); // TODO
       bioSampleSpuid.setValue(bioSampleId);
 
-      TypeIdentifier bioSampleIdentifier = spCommonObjectFactory.createTypeIdentifier();
+      TypeIdentifier bioSampleIdentifier = ncbiCommonObjectFactory.createTypeIdentifier();
       bioSampleIdentifier.setSPUID(bioSampleSpuid);
 
       // AddData
@@ -881,14 +881,22 @@ public class CAIRRTemplateInstance2SRAXMLConverter
 
       ///End of AIRR SRA Elements
 
-      // Identifier: For SRA
-      TypeLocalId localSraId = spCommonObjectFactory.createTypeLocalId();
-      localSraId.setValue(createNewSraId());
+      //      // Identifier
+      //      TypeSPUID bioSampleSpuid = ncbiCommonObjectFactory.createTypeSPUID();
+      //      bioSampleSpuid.setSpuidNamespace("CEDAR"); // TODO
+      //      bioSampleSpuid.setValue(bioSampleId);
+      //
+      //      TypeIdentifier bioSampleIdentifier = ncbiCommonObjectFactory.createTypeIdentifier();
+      //      bioSampleIdentifier.setSPUID(bioSampleSpuid);
 
-      TypeIdentifier sraIdentifier = spCommonObjectFactory.createTypeIdentifier();
-      sraIdentifier.setLocalId(localSraId);
+      TypeSPUID sraSampleSpuid = ncbiCommonObjectFactory.createTypeSPUID();
+      sraSampleSpuid.setSpuidNamespace("CEDAR"); // TODO
+      sraSampleSpuid.setValue(createNewSraId());
 
-      //sraAddFiles.setIdentifier(sraIdentifier);
+      TypeIdentifier sraIdentifier = ncbiCommonObjectFactory.createTypeIdentifier();
+      sraIdentifier.setSPUID(sraSampleSpuid);
+
+      sraAddFiles.setIdentifier(sraIdentifier);
 
       // Action
       Submission.Action sraAction = submissionObjectFactory.createSubmissionAction();
