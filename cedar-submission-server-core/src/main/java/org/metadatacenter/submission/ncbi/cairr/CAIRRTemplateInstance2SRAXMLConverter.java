@@ -174,84 +174,101 @@ public class CAIRRTemplateInstance2SRAXMLConverter
       }
 
       // Organism
-      String organismValue = bioSample.getOrganism().getId().toString();
-      if (organismValue != null) {
-        TypeAttribute attribute = bioSampleObjectFactory.createTypeAttribute();
-        attribute.setAttributeName("Organism");
-        attribute.setValue(organismValue);
-        bioSampleAttributes.getAttribute().add(attribute);
+      if (bioSample.getOrganism() != null) {
+        String organismValue = bioSample.getOrganism().getId().toString();
+        if (organismValue != null) {
+          TypeAttribute attribute = bioSampleObjectFactory.createTypeAttribute();
+          attribute.setAttributeName("Organism");
+          attribute.setValue(organismValue);
+          bioSampleAttributes.getAttribute().add(attribute);
+        }
       }
-
       // Sex
-      String sexValue = bioSample.getSex().getValue();
-      if (sexValue != null) {
-        TypeAttribute attribute = bioSampleObjectFactory.createTypeAttribute();
-        attribute.setAttributeName("Sex");
-        attribute.setValue(sexValue);
-        bioSampleAttributes.getAttribute().add(attribute);
+      if (bioSample.getSex() != null) {
+        String sexValue = bioSample.getSex().getValue();
+        if (sexValue != null) {
+          TypeAttribute attribute = bioSampleObjectFactory.createTypeAttribute();
+          attribute.setAttributeName("Sex");
+          attribute.setValue(sexValue);
+          bioSampleAttributes.getAttribute().add(attribute);
+        }
       }
 
       // Age
-      String ageValue = bioSample.getAge().getValue();
-      if (ageValue != null) {
-        TypeAttribute attribute = bioSampleObjectFactory.createTypeAttribute();
-        attribute.setAttributeName("Age");
-        attribute.setValue(ageValue);
-        bioSampleAttributes.getAttribute().add(attribute);
+      if (bioSample.getAge()!= null) {
+        String ageValue = bioSample.getAge().getValue();
+        if (ageValue != null) {
+          TypeAttribute attribute = bioSampleObjectFactory.createTypeAttribute();
+          attribute.setAttributeName("Age");
+          attribute.setValue(ageValue);
+          bioSampleAttributes.getAttribute().add(attribute);
+        }
       }
 
       // Age Event
-      String ageEventValue = bioSample.getAgeEvent().getValue();
-      if (ageEventValue != null) {
-        TypeAttribute attribute = bioSampleObjectFactory.createTypeAttribute();
-        attribute.setAttributeName("AgeEvent");
-        attribute.setValue(ageEventValue);
-        bioSampleAttributes.getAttribute().add(attribute);
+      if (bioSample.getAgeEvent() != null) {
+        String ageEventValue = bioSample.getAgeEvent().getValue();
+        if (ageEventValue != null) {
+          TypeAttribute attribute = bioSampleObjectFactory.createTypeAttribute();
+          attribute.setAttributeName("AgeEvent");
+          attribute.setValue(ageEventValue);
+          bioSampleAttributes.getAttribute().add(attribute);
+        }
       }
 
       // Ancestry Population
-      String ancestryPopulationValue = bioSample.getAncestryPopulation().getValue();
-      if (ancestryPopulationValue != null) {
-        TypeAttribute attribute = bioSampleObjectFactory.createTypeAttribute();
-        attribute.setAttributeName("AncestryPopulation");
-        attribute.setValue(ancestryPopulationValue);
-        bioSampleAttributes.getAttribute().add(attribute);
+      if (bioSample.getAncestryPopulation() != null) {
+        String ancestryPopulationValue = bioSample.getAncestryPopulation().getValue();
+        if (ancestryPopulationValue != null) {
+          TypeAttribute attribute = bioSampleObjectFactory.createTypeAttribute();
+          attribute.setAttributeName("AncestryPopulation");
+          attribute.setValue(ancestryPopulationValue);
+          bioSampleAttributes.getAttribute().add(attribute);
+        }
       }
 
       // Ethnicity
-      String ethnicityValue = bioSample.getEthnicity().getValue();
-      if (ethnicityValue != null) {
-        TypeAttribute attribute = bioSampleObjectFactory.createTypeAttribute();
-        attribute.setAttributeName("Ethnicity");
-        attribute.setValue(ethnicityValue);
-        bioSampleAttributes.getAttribute().add(attribute);
+      if (bioSample.getEthnicity() != null) {
+        String ethnicityValue = bioSample.getEthnicity().getValue();
+        if (ethnicityValue != null) {
+          TypeAttribute attribute = bioSampleObjectFactory.createTypeAttribute();
+          attribute.setAttributeName("Ethnicity");
+          attribute.setValue(ethnicityValue);
+          bioSampleAttributes.getAttribute().add(attribute);
+        }
       }
 
       // Race
-      String raceValue = bioSample.getRace().getValue();
-      if (raceValue != null) {
-        TypeAttribute attribute = bioSampleObjectFactory.createTypeAttribute();
-        attribute.setAttributeName("Race");
-        attribute.setValue(raceValue);
-        bioSampleAttributes.getAttribute().add(attribute);
+      if (bioSample.getRace() != null) {
+        String raceValue = bioSample.getRace().getValue();
+        if (raceValue != null) {
+          TypeAttribute attribute = bioSampleObjectFactory.createTypeAttribute();
+          attribute.setAttributeName("Race");
+          attribute.setValue(raceValue);
+          bioSampleAttributes.getAttribute().add(attribute);
+        }
       }
 
       // StrainName
-      String strainNameValue = bioSample.getStrainName().getValue();
-      if (strainNameValue != null) {
-        TypeAttribute attribute = bioSampleObjectFactory.createTypeAttribute();
-        attribute.setAttributeName("StrainName");
-        attribute.setValue(strainNameValue);
-        bioSampleAttributes.getAttribute().add(attribute);
+      if (bioSample.getStrainName() != null) {
+        String strainNameValue = bioSample.getStrainName().getValue();
+        if (strainNameValue != null) {
+          TypeAttribute attribute = bioSampleObjectFactory.createTypeAttribute();
+          attribute.setAttributeName("StrainName");
+          attribute.setValue(strainNameValue);
+          bioSampleAttributes.getAttribute().add(attribute);
+        }
       }
 
       // Relation to other Subject
-      String relationToOtherSubjectValue = bioSample.getRelationToOtherSubject().getValue();
-      if (relationToOtherSubjectValue != null) {
-        TypeAttribute attribute = bioSampleObjectFactory.createTypeAttribute();
-        attribute.setAttributeName("RelationToOtherSubject");
-        attribute.setValue(relationToOtherSubjectValue);
-        bioSampleAttributes.getAttribute().add(attribute);
+      if (bioSample.getRelationToOtherSubject() != null) {
+        String relationToOtherSubjectValue = bioSample.getRelationToOtherSubject().getValue();
+        if (relationToOtherSubjectValue != null) {
+          TypeAttribute attribute = bioSampleObjectFactory.createTypeAttribute();
+          attribute.setAttributeName("RelationToOtherSubject");
+          attribute.setValue(relationToOtherSubjectValue);
+          bioSampleAttributes.getAttribute().add(attribute);
+        }
       }
 
       // Relation Type
