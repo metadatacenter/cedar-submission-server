@@ -642,6 +642,8 @@ public class CAIRRTemplateInstance2SRAXMLConverter
         sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(bioSampleAttributeRefId);
       }
 
+      // BioProject ID
+
       if (!bioProjectID.isEmpty()) {
         TypeFileAttributeRefId bioProjectAttributeRefId = submissionObjectFactory.createTypeFileAttributeRefId();
         bioProjectAttributeRefId.setName("BioProject");
@@ -868,7 +870,7 @@ public class CAIRRTemplateInstance2SRAXMLConverter
       String sequencingPlatformValue = sequenceReadArchive.getSequencingPlatform().getValue();
       if (sequencingPlatformValue != null) {
         TypeFileAttribute fileAttribute = submissionObjectFactory.createTypeFileAttribute();
-        fileAttribute.setName("SequencingPlatform1");
+        fileAttribute.setName("SequencingPlatform");
         fileAttribute.setValue(sequencingPlatformValue);
         sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(fileAttribute);
       }
@@ -910,7 +912,8 @@ public class CAIRRTemplateInstance2SRAXMLConverter
         TypeFileAttribute fileAttribute = submissionObjectFactory.createTypeFileAttribute();
         fileAttribute.setName("DateOfSequencingRun");
         fileAttribute.setValue(dateOfSequencingRunValue);
-        sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(fileAttribute);
+        // TODO Possible date format issue
+        //sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(fileAttribute);
       }
 
       // Sequencing Kit
