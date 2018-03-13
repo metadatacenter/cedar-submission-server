@@ -1,6 +1,5 @@
 package org.metadatacenter.submission.ncbi.cairr;
 
-import bioproject.TypeProject;
 import biosample.TypeAttribute;
 import biosample.TypeBioSample;
 import biosample.TypeBioSampleIdentifier;
@@ -82,8 +81,14 @@ public class CAIRRTemplateInstance2SRAXMLConverter
     // Retrieve the BioProject from the CAIRR instance
     BioProject cairrBioProject = cairrInstance.getBioProject();
 
+    String bioProjectID;
+    if (cairrBioProject.getStudyID() != null) {
+      bioProjectID = cairrBioProject.getStudyID().getValue();
+    } else
+      bioProjectID = "";
+
     // Create a NCBI BioProject element
-    TypeProject ncbiBioProject = bioProjectObjectFactory.createTypeProject();
+    //TypeProject ncbiBioProject = bioProjectObjectFactory.createTypeProject();
 
     /*
      * Object construction for the submission <Description> section
@@ -109,7 +114,7 @@ public class CAIRRTemplateInstance2SRAXMLConverter
     contactOrganization.getContact().add(contactInfo);
 
     Submission.Description submissionDescription = submissionObjectFactory.createSubmissionDescription();
-    submissionDescription.setComment("AIRR (myasthenia gravis) data to the NCBI using the CAIRR"); // TODO
+    submissionDescription.setComment("AIRR (myasthenia gravis) data to the NCBI using the CAIRR");
     submissionDescription.setSubmitter(contactSubmitter);
     submissionDescription.getOrganization().add(contactOrganization);
     submission.setDescription(submissionDescription);
@@ -122,12 +127,12 @@ public class CAIRRTemplateInstance2SRAXMLConverter
       TypeBioSample ncbiBioSample = bioSampleObjectFactory.createTypeBioSample();
       ncbiBioSample.setSchemaVersion("2.0"); // XXX: Hard-coded
 
-      // Sample Name (which is actually the sampe ID )
+      // Sample Name (which is actually the sample ID )
       String bioSampleID = bioSample.getSampleName().getValue();
       if (bioSampleID != null) {
         // SampleId
         TypeBioSampleIdentifier.SPUID spuid = bioSampleObjectFactory.createTypeBioSampleIdentifierSPUID();
-        spuid.setSpuidNamespace("CEDAR"); // TODO
+        spuid.setSpuidNamespace("CEDAR");
         spuid.setValue(bioSampleID);
 
         TypeBioSampleIdentifier sampleID = bioSampleObjectFactory.createTypeBioSampleIdentifier();
@@ -138,15 +143,14 @@ public class CAIRRTemplateInstance2SRAXMLConverter
 
       // Descriptor
       JAXBElement descriptionElement = new JAXBElement(new QName("p"), String.class,
-        "AIRR (myasthenia gravis) data " + "to the NCBI using the CAIRR"); // TODO
+        "AIRR (myasthenia gravis) data to the NCBI using the CAIRR");
 
       TypeBlock sampleDescription = ncbiCommonObjectFactory.createTypeBlock();
       sampleDescription.getPOrUlOrOl().add(descriptionElement);
 
       TypeDescriptor sampleDescriptor = ncbiCommonObjectFactory.createTypeDescriptor();
       sampleDescriptor.setTitle("AIRR (myasthenia gravis) data to the NCBI using the CAIRR"); // XXX: Hard-coded due
-      // to no corresponding entry in
-      // the AIRR instance
+      // to no corresponding entry in the AIRR instance
       sampleDescriptor.setDescription(sampleDescription);
 
       ncbiBioSample.setDescriptor(sampleDescriptor);
@@ -627,15 +631,27 @@ public class CAIRRTemplateInstance2SRAXMLConverter
 
       String bioSampleID = sequenceReadArchive.getSampleName().getValue();
       if (bioSampleID != null) {
-        TypeFileAttributeRefId fileAttributeRefId = submissionObjectFactory.createTypeFileAttributeRefId();
-        fileAttributeRefId.setName("BioSample");
+        TypeFileAttributeRefId bioSampleAttributeRefId = submissionObjectFactory.createTypeFileAttributeRefId();
+        bioSampleAttributeRefId.setName("BioSample");
         TypeRefId refId = ncbiCommonObjectFactory.createTypeRefId();
         TypePrimaryId primaryId = ncbiCommonObjectFactory.createTypePrimaryId();
         primaryId.setDb("BioSample");
         primaryId.setValue(bioSampleID);
         refId.setPrimaryId(primaryId);
-        fileAttributeRefId.setRefId(refId);
-        sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(fileAttributeRefId);
+        bioSampleAttributeRefId.setRefId(refId);
+        sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(bioSampleAttributeRefId);
+      }
+
+      if (!bioProjectID.isEmpty()) {
+        TypeFileAttributeRefId bioProjectAttributeRefId = submissionObjectFactory.createTypeFileAttributeRefId();
+        bioProjectAttributeRefId.setName("BioProject");
+        TypeRefId refId = ncbiCommonObjectFactory.createTypeRefId();
+        TypePrimaryId primaryId = ncbiCommonObjectFactory.createTypePrimaryId();
+        primaryId.setDb("BioProject");
+        primaryId.setValue(bioProjectID);
+        refId.setPrimaryId(primaryId);
+        bioProjectAttributeRefId.setRefId(refId);
+        sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(bioProjectAttributeRefId);
       }
 
       // library ID
@@ -906,10 +922,10 @@ public class CAIRRTemplateInstance2SRAXMLConverter
         sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(fileAttribute);
       }
 
-      ///End of AIRR SRA Elements
+      // End of AIRR SRA Elements
 
       TypeSPUID sraSampleSpuid = ncbiCommonObjectFactory.createTypeSPUID();
-      sraSampleSpuid.setSpuidNamespace("CEDAR"); // TODO
+      sraSampleSpuid.setSpuidNamespace("CEDAR");
       sraSampleSpuid.setValue(createNewSraId());
 
       TypeIdentifier sraIdentifier = ncbiCommonObjectFactory.createTypeIdentifier();
@@ -944,13 +960,6 @@ public class CAIRRTemplateInstance2SRAXMLConverter
     return datatypeFactory.newXMLGregorianCalendar(gc);
   }
 
-  private String createNewBioSampleId()
-  {
-    String id = "BioSample-" + UUID.randomUUID();
-    bioSampleIds.add(id);
-    return id;
-  }
-
   private String createNewSraId()
   {
     String id = "SRA-" + UUID.randomUUID();
@@ -963,15 +972,5 @@ public class CAIRRTemplateInstance2SRAXMLConverter
     String id = "Action-" + UUID.randomUUID();
     sraIds.add(id);
     return id;
-  }
-
-  private String getBioSampleId(int index)
-  {
-    return bioSampleIds.get(index);
-  }
-
-  private String getSraId(int index)
-  {
-    return sraIds.get(index);
   }
 }
