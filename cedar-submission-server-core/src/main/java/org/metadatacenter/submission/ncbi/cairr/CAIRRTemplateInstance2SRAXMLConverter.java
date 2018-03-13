@@ -514,7 +514,7 @@ public class CAIRRTemplateInstance2SRAXMLConverter
         bioSampleAttributes.getAttribute().add(attribute);
       }
 
-      // Cell Storage1
+      // Cell Storage
       String cellStorage1Value = bioSample.getCellStorage().getValue();
       if (cellStorage1Value != null) {
         TypeAttribute attribute = bioSampleObjectFactory.createTypeAttribute();
@@ -549,16 +549,6 @@ public class CAIRRTemplateInstance2SRAXMLConverter
         attribute.setValue(processingProtocolValue);
         bioSampleAttributes.getAttribute().add(attribute);
       }
-
-      /*
-      // Optional attributes
-      for (OptionalBioSampleAttribute optionalAttribute : bioSample.getOptionalBioSampleAttribute()) {
-        TypeAttribute attribute = bioSampleObjectFactory.createTypeAttribute();
-        attribute.setAttributeName(optionalAttribute.getName().getValue());
-        attribute.setValue(optionalAttribute.getValue().getValue());
-        bioSampleAttributes.getAttribute().add(attribute);
-      }
-      */
 
       ncbiBioSample.setAttributes(bioSampleAttributes);
 
@@ -656,6 +646,16 @@ public class CAIRRTemplateInstance2SRAXMLConverter
         sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(bioProjectAttributeRefId);
       }
 
+      // library ID
+
+      String libraryIDValue = sequenceReadArchive.getLibraryID().getValue();
+      if (libraryIDValue != null) {
+        TypeFileAttribute fileAttribute = submissionObjectFactory.createTypeFileAttribute();
+        fileAttribute.setName("library_id");
+        fileAttribute.setValue(libraryIDValue);
+        // TODO Remove for testing sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(fileAttribute);
+      }
+
       // library + sequencing strategy + layout + instrument model must be unique according to
       // https://www.ncbi.nlm.nih.gov/sra/docs/submitmeta/
 
@@ -665,16 +665,6 @@ public class CAIRRTemplateInstance2SRAXMLConverter
         fileAttribute.setName("instrument_model");
         fileAttribute.setValue(instrumentModelValue);
         sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(fileAttribute);
-      }
-
-      // library ID
-
-      String libraryIDValue = sequenceReadArchive.getLibraryID().getValue();
-      if (libraryIDValue != null) {
-        TypeFileAttribute fileAttribute = submissionObjectFactory.createTypeFileAttribute();
-        fileAttribute.setName("library_id");
-        fileAttribute.setValue(libraryIDValue);
-        // TODO Remove for testing sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(fileAttribute);
       }
 
       // Library Name
@@ -737,6 +727,7 @@ public class CAIRRTemplateInstance2SRAXMLConverter
         sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(fileAttribute);
       }
 
+      /*
       // Library instrument
 
       String LibraryInstrumentValue = sequenceReadArchive.getLibraryInstrument().getValue();
@@ -857,7 +848,7 @@ public class CAIRRTemplateInstance2SRAXMLConverter
         sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(fileAttribute);
       }
 
-      // Total Reads Passing QC Filter1
+      // Total Reads Passing QC Filter
 
       String totalReadsPassingQCFilterValue = sequenceReadArchive.getTotalReadsPassingQCFilter().getValue();
       if (totalReadsPassingQCFilterValue != null) {
@@ -936,6 +927,7 @@ public class CAIRRTemplateInstance2SRAXMLConverter
         fileAttribute.setValue(sequencingKitValue);
         sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(fileAttribute);
       }
+      */
 
       // End of AIRR SRA Elements
 
