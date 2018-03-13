@@ -656,6 +656,17 @@ public class CAIRRTemplateInstance2SRAXMLConverter
         sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(bioProjectAttributeRefId);
       }
 
+      // library + sequencing strategy + layout + instrument model must be unique according to
+      // https://www.ncbi.nlm.nih.gov/sra/docs/submitmeta/
+
+      String instrumentModelValue = sequenceReadArchive.getSequencingPlatform().getValue();
+      if (instrumentModelValue != null) {
+        TypeFileAttribute fileAttribute = submissionObjectFactory.createTypeFileAttribute();
+        fileAttribute.setName("instrument_model");
+        fileAttribute.setValue(instrumentModelValue);
+        sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(fileAttribute);
+      }
+
       // library ID
 
       String libraryIDValue = sequenceReadArchive.getLibraryID().getValue();
