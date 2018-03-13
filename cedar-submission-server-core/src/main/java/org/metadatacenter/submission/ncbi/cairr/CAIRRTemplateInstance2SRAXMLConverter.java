@@ -663,7 +663,7 @@ public class CAIRRTemplateInstance2SRAXMLConverter
         TypeFileAttribute fileAttribute = submissionObjectFactory.createTypeFileAttribute();
         fileAttribute.setName("library_id");
         fileAttribute.setValue(libraryIDValue);
-        sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(fileAttribute);
+        // TODO Remove for testing sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(fileAttribute);
       }
 
       // Library Name
@@ -676,17 +676,7 @@ public class CAIRRTemplateInstance2SRAXMLConverter
         sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(fileAttribute);
       }
 
-      // Library instrument
-
-      String LibraryInstrumentValue = sequenceReadArchive.getLibraryInstrument().getValue();
-      if (LibraryInstrumentValue != null) {
-        TypeFileAttribute fileAttribute = submissionObjectFactory.createTypeFileAttribute();
-        fileAttribute.setName("library_instrument");
-        fileAttribute.setValue(LibraryInstrumentValue);
-        sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(fileAttribute);
-      }
-
-      // Library Strategy
+      // Library Strategy - controlled
 
       String LibraryStrategyValue = sequenceReadArchive.getLibraryStrategy().getValue();
       if (LibraryStrategyValue != null) {
@@ -696,7 +686,7 @@ public class CAIRRTemplateInstance2SRAXMLConverter
         sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(fileAttribute);
       }
 
-      // Library Source
+      // Library Source - controlled
 
       String librarySourceValue = sequenceReadArchive.getLibrarySource().getValue();
       if (librarySourceValue != null) {
@@ -706,7 +696,7 @@ public class CAIRRTemplateInstance2SRAXMLConverter
         sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(fileAttribute);
       }
 
-      // Library Selection
+      // Library Selection - controlled
 
       String librarySelectionValue = sequenceReadArchive.getLibrarySelection().getValue();
       if (librarySelectionValue != null) {
@@ -716,7 +706,7 @@ public class CAIRRTemplateInstance2SRAXMLConverter
         sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(fileAttribute);
       }
 
-      // Library Layout
+      // Library Layout - controlled
 
       String libraryLayoutValue = sequenceReadArchive.getLibraryLayout().getValue();
       if (libraryLayoutValue != null) {
@@ -725,6 +715,7 @@ public class CAIRRTemplateInstance2SRAXMLConverter
         fileAttribute.setValue(libraryLayoutValue);
         sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(fileAttribute);
       }
+
       // Library Construction Protocol
 
       String libraryConstructionProtocolValue = sequenceReadArchive.getLibraryConstructionProtocol().getValue();
@@ -732,6 +723,16 @@ public class CAIRRTemplateInstance2SRAXMLConverter
         TypeFileAttribute fileAttribute = submissionObjectFactory.createTypeFileAttribute();
         fileAttribute.setName("library_construction_protocol");
         fileAttribute.setValue(libraryConstructionProtocolValue);
+        sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(fileAttribute);
+      }
+
+      // Library instrument
+
+      String LibraryInstrumentValue = sequenceReadArchive.getLibraryInstrument().getValue();
+      if (LibraryInstrumentValue != null) {
+        TypeFileAttribute fileAttribute = submissionObjectFactory.createTypeFileAttribute();
+        fileAttribute.setName("library_instrument");
+        fileAttribute.setValue(LibraryInstrumentValue);
         sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(fileAttribute);
       }
 
@@ -830,7 +831,7 @@ public class CAIRRTemplateInstance2SRAXMLConverter
       String physicalLinkageOfDifferentLociValue = sequenceReadArchive.getPhysicalLinkageOfDifferentLoci().getValue();
       if (physicalLinkageOfDifferentLociValue != null) {
         TypeFileAttribute fileAttribute = submissionObjectFactory.createTypeFileAttribute();
-        fileAttribute.setName("physical_linkage-of-different_loci");
+        fileAttribute.setName("physical_linkage_of_different_loci");
         fileAttribute.setValue(physicalLinkageOfDifferentLociValue);
         sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(fileAttribute);
       }
