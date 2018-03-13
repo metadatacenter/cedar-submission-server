@@ -10,10 +10,13 @@ import common.sp.TypeDescriptor;
 import common.sp.TypeIdentifier;
 import common.sp.TypeName;
 import common.sp.TypeOrganism;
+import common.sp.TypePrimaryId;
+import common.sp.TypeRefId;
 import common.sp.TypeSPUID;
 import generated.Submission;
 import generated.TypeAccount;
 import generated.TypeFileAttribute;
+import generated.TypeFileAttributeRefId;
 import generated.TypeInlineData;
 import generated.TypeOrganization;
 import generated.TypeTargetDb;
@@ -119,16 +122,19 @@ public class CAIRRTemplateInstance2SRAXMLConverter
       TypeBioSample ncbiBioSample = bioSampleObjectFactory.createTypeBioSample();
       ncbiBioSample.setSchemaVersion("2.0"); // XXX: Hard-coded
 
-      // SampleId
-      String bioSampleId = createNewBioSampleId();
-      TypeBioSampleIdentifier.SPUID spuid = bioSampleObjectFactory.createTypeBioSampleIdentifierSPUID();
-      spuid.setSpuidNamespace("CEDAR"); // TODO
-      spuid.setValue(bioSampleId);
+      // Sample Name (which is actually the id)
+      String bioSampleID = bioSample.getSampleName().getValue();
+      if (bioSampleID != null) {
+        // SampleId
+        TypeBioSampleIdentifier.SPUID spuid = bioSampleObjectFactory.createTypeBioSampleIdentifierSPUID();
+        spuid.setSpuidNamespace("CEDAR"); // TODO
+        spuid.setValue(bioSampleID);
 
-      TypeBioSampleIdentifier sampleID = bioSampleObjectFactory.createTypeBioSampleIdentifier();
-      sampleID.getSPUID().add(spuid);
+        TypeBioSampleIdentifier sampleID = bioSampleObjectFactory.createTypeBioSampleIdentifier();
+        sampleID.getSPUID().add(spuid);
 
-      ncbiBioSample.setSampleId(sampleID);
+        ncbiBioSample.setSampleId(sampleID);
+      }
 
       // Descriptor
       JAXBElement descriptionElement = new JAXBElement(new QName("p"), String.class,
@@ -154,6 +160,7 @@ public class CAIRRTemplateInstance2SRAXMLConverter
       // Package
       ncbiBioSample.setPackage("Human.1.0"); // TODO
 
+
       // Attributes
       TypeBioSample.Attributes bioSampleAttributes = bioSampleObjectFactory.createTypeBioSampleAttributes();
 
@@ -161,7 +168,7 @@ public class CAIRRTemplateInstance2SRAXMLConverter
 
       // Subject ID
       String subjectIdValue = bioSample.getSubjectId().getValue();
-      if (subjectIdValue != null) {
+      if (subjectIdValue != null && !subjectIdValue.isEmpty()) {
         TypeAttribute attribute = bioSampleObjectFactory.createTypeAttribute();
         attribute.setAttributeName("SubjectId");
         attribute.setValue(subjectIdValue);
@@ -378,15 +385,6 @@ public class CAIRRTemplateInstance2SRAXMLConverter
         bioSampleAttributes.getAttribute().add(attribute);
       }
 
-      // Sample Name
-      String sampleNameValue = bioSample.getSampleName().getValue();
-      if (sampleNameValue != null) {
-        TypeAttribute attribute = bioSampleObjectFactory.createTypeAttribute();
-        attribute.setAttributeName("SampleName");
-        attribute.setValue(sampleNameValue);
-        bioSampleAttributes.getAttribute().add(attribute);
-      }
-
       // Sample Type
       String sampleTypeValue = bioSample.getSampleType().getValue();
       if (sampleTypeValue != null) {
@@ -575,7 +573,7 @@ public class CAIRRTemplateInstance2SRAXMLConverter
       // Identifier
       TypeSPUID bioSampleSpuid = ncbiCommonObjectFactory.createTypeSPUID();
       bioSampleSpuid.setSpuidNamespace("CEDAR"); // TODO
-      bioSampleSpuid.setValue(bioSampleId);
+      bioSampleSpuid.setValue("TODO");
 
       TypeIdentifier bioSampleIdentifier = ncbiCommonObjectFactory.createTypeIdentifier();
       bioSampleIdentifier.setSPUID(bioSampleSpuid);
@@ -624,6 +622,21 @@ public class CAIRRTemplateInstance2SRAXMLConverter
             }
           }
         }
+      }
+
+      // Sample Name (ID of BioSample)
+
+      String bioSampleID = sequenceReadArchive.getSampleName().getValue();
+      if (bioSampleID != null) {
+        TypeFileAttributeRefId fileAttributeRefId = submissionObjectFactory.createTypeFileAttributeRefId();
+        fileAttributeRefId.setName("BioSample");
+        TypeRefId refId = ncbiCommonObjectFactory.createTypeRefId();
+        TypePrimaryId primaryId = ncbiCommonObjectFactory.createTypePrimaryId();
+        primaryId.setDb("BioSample");
+        primaryId.setValue(bioSampleID);
+        refId.setPrimaryId(primaryId);
+        fileAttributeRefId.setRefId(refId);
+        sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(fileAttributeRefId);
       }
 
       // library ID
