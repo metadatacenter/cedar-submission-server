@@ -29,6 +29,8 @@ public class CAIRRValidator
 
     }
 
+    validationResponse.setIsValid(true);
+
     return validationResponse;
   }
 
