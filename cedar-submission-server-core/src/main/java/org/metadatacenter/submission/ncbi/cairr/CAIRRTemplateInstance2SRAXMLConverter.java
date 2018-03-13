@@ -122,7 +122,7 @@ public class CAIRRTemplateInstance2SRAXMLConverter
       TypeBioSample ncbiBioSample = bioSampleObjectFactory.createTypeBioSample();
       ncbiBioSample.setSchemaVersion("2.0"); // XXX: Hard-coded
 
-      // Sample Name (which is actually the id)
+      // Sample Name (which is actually the sampe ID )
       String bioSampleID = bioSample.getSampleName().getValue();
       if (bioSampleID != null) {
         // SampleId
@@ -159,7 +159,6 @@ public class CAIRRTemplateInstance2SRAXMLConverter
 
       // Package
       ncbiBioSample.setPackage("Human.1.0"); // TODO
-
 
       // Attributes
       TypeBioSample.Attributes bioSampleAttributes = bioSampleObjectFactory.createTypeBioSampleAttributes();
@@ -262,7 +261,7 @@ public class CAIRRTemplateInstance2SRAXMLConverter
         }
       }
 
-      // StrainName
+      // Strain Name
       if (bioSample.getStrainName() != null) {
         String strainNameValue = bioSample.getStrainName().getValue();
         if (strainNameValue != null) {
@@ -321,7 +320,7 @@ public class CAIRRTemplateInstance2SRAXMLConverter
         }
       }
 
-      // StudyGroupDescription
+      // Study Group Description
       String studyGroupDescriptionValue = bioSample.getStudyGroupDescription().getValue();
       if (studyGroupDescriptionValue != null) {
         TypeAttribute attribute = bioSampleObjectFactory.createTypeAttribute();
@@ -339,7 +338,7 @@ public class CAIRRTemplateInstance2SRAXMLConverter
         bioSampleAttributes.getAttribute().add(attribute);
       }
 
-      // Disease stage
+      // Disease Stage
       String diseaseStageValue = bioSample.getDiseaseStage().getValue();
       if (diseaseStageValue != null) {
         TypeAttribute attribute = bioSampleObjectFactory.createTypeAttribute();
@@ -560,29 +559,29 @@ public class CAIRRTemplateInstance2SRAXMLConverter
       ncbiBioSample.setAttributes(bioSampleAttributes);
 
       // XmlContent
-      // Developement Note: The original NCBI submission doesn't includ the BioSample element, so it
+      // Development Note: The original NCBI submission doesn't include the BioSample element, so it
       // is required to append the rule in the submission.xsd file (See submission.xsd:441)
       TypeInlineData.XmlContent xmlContent = submissionObjectFactory.createTypeInlineDataXmlContent();
       xmlContent.setBioSample(ncbiBioSample);
 
       // Data
       Submission.Action.AddData.Data bioSampleData = submissionObjectFactory.createSubmissionActionAddDataData();
-      bioSampleData.setContentType("XML"); // TODO
+      bioSampleData.setContentType("XML");
       bioSampleData.setXmlContent(xmlContent);
 
       // Identifier
       TypeSPUID bioSampleSpuid = ncbiCommonObjectFactory.createTypeSPUID();
-      bioSampleSpuid.setSpuidNamespace("CEDAR"); // TODO
-      bioSampleSpuid.setValue("TODO");
+      bioSampleSpuid.setSpuidNamespace("CEDAR");
+      bioSampleSpuid.setValue(createNewActionId());
 
-      TypeIdentifier bioSampleIdentifier = ncbiCommonObjectFactory.createTypeIdentifier();
-      bioSampleIdentifier.setSPUID(bioSampleSpuid);
+      TypeIdentifier actionIdentifier = ncbiCommonObjectFactory.createTypeIdentifier();
+      actionIdentifier.setSPUID(bioSampleSpuid);
 
       // AddData
       Submission.Action.AddData bioSampleAddData = submissionObjectFactory.createSubmissionActionAddData();
       bioSampleAddData.setTargetDb(TypeTargetDb.BIO_SAMPLE);
       bioSampleAddData.setData(bioSampleData);
-      bioSampleAddData.setIdentifier(bioSampleIdentifier);
+      bioSampleAddData.setIdentifier(actionIdentifier);
 
       // Action
       Submission.Action bioSampleAction = submissionObjectFactory.createSubmissionAction();
@@ -750,10 +749,10 @@ public class CAIRRTemplateInstance2SRAXMLConverter
 
       // Library Generation Method
 
-      String libraryGenerationMethodValue = sequenceReadArchive.getLibraryGenerationProtocol().getValue();
+      String libraryGenerationMethodValue = sequenceReadArchive.getLibraryGenerationMethod().getValue();
       if (libraryGenerationMethodValue != null) {
         TypeFileAttribute fileAttribute = submissionObjectFactory.createTypeFileAttribute();
-        fileAttribute.setName("LibraryGenerationProtocol");
+        fileAttribute.setName("LibraryGenerationMethod");
         fileAttribute.setValue(libraryGenerationMethodValue);
         sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(fileAttribute);
       }
@@ -955,6 +954,13 @@ public class CAIRRTemplateInstance2SRAXMLConverter
   private String createNewSraId()
   {
     String id = "SRA-" + UUID.randomUUID();
+    sraIds.add(id);
+    return id;
+  }
+
+  private String createNewActionId()
+  {
+    String id = "Action-" + UUID.randomUUID();
     sraIds.add(id);
     return id;
   }
