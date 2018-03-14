@@ -100,7 +100,7 @@ import static org.metadatacenter.rest.assertion.GenericAssertions.LoggedIn;
 
         return Response.ok(this.bioSampleValidator.validateBioSampleSubmission(submissionXML)).build();
       }
-    } catch (JAXBException e) {
+    } catch (JAXBException | DatatypeConfigurationException e) {
       return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
     }
   }
