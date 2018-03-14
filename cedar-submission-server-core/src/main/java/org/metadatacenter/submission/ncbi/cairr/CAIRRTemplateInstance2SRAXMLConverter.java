@@ -617,22 +617,22 @@ public class CAIRRTemplateInstance2SRAXMLConverter
         }
       }
 
-      // Sample Name (ID of BioSample)
+      // Reference to BioSample ID
 
       String bioSampleID = sequenceReadArchive.getSampleName().getValue();
       if (bioSampleID != null) {
         TypeFileAttributeRefId bioSampleAttributeRefId = submissionObjectFactory.createTypeFileAttributeRefId();
         bioSampleAttributeRefId.setName("BioSample");
         TypeRefId refId = ncbiCommonObjectFactory.createTypeRefId();
-        TypePrimaryId primaryId = ncbiCommonObjectFactory.createTypePrimaryId();
-        primaryId.setDb("BioSample");
-        primaryId.setValue(bioSampleID);
-        refId.setPrimaryId(primaryId);
+        TypeSPUID spuid = ncbiCommonObjectFactory.createTypeSPUID();
+        spuid.setSpuidNamespace("CEDAR");
+        spuid.setValue(bioSampleID);
+        refId.setSPUID(spuid);
         bioSampleAttributeRefId.setRefId(refId);
         sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(bioSampleAttributeRefId);
       }
 
-      // BioProject ID
+      // Reference to BioProject ID
 
       if (!bioProjectID.isEmpty()) {
         TypeFileAttributeRefId bioProjectAttributeRefId = submissionObjectFactory.createTypeFileAttributeRefId();
