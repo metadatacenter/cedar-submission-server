@@ -301,7 +301,8 @@ public class CAIRRTemplateInstance2SRAXMLConverter
       if (projectedReleaseDateValue != null) {
         TypeAttribute attribute = bioSampleObjectFactory.createTypeAttribute();
         attribute.setAttributeName("ProjectedReleaseDate");
-        attribute.setValue(projectedReleaseDateValue);
+        // TODO Hard code for moment
+        attribute.setValue("2019-03-03");
         bioSampleAttributes.getAttribute().add(attribute);
       }
       // Isolate
