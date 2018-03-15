@@ -50,6 +50,8 @@ public class CAIRRTemplateInstance2SRAXMLConverter
 {
   final static Logger logger = LoggerFactory.getLogger(CAIRRTemplateInstance2SRAXMLConverter.class);
 
+  private final static String CEDAR_NAMESPACE = "CEDAR";
+
   private List<String> bioSampleIds = new ArrayList<>();
   private List<String> sraIds = new ArrayList<>();
 
@@ -76,13 +78,9 @@ public class CAIRRTemplateInstance2SRAXMLConverter
   public String convertTemplateInstanceToXML(CAIRRTemplate cairrInstance)
     throws JAXBException, DatatypeConfigurationException
   {
+    Submission ncbiSubmission = submissionObjectFactory.createSubmission();
 
-    // This is the NCBI SRA submission. We will generate SRA XML from this submission.
-    Submission submission = submissionObjectFactory.createSubmission();
-
-    // Retrieve the BioProject from the CAIRR instance
     BioProject cairrBioProject = cairrInstance.getBioProject();
-
     String bioProjectID;
     if (cairrBioProject.getStudyID() != null) {
       bioProjectID = cairrBioProject.getStudyID().getValue();
@@ -92,464 +90,37 @@ public class CAIRRTemplateInstance2SRAXMLConverter
     // Create a NCBI BioProject element
     //TypeProject ncbiBioProject = bioProjectObjectFactory.createTypeProject();
 
-    /*
-     * Object construction for the submission <Description> section
-     */
-    TypeName contactName = ncbiCommonObjectFactory.createTypeName();
-    contactName.setFirst(cairrBioProject.getFirstGivenName().getValue());
-    contactName.setLast(cairrBioProject.getLastFamilyName().getValue());
-
-    TypeContactInfo contactInfo = ncbiCommonObjectFactory.createTypeContactInfo();
-    contactInfo.setEmail(cairrBioProject.getEMail().getValue());
-    contactInfo.setName(contactName);
-
-    TypeOrganization.Name organizationName = submissionObjectFactory.createTypeOrganizationName();
-    organizationName.setValue(cairrBioProject.getSubmittingOrganization().getValue());
-
-    TypeAccount contactSubmitter = submissionObjectFactory.createTypeAccount();
-    contactSubmitter.setUserName(cairrBioProject.getContactInformationCorrespondingAuthorEMail().getValue());
-
-    TypeOrganization contactOrganization = submissionObjectFactory.createTypeOrganization();
-    contactOrganization.setType("lab");
-    contactOrganization.setRole("owner"); // TODO
-    contactOrganization.setName(organizationName);
-    contactOrganization.getContact().add(contactInfo);
-
-    Submission.Description submissionDescription = submissionObjectFactory.createSubmissionDescription();
-    submissionDescription.setComment("AIRR (myasthenia gravis) data to the NCBI using the CAIRR");
-    submissionDescription.setSubmitter(contactSubmitter);
-    submissionDescription.getOrganization().add(contactOrganization);
-    submission.setDescription(submissionDescription);
-
-    Submission.Description.Hold submissionDescriptionHold = submissionObjectFactory.createSubmissionDescriptionHold();
-    submissionDescriptionHold.setReleaseDate(createXMLGregorianCalendar("2019-03-03")); // TODO No place in AIRR
-    submissionDescription.setHold(submissionDescriptionHold);
-
-    // TODO Other BioProject fields need to be set
+    Submission.Description submissionDescription = createSubmissionDescription(ncbiSubmission, cairrBioProject);
+    ncbiSubmission.setDescription(submissionDescription);
 
     // Retrieve the biosamples from the CAIRR instance
     for (BioSample bioSample : cairrInstance.getBioSample()) {
       // Start <BioSample> section
       TypeBioSample ncbiBioSample = bioSampleObjectFactory.createTypeBioSample();
-      ncbiBioSample.setSchemaVersion("2.0"); // XXX: Hard-coded
+      ncbiBioSample.setSchemaVersion("2.0"); // Hard-coded
 
       // Sample Name (which is actually the sample ID )
-      String bioSampleID = bioSample.getSampleName().getValue();
-      if (bioSampleID != null) {
-        // SampleId
-        TypeBioSampleIdentifier.SPUID spuid = bioSampleObjectFactory.createTypeBioSampleIdentifierSPUID();
-        spuid.setSpuidNamespace("CEDAR");
-        spuid.setValue(bioSampleID);
-
-        TypeBioSampleIdentifier sampleID = bioSampleObjectFactory.createTypeBioSampleIdentifier();
-        sampleID.getSPUID().add(spuid);
-
-        ncbiBioSample.setSampleId(sampleID);
+      if (bioSample.getSampleName() != null) {
+        String bioSampleID = bioSample.getSampleName().getValue();
+        if (bioSampleID != null && !bioProjectID.isEmpty())
+          ncbiBioSample.setSampleId(createBioSampleIdentifier(bioSampleID));
       }
 
       // Descriptor
-      JAXBElement descriptionElement = new JAXBElement(new QName("p"), String.class,
-        "AIRR (myasthenia gravis) data to the NCBI using the CAIRR");
-
-      TypeBlock sampleDescription = ncbiCommonObjectFactory.createTypeBlock();
-      sampleDescription.getPOrUlOrOl().add(descriptionElement);
-
-      TypeDescriptor sampleDescriptor = ncbiCommonObjectFactory.createTypeDescriptor();
-      sampleDescriptor.setTitle("AIRR (myasthenia gravis) data to the NCBI using the CAIRR"); // XXX: Hard-coded due
-      // to no corresponding entry in the AIRR instance
-      sampleDescriptor.setDescription(sampleDescription);
-
-      ncbiBioSample.setDescriptor(sampleDescriptor);
+      ncbiBioSample.setDescriptor(createDescriptor("AIRR Submission", "AIRR Submission")); // TODO
 
       // Organism
-      TypeOrganism sampleOrganism = ncbiCommonObjectFactory.createTypeOrganism();
-      sampleOrganism.setOrganismName("Homo sapiens"); // TODO
-
-      ncbiBioSample.setOrganism(sampleOrganism);
+      ncbiBioSample.setOrganism(createOrganism("Homo sapiens")); // TODO
 
       // Package
       ncbiBioSample.setPackage("Human.1.0"); // TODO
 
       // Attributes
-      TypeBioSample.Attributes bioSampleAttributes = bioSampleObjectFactory.createTypeBioSampleAttributes();
-
-      // Following are the CAIRR BioSample Elements/attributes
-
-      // Subject ID
-      String subjectIdValue = bioSample.getSubjectId().getValue();
-      if (subjectIdValue != null && !subjectIdValue.isEmpty())
-        bioSampleAttributes.getAttribute().add(createAttribute("SubjectId", subjectIdValue));
-
-      // Synthetic Library
-      if (bioSample.getSyntheticLibrary() != null) {
-        String syntheticLibraryValue = bioSample.getSyntheticLibrary().getValue();
-        if (syntheticLibraryValue != null && !syntheticLibraryValue.isEmpty())
-          bioSampleAttributes.getAttribute().add(createAttribute("SyntheticLibrary", syntheticLibraryValue));
-      }
-
-      // Organism
-      if (bioSample.getOrganism() != null && bioSample.getOrganism().getId() != null) {
-        String organismValue = bioSample.getOrganism().getId().toString();
-        if (organismValue != null)
-          bioSampleAttributes.getAttribute().add(createAttribute("Organism", organismValue));
-      }
-
-      // Sex
-      if (bioSample.getSex() != null) {
-        String sexValue = bioSample.getSex().getValue();
-        if (sexValue != null) {
-          TypeAttribute attribute = bioSampleObjectFactory.createTypeAttribute();
-          attribute.setAttributeName("Sex");
-          attribute.setValue(sexValue);
-          bioSampleAttributes.getAttribute().add(attribute);
-        }
-      }
-
-      // Age
-      if (bioSample.getAge() != null) {
-        String ageValue = bioSample.getAge().getValue();
-        if (ageValue != null) {
-          TypeAttribute attribute = bioSampleObjectFactory.createTypeAttribute();
-          attribute.setAttributeName("Age");
-          attribute.setValue(ageValue);
-          bioSampleAttributes.getAttribute().add(attribute);
-        }
-      }
-
-      // Age Event
-      if (bioSample.getAgeEvent() != null) {
-        String ageEventValue = bioSample.getAgeEvent().getValue();
-        if (ageEventValue != null) {
-          TypeAttribute attribute = bioSampleObjectFactory.createTypeAttribute();
-          attribute.setAttributeName("AgeEvent");
-          attribute.setValue(ageEventValue);
-          bioSampleAttributes.getAttribute().add(attribute);
-        }
-      }
-
-      // Ancestry Population
-      if (bioSample.getAncestryPopulation() != null) {
-        String ancestryPopulationValue = bioSample.getAncestryPopulation().getValue();
-        if (ancestryPopulationValue != null) {
-          TypeAttribute attribute = bioSampleObjectFactory.createTypeAttribute();
-          attribute.setAttributeName("AncestryPopulation");
-          attribute.setValue(ancestryPopulationValue);
-          bioSampleAttributes.getAttribute().add(attribute);
-        }
-      }
-
-      // Ethnicity
-      if (bioSample.getEthnicity() != null) {
-        String ethnicityValue = bioSample.getEthnicity().getValue();
-        if (ethnicityValue != null) {
-          TypeAttribute attribute = bioSampleObjectFactory.createTypeAttribute();
-          attribute.setAttributeName("Ethnicity");
-          attribute.setValue(ethnicityValue);
-          bioSampleAttributes.getAttribute().add(attribute);
-        }
-      }
-
-      // Race
-      if (bioSample.getRace() != null) {
-        String raceValue = bioSample.getRace().getValue();
-        if (raceValue != null) {
-          TypeAttribute attribute = bioSampleObjectFactory.createTypeAttribute();
-          attribute.setAttributeName("Race");
-          attribute.setValue(raceValue);
-          bioSampleAttributes.getAttribute().add(attribute);
-        }
-      }
-
-      // Strain Name
-      if (bioSample.getStrainName() != null) {
-        String strainNameValue = bioSample.getStrainName().getValue();
-        if (strainNameValue != null) {
-          TypeAttribute attribute = bioSampleObjectFactory.createTypeAttribute();
-          attribute.setAttributeName("StrainName");
-          attribute.setValue(strainNameValue);
-          bioSampleAttributes.getAttribute().add(attribute);
-        }
-      }
-
-      // Relation to other Subject
-      if (bioSample.getRelationToOtherSubject() != null) {
-        String relationToOtherSubjectValue = bioSample.getRelationToOtherSubject().getValue();
-        if (relationToOtherSubjectValue != null) {
-          TypeAttribute attribute = bioSampleObjectFactory.createTypeAttribute();
-          attribute.setAttributeName("RelationToOtherSubject");
-          attribute.setValue(relationToOtherSubjectValue);
-          bioSampleAttributes.getAttribute().add(attribute);
-        }
-      }
-
-      // Relation Type
-      String relationTypeValue = bioSample.getRelationType().getValue();
-      if (relationTypeValue != null) {
-        TypeAttribute attribute = bioSampleObjectFactory.createTypeAttribute();
-        attribute.setAttributeName("RelationType");
-        attribute.setValue(relationTypeValue);
-        bioSampleAttributes.getAttribute().add(attribute);
-      }
-
-      // Projected Release Date
-      String projectedReleaseDateValue = bioSample.getProjectedReleaseDate().getValue();
-      if (projectedReleaseDateValue != null) {
-        TypeAttribute attribute = bioSampleObjectFactory.createTypeAttribute();
-        attribute.setAttributeName("ProjectedReleaseDate");
-        // TODO Hard code for moment
-        attribute.setValue("2019-03-03");
-        bioSampleAttributes.getAttribute().add(attribute);
-      }
-      // Isolate
-      String isolateValue = bioSample.getIsolate().getValue();
-      if (isolateValue != null) {
-        TypeAttribute attribute = bioSampleObjectFactory.createTypeAttribute();
-        attribute.setAttributeName("Isolate");
-        attribute.setValue(isolateValue);
-        bioSampleAttributes.getAttribute().add(attribute);
-      }
-
-      // Diagnosis
-      if (bioSample.getDiagnosis() != null) {
-        String diagnosisValue = bioSample.getDiagnosis().getValue();
-        if (diagnosisValue != null) {
-          TypeAttribute attribute = bioSampleObjectFactory.createTypeAttribute();
-          attribute.setAttributeName("Diagnosis");
-          attribute.setValue(diagnosisValue);
-          bioSampleAttributes.getAttribute().add(attribute);
-        }
-      }
-
-      // Study Group Description
-      String studyGroupDescriptionValue = bioSample.getStudyGroupDescription().getValue();
-      if (studyGroupDescriptionValue != null) {
-        TypeAttribute attribute = bioSampleObjectFactory.createTypeAttribute();
-        attribute.setAttributeName("StudyGroupDescription");
-        attribute.setValue(studyGroupDescriptionValue);
-        bioSampleAttributes.getAttribute().add(attribute);
-      }
-
-      // Length of Disease
-      String lengthOfDiseaseValue = bioSample.getLengthOfDisease().getValue();
-      if (lengthOfDiseaseValue != null) {
-        TypeAttribute attribute = bioSampleObjectFactory.createTypeAttribute();
-        attribute.setAttributeName("LengthOfDisease");
-        attribute.setValue(lengthOfDiseaseValue);
-        bioSampleAttributes.getAttribute().add(attribute);
-      }
-
-      // Disease Stage
-      String diseaseStageValue = bioSample.getDiseaseStage().getValue();
-      if (diseaseStageValue != null) {
-        TypeAttribute attribute = bioSampleObjectFactory.createTypeAttribute();
-        attribute.setAttributeName("DiseaseStage");
-        attribute.setValue(diseaseStageValue);
-        bioSampleAttributes.getAttribute().add(attribute);
-      }
-
-      // Prior Therapies For Primary Disease Under Study
-      String priorTherapiesForPrimaryDiseaseUnderStudyValue = bioSample.getPriorTherapiesForPrimaryDiseaseUnderStudy()
-        .getValue();
-      if (priorTherapiesForPrimaryDiseaseUnderStudyValue != null) {
-        TypeAttribute attribute = bioSampleObjectFactory.createTypeAttribute();
-        attribute.setAttributeName("PriorTherapiesForPrimaryDiseaseUnderStudy");
-        attribute.setValue(priorTherapiesForPrimaryDiseaseUnderStudyValue);
-        bioSampleAttributes.getAttribute().add(attribute);
-      }
-
-      // Immunogen
-      String immunogenValue = bioSample.getImmunogen().getValue();
-      if (immunogenValue != null) {
-        TypeAttribute attribute = bioSampleObjectFactory.createTypeAttribute();
-        attribute.setAttributeName("Immunogen");
-        attribute.setValue(immunogenValue);
-        bioSampleAttributes.getAttribute().add(attribute);
-      }
-
-      // Intervention Definition
-      String interventionDefinitionValue = bioSample.getInterventionDefinition().getValue();
-      if (interventionDefinitionValue != null) {
-        TypeAttribute attribute = bioSampleObjectFactory.createTypeAttribute();
-        attribute.setAttributeName("InterventionDefinition");
-        attribute.setValue(interventionDefinitionValue);
-        bioSampleAttributes.getAttribute().add(attribute);
-      }
-
-      // Other Relevant Medical History
-      String otherRelevantMedicalHistoryValue = bioSample.getOtherRelevantMedicalHistory().getValue();
-      if (otherRelevantMedicalHistoryValue != null) {
-        TypeAttribute attribute = bioSampleObjectFactory.createTypeAttribute();
-        attribute.setAttributeName("OtherRelevantMedicalHistory");
-        attribute.setValue(otherRelevantMedicalHistoryValue);
-        bioSampleAttributes.getAttribute().add(attribute);
-      }
-
-      // Sample Type
-      String sampleTypeValue = bioSample.getSampleType().getValue();
-      if (sampleTypeValue != null) {
-        TypeAttribute attribute = bioSampleObjectFactory.createTypeAttribute();
-        attribute.setAttributeName("SampleType");
-        attribute.setValue(sampleTypeValue);
-        bioSampleAttributes.getAttribute().add(attribute);
-      }
-      // Tissue
-      if (bioSample.getTissue() != null && bioSample.getTissue().getId() != null) {
-        String tissueValue = bioSample.getTissue().getId().toString();
-        if (tissueValue != null) {
-          TypeAttribute attribute = bioSampleObjectFactory.createTypeAttribute();
-          attribute.setAttributeName("Tissue");
-          attribute.setValue(tissueValue);
-          bioSampleAttributes.getAttribute().add(attribute);
-        }
-      }
-
-      // Anatomic Site
-      String anatomicSiteValue = bioSample.getAnatomicSite().getValue();
-      if (anatomicSiteValue != null) {
-        TypeAttribute attribute = bioSampleObjectFactory.createTypeAttribute();
-        attribute.setAttributeName("AnatomicSite");
-        attribute.setValue(anatomicSiteValue);
-        bioSampleAttributes.getAttribute().add(attribute);
-      }
-      // Disease State of Sample
-      String diseaseStateOfSamplevalue = bioSample.getDiseaseStateOfSample().getValue();
-      if (diseaseStateOfSamplevalue != null) {
-        TypeAttribute attribute = bioSampleObjectFactory.createTypeAttribute();
-        attribute.setAttributeName("DiseaseStateOfSample");
-        attribute.setValue(diseaseStateOfSamplevalue);
-        bioSampleAttributes.getAttribute().add(attribute);
-      }
-
-      // Sample Collection Time
-      String sampleCollectionTimeValue = bioSample.getSampleCollectionTime().getValue();
-      if (sampleCollectionTimeValue != null) {
-        TypeAttribute attribute = bioSampleObjectFactory.createTypeAttribute();
-        attribute.setAttributeName("SampleCollectionTime");
-        attribute.setValue(sampleCollectionTimeValue);
-        bioSampleAttributes.getAttribute().add(attribute);
-      }
-
-      // Collection Time Event T01
-      String collectionTimeEventT01Value = bioSample.getCollectionTimeEventT0().getValue();
-      if (collectionTimeEventT01Value != null) {
-        TypeAttribute attribute = bioSampleObjectFactory.createTypeAttribute();
-        attribute.setAttributeName("CollectionTimeEventT01");
-        attribute.setValue(collectionTimeEventT01Value);
-        bioSampleAttributes.getAttribute().add(attribute);
-      }
-
-      // Biomaterial Provider
-      String biomaterialProviderValue = bioSample.getBiomaterialProvider().getValue();
-      if (biomaterialProviderValue != null) {
-        TypeAttribute attribute = bioSampleObjectFactory.createTypeAttribute();
-        attribute.setAttributeName("BiomaterialProvider");
-        attribute.setValue(biomaterialProviderValue);
-        bioSampleAttributes.getAttribute().add(attribute);
-      }
-
-      // Geolocation Name
-      String geolocationNameValue = bioSample.getGeolocationName().getValue();
-      if (geolocationNameValue != null) {
-        TypeAttribute attribute = bioSampleObjectFactory.createTypeAttribute();
-        attribute.setAttributeName("GeolocationName");
-        attribute.setValue(geolocationNameValue);
-        bioSampleAttributes.getAttribute().add(attribute);
-      }
-
-      // Tissue Processing
-      String tissueProcessingValue = bioSample.getTissueProcessing().getValue();
-      if (tissueProcessingValue != null) {
-        TypeAttribute attribute = bioSampleObjectFactory.createTypeAttribute();
-        attribute.setAttributeName("TissueProcessing");
-        attribute.setValue(tissueProcessingValue);
-        bioSampleAttributes.getAttribute().add(attribute);
-      }
-
-      // Cell Subset
-      String cellSubsetValue = bioSample.getCellSubsetPhenotype().getValue();
-      if (cellSubsetValue != null) {
-        TypeAttribute attribute = bioSampleObjectFactory.createTypeAttribute();
-        attribute.setAttributeName("CellSubset");
-        attribute.setValue(cellSubsetValue);
-        bioSampleAttributes.getAttribute().add(attribute);
-      }
-
-      // Cell Subset Phenotype
-      String cellSubsetPhenotypeValue = bioSample.getCellSubsetPhenotype().getValue();
-      if (cellSubsetPhenotypeValue != null) {
-        TypeAttribute attribute = bioSampleObjectFactory.createTypeAttribute();
-        attribute.setAttributeName("CellSubsetPhenotype");
-        attribute.setValue(cellSubsetPhenotypeValue);
-        bioSampleAttributes.getAttribute().add(attribute);
-      }
-
-      // Single-cell Sort
-      String singleCellSortValue = bioSample.getSingleCellSort().getValue();
-      if (singleCellSortValue != null) {
-        TypeAttribute attribute = bioSampleObjectFactory.createTypeAttribute();
-        attribute.setAttributeName("SingleCellSort");
-        attribute.setValue(singleCellSortValue);
-        bioSampleAttributes.getAttribute().add(attribute);
-      }
-
-      // Number of Cells in Experiment
-      String numberOfCellsInExperiment1Value = bioSample.getNumberOfCellsInExperiment().getValue();
-      if (numberOfCellsInExperiment1Value != null) {
-        TypeAttribute attribute = bioSampleObjectFactory.createTypeAttribute();
-        attribute.setAttributeName("NumberOfCellsInExperiment");
-        attribute.setValue(numberOfCellsInExperiment1Value);
-        bioSampleAttributes.getAttribute().add(attribute);
-      }
-
-      // Number of Cells per Sequencing Reaction1
-      String numberOfCellsPerSequencingReaction1Value = bioSample.getNumberOfCellsPerSequencingReaction().getValue();
-      if (numberOfCellsPerSequencingReaction1Value != null) {
-        TypeAttribute attribute = bioSampleObjectFactory.createTypeAttribute();
-        attribute.setAttributeName("NumberOfCellsPerSequencingReaction");
-        attribute.setValue(numberOfCellsPerSequencingReaction1Value);
-        bioSampleAttributes.getAttribute().add(attribute);
-      }
-
-      // Cell Storage
-      String cellStorage1Value = bioSample.getCellStorage().getValue();
-      if (cellStorage1Value != null) {
-        TypeAttribute attribute = bioSampleObjectFactory.createTypeAttribute();
-        attribute.setAttributeName("CellStorage");
-        attribute.setValue(cellStorage1Value);
-        bioSampleAttributes.getAttribute().add(attribute);
-      }
-
-      // Cell Quality
-      String cellQualityValue = bioSample.getCellQuality().getValue();
-      if (cellQualityValue != null) {
-        TypeAttribute attribute = bioSampleObjectFactory.createTypeAttribute();
-        attribute.setAttributeName("CellQuality");
-        attribute.setValue(cellQualityValue);
-        bioSampleAttributes.getAttribute().add(attribute);
-      }
-
-      // Cell Isolation
-      String cellIsolationValue = bioSample.getCellIsolation().getValue();
-      if (cellIsolationValue != null) {
-        TypeAttribute attribute = bioSampleObjectFactory.createTypeAttribute();
-        attribute.setAttributeName("CellIsolation");
-        attribute.setValue(cellIsolationValue);
-        bioSampleAttributes.getAttribute().add(attribute);
-      }
-
-      // Processing Protocol
-      String processingProtocolValue = bioSample.getProcessingProtocol().getValue();
-      if (processingProtocolValue != null)
-        bioSampleAttributes.getAttribute().add(createAttribute("ProcessingProtocol", processingProtocolValue));
-
-      // Custom CEDAR attribute
-      bioSampleAttributes.getAttribute().add(createAttribute("SubmissionTool", "CEDAR"));
-
-      ncbiBioSample.setAttributes(bioSampleAttributes);
+      ncbiBioSample.setAttributes(createBioSampleAttributes(bioSample));
 
       // XmlContent
       // Development Note: The original NCBI submission doesn't include the BioSample element, so it
-      // is required to append the rule in the submission.xsd file (See submission.xsd:441)
+      // is required to modify the submission.xsd file (See submission.xsd:441)
       TypeInlineData.XmlContent xmlContent = submissionObjectFactory.createTypeInlineDataXmlContent();
       xmlContent.setBioSample(ncbiBioSample);
 
@@ -559,29 +130,29 @@ public class CAIRRTemplateInstance2SRAXMLConverter
       bioSampleData.setXmlContent(xmlContent);
 
       // Identifier
-      TypeSPUID bioSampleSpuid = ncbiCommonObjectFactory.createTypeSPUID();
-      bioSampleSpuid.setSpuidNamespace("CEDAR");
-      bioSampleSpuid.setValue(createNewActionId());
-
       TypeIdentifier actionIdentifier = ncbiCommonObjectFactory.createTypeIdentifier();
+      TypeSPUID bioSampleSpuid = ncbiCommonObjectFactory.createTypeSPUID();
+      bioSampleSpuid.setSpuidNamespace(CEDAR_NAMESPACE);
+      bioSampleSpuid.setValue(createNewActionId());
       actionIdentifier.setSPUID(bioSampleSpuid);
 
-      // AddData
-      Submission.Action.AddData bioSampleAddData = submissionObjectFactory.createSubmissionActionAddData();
-      bioSampleAddData.setTargetDb(TypeTargetDb.BIO_SAMPLE);
-      bioSampleAddData.setData(bioSampleData);
-      bioSampleAddData.setIdentifier(actionIdentifier);
+      // Action/AddData
+      Submission.Action.AddData bioSampleSubmissionActionAddData = submissionObjectFactory.createSubmissionActionAddData();
+      bioSampleSubmissionActionAddData.setTargetDb(TypeTargetDb.BIO_SAMPLE);
+      bioSampleSubmissionActionAddData.setData(bioSampleData);
+      bioSampleSubmissionActionAddData.setIdentifier(actionIdentifier);
 
       // Action
       Submission.Action bioSampleAction = submissionObjectFactory.createSubmissionAction();
-      bioSampleAction.setAddData(bioSampleAddData);
-
-      submission.getAction().add(bioSampleAction);
+      bioSampleAction.setAddData(bioSampleSubmissionActionAddData);
+      ncbiSubmission.getAction().add(bioSampleAction);
     }
 
     // Retrieve the SRAs from the CAIRR instance
     int sraIndex = 0; // to track the corresponding BioSample record for this SRA entry
-    for (SequenceReadArchive sequenceReadArchive : cairrInstance.getSequenceReadArchive()) {
+    for (SequenceReadArchive sequenceReadArchive : cairrInstance.getSequenceReadArchive())
+
+    {
       // AddFiles
       Submission.Action.AddFiles sraAddFiles = submissionObjectFactory.createSubmissionActionAddFiles();
       sraAddFiles.setTargetDb(TypeTargetDb.SRA);
@@ -619,7 +190,7 @@ public class CAIRRTemplateInstance2SRAXMLConverter
         bioSampleAttributeRefId.setName("BioSample");
         TypeRefId refId = ncbiCommonObjectFactory.createTypeRefId();
         TypeSPUID spuid = ncbiCommonObjectFactory.createTypeSPUID();
-        spuid.setSpuidNamespace("CEDAR");
+        spuid.setSpuidNamespace(CEDAR_NAMESPACE);
         spuid.setValue(bioSampleID);
         refId.setSPUID(spuid);
         bioSampleAttributeRefId.setRefId(refId);
@@ -721,7 +292,6 @@ public class CAIRRTemplateInstance2SRAXMLConverter
         sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(fileAttribute);
       }
 
-      /*
       // Library instrument
 
       String LibraryInstrumentValue = sequenceReadArchive.getLibraryInstrument().getValue();
@@ -921,12 +491,11 @@ public class CAIRRTemplateInstance2SRAXMLConverter
         fileAttribute.setValue(sequencingKitValue);
         sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(fileAttribute);
       }
-      */
 
       // End of AIRR SRA Elements
 
       TypeSPUID sraSampleSpuid = ncbiCommonObjectFactory.createTypeSPUID();
-      sraSampleSpuid.setSpuidNamespace("CEDAR");
+      sraSampleSpuid.setSpuidNamespace(CEDAR_NAMESPACE);
       sraSampleSpuid.setValue(createNewSraId());
 
       TypeIdentifier sraIdentifier = ncbiCommonObjectFactory.createTypeIdentifier();
@@ -938,7 +507,7 @@ public class CAIRRTemplateInstance2SRAXMLConverter
       Submission.Action sraAction = submissionObjectFactory.createSubmissionAction();
       sraAction.setAddFiles(sraAddFiles);
 
-      submission.getAction().add(sraAction);
+      ncbiSubmission.getAction().add(sraAction);
 
       sraIndex++; // increment the index counter
     }
@@ -948,9 +517,372 @@ public class CAIRRTemplateInstance2SRAXMLConverter
     JAXBContext ctx = JAXBContext.newInstance(Submission.class);
     Marshaller marshaller = ctx.createMarshaller();
     marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
-    marshaller.marshal(submission, writer);
+    marshaller.marshal(ncbiSubmission, writer);
 
     return writer.toString();
+  }
+
+  private TypeOrganism createOrganism(String organismName)
+  {
+    TypeOrganism sampleOrganism = ncbiCommonObjectFactory.createTypeOrganism();
+    sampleOrganism.setOrganismName(organismName);
+    return sampleOrganism;
+  }
+
+  private TypeDescriptor createDescriptor(String title, String description)
+  {
+    TypeDescriptor sampleDescriptor = ncbiCommonObjectFactory.createTypeDescriptor();
+    JAXBElement descriptionElement = new JAXBElement(new QName("p"), String.class, description);
+    TypeBlock sampleDescription = ncbiCommonObjectFactory.createTypeBlock();
+    sampleDescription.getPOrUlOrOl().add(descriptionElement);
+    sampleDescriptor.setTitle(title);
+    sampleDescriptor.setDescription(sampleDescription);
+    return sampleDescriptor;
+  }
+
+  private TypeBioSampleIdentifier createBioSampleIdentifier(String bioSampleID)
+  {
+    TypeBioSampleIdentifier sampleID = bioSampleObjectFactory.createTypeBioSampleIdentifier();
+    TypeBioSampleIdentifier.SPUID spuid = bioSampleObjectFactory.createTypeBioSampleIdentifierSPUID();
+    spuid.setSpuidNamespace(CEDAR_NAMESPACE);
+    spuid.setValue(bioSampleID);
+    sampleID.getSPUID().add(spuid);
+    return sampleID;
+  }
+
+  /*
+   * Object construction for the submission <Description> section
+   */
+  private Submission.Description createSubmissionDescription(Submission submission, BioProject cairrBioProject)
+    throws DatatypeConfigurationException
+  {
+    Submission.Description submissionDescription = submissionObjectFactory.createSubmissionDescription();
+
+    TypeName contactName = ncbiCommonObjectFactory.createTypeName();
+    contactName.setFirst(cairrBioProject.getFirstGivenName().getValue());
+    contactName.setLast(cairrBioProject.getLastFamilyName().getValue());
+
+    TypeContactInfo contactInfo = ncbiCommonObjectFactory.createTypeContactInfo();
+    contactInfo.setEmail(cairrBioProject.getEMail().getValue());
+    contactInfo.setName(contactName);
+
+    TypeOrganization.Name organizationName = submissionObjectFactory.createTypeOrganizationName();
+    organizationName.setValue(cairrBioProject.getSubmittingOrganization().getValue());
+
+    TypeAccount contactSubmitter = submissionObjectFactory.createTypeAccount();
+    contactSubmitter.setUserName(cairrBioProject.getContactInformationCorrespondingAuthorEMail().getValue());
+
+    TypeOrganization contactOrganization = submissionObjectFactory.createTypeOrganization();
+    contactOrganization.setType("lab");
+    contactOrganization.setRole("owner"); // TODO
+    contactOrganization.setName(organizationName);
+    contactOrganization.getContact().add(contactInfo);
+
+    submissionDescription.setComment("AIRR (myasthenia gravis) data to the NCBI using the CAIRR");
+    submissionDescription.setSubmitter(contactSubmitter);
+    submissionDescription.getOrganization().add(contactOrganization);
+
+    Submission.Description.Hold submissionDescriptionHold = submissionObjectFactory.createSubmissionDescriptionHold();
+    submissionDescriptionHold.setReleaseDate(createXMLGregorianCalendar("2019-03-03")); // TODO No place in AIRR
+    submissionDescription.setHold(submissionDescriptionHold);
+
+    return submissionDescription;
+  }
+
+  private TypeBioSample.Attributes createBioSampleAttributes(BioSample bioSample)
+  {
+    // Attributes
+    TypeBioSample.Attributes bioSampleAttributes = bioSampleObjectFactory.createTypeBioSampleAttributes();
+
+    // Subject ID
+    String subjectIdValue = bioSample.getSubjectId().getValue();
+    if (subjectIdValue != null && !subjectIdValue.isEmpty())
+      bioSampleAttributes.getAttribute().add(createAttribute("SubjectId", subjectIdValue));
+
+    // Synthetic Library
+    if (bioSample.getSyntheticLibrary() != null) {
+      String syntheticLibraryValue = bioSample.getSyntheticLibrary().getValue();
+      if (syntheticLibraryValue != null && !syntheticLibraryValue.isEmpty())
+        bioSampleAttributes.getAttribute().add(createAttribute("SyntheticLibrary", syntheticLibraryValue));
+    }
+
+    // Organism
+    if (bioSample.getOrganism() != null && bioSample.getOrganism().getId() != null) {
+      String organismValue = bioSample.getOrganism().getId().toString();
+      if (organismValue != null && !organismValue.isEmpty())
+        bioSampleAttributes.getAttribute().add(createAttribute("Organism", organismValue));
+    }
+
+    // Sex
+    if (bioSample.getSex() != null) {
+      String sexValue = bioSample.getSex().getValue();
+      if (sexValue != null && !sexValue.isEmpty())
+        bioSampleAttributes.getAttribute().add(createAttribute("Sex", sexValue));
+    }
+
+    // Age
+    if (bioSample.getAge() != null) {
+      String ageValue = bioSample.getAge().getValue();
+      if (ageValue != null && !ageValue.isEmpty())
+        bioSampleAttributes.getAttribute().add(createAttribute("Age", ageValue));
+    }
+
+    // Age Event
+    if (bioSample.getAgeEvent() != null) {
+      String ageEventValue = bioSample.getAgeEvent().getValue();
+      if (ageEventValue != null && !ageEventValue.isEmpty())
+        bioSampleAttributes.getAttribute().add(createAttribute("AgeEvent", ageEventValue));
+    }
+
+    // Ancestry Population
+    if (bioSample.getAncestryPopulation() != null) {
+      String ancestryPopulationValue = bioSample.getAncestryPopulation().getValue();
+      if (ancestryPopulationValue != null && !ancestryPopulationValue.isEmpty())
+        bioSampleAttributes.getAttribute().add(createAttribute("AncestryPopulation", ancestryPopulationValue));
+    }
+
+    // Ethnicity
+    if (bioSample.getEthnicity() != null) {
+      String ethnicityValue = bioSample.getEthnicity().getValue();
+      if (ethnicityValue != null && !ethnicityValue.isEmpty())
+        bioSampleAttributes.getAttribute().add(createAttribute("Ethnicity", ethnicityValue));
+    }
+
+    // Race
+    if (bioSample.getRace() != null) {
+      String raceValue = bioSample.getRace().getValue();
+      if (raceValue != null && !raceValue.isEmpty())
+        bioSampleAttributes.getAttribute().add(createAttribute("Race", raceValue));
+    }
+
+    // Strain Name
+    if (bioSample.getStrainName() != null) {
+      String strainNameValue = bioSample.getStrainName().getValue();
+      if (strainNameValue != null && !strainNameValue.isEmpty())
+        bioSampleAttributes.getAttribute().add(createAttribute("StrainName", strainNameValue));
+    }
+
+    // Relation to other Subject
+    if (bioSample.getRelationToOtherSubject() != null) {
+      String relationToOtherSubjectValue = bioSample.getRelationToOtherSubject().getValue();
+      if (relationToOtherSubjectValue != null && !relationToOtherSubjectValue.isEmpty())
+        bioSampleAttributes.getAttribute().add(createAttribute("RelationToOtherSubject", relationToOtherSubjectValue));
+    }
+
+    // Relation Type
+    if (bioSample.getRelationType() != null) {
+      String relationTypeValue = bioSample.getRelationType().getValue();
+      if (relationTypeValue != null && !relationTypeValue.isEmpty())
+        bioSampleAttributes.getAttribute().add(createAttribute("RelationType", relationTypeValue));
+    }
+
+    // Projected Release Date
+    // TODO Hard code for moment - need to fix front end to generate dates in correct format
+    if (bioSample.getProjectedReleaseDate() != null) {
+      String projectedReleaseDateValue = bioSample.getProjectedReleaseDate().getValue();
+      if (projectedReleaseDateValue != null && !projectedReleaseDateValue.isEmpty())
+        bioSampleAttributes.getAttribute().add(createAttribute("ProjectedReleaseDate", "2019-03-03"));
+    }
+
+    // Isolate
+    if (bioSample.getIsolate() != null) {
+      String isolateValue = bioSample.getIsolate().getValue();
+      if (isolateValue != null && !isolateValue.isEmpty())
+        bioSampleAttributes.getAttribute().add(createAttribute("Isolate", isolateValue));
+    }
+
+    // Diagnosis
+    if (bioSample.getDiagnosis() != null) {
+      String diagnosisValue = bioSample.getDiagnosis().getValue();
+      if (diagnosisValue != null && !diagnosisValue.isEmpty())
+        bioSampleAttributes.getAttribute().add(createAttribute("Diagnosis", diagnosisValue));
+    }
+
+    // Study Group Description
+    if (bioSample.getStudyGroupDescription() != null) {
+      String studyGroupDescriptionValue = bioSample.getStudyGroupDescription().getValue();
+      if (studyGroupDescriptionValue != null && !studyGroupDescriptionValue.isEmpty())
+        bioSampleAttributes.getAttribute().add(createAttribute("StudyGroupDescription", studyGroupDescriptionValue));
+    }
+
+    // Length of Disease
+    if (bioSample.getLengthOfDisease() != null) {
+      String lengthOfDiseaseValue = bioSample.getLengthOfDisease().getValue();
+      if (lengthOfDiseaseValue != null && !lengthOfDiseaseValue.isEmpty())
+        bioSampleAttributes.getAttribute().add(createAttribute("LengthOfDisease", lengthOfDiseaseValue));
+    }
+
+    // Disease Stage
+    if (bioSample.getDiseaseStage() != null) {
+      String diseaseStageValue = bioSample.getDiseaseStage().getValue();
+      if (diseaseStageValue != null && !diseaseStageValue.isEmpty())
+        bioSampleAttributes.getAttribute().add(createAttribute("DiseaseStage", diseaseStageValue));
+    }
+
+    // Prior Therapies For Primary Disease Under Study
+    if (bioSample.getPriorTherapiesForPrimaryDiseaseUnderStudy() != null) {
+      String priorTherapiesForPrimaryDiseaseUnderStudyValue = bioSample.getPriorTherapiesForPrimaryDiseaseUnderStudy()
+        .getValue();
+      if (priorTherapiesForPrimaryDiseaseUnderStudyValue != null && !priorTherapiesForPrimaryDiseaseUnderStudyValue
+        .isEmpty())
+        bioSampleAttributes.getAttribute().add(
+          createAttribute("PriorTherapiesForPrimaryDiseaseUnderStudy", priorTherapiesForPrimaryDiseaseUnderStudyValue));
+    }
+
+    // Immunogen
+    if (bioSample.getImmunogen() != null) {
+      String immunogenValue = bioSample.getImmunogen().getValue();
+      if (immunogenValue != null && !immunogenValue.isEmpty())
+        bioSampleAttributes.getAttribute().add(createAttribute("Immunogen", immunogenValue));
+    }
+
+    // Intervention Definition
+    if (bioSample.getInterventionDefinition() != null) {
+      String interventionDefinitionValue = bioSample.getInterventionDefinition().getValue();
+      if (interventionDefinitionValue != null)
+        bioSampleAttributes.getAttribute().add(createAttribute("InterventionDefinition", interventionDefinitionValue));
+    }
+
+    // Other Relevant Medical History
+    if (bioSample.getOtherRelevantMedicalHistory() != null) {
+      String otherRelevantMedicalHistoryValue = bioSample.getOtherRelevantMedicalHistory().getValue();
+      if (otherRelevantMedicalHistoryValue != null)
+        bioSampleAttributes.getAttribute()
+          .add(createAttribute("OtherRelevantMedicalHistory", otherRelevantMedicalHistoryValue));
+    }
+
+    // Sample Type
+    if (bioSample.getSampleType() != null) {
+      String sampleTypeValue = bioSample.getSampleType().getValue();
+      if (sampleTypeValue != null && !sampleTypeValue.isEmpty())
+        bioSampleAttributes.getAttribute().add(createAttribute("SampleType", sampleTypeValue));
+    }
+
+    // Tissue
+    if (bioSample.getTissue() != null && bioSample.getTissue().getId() != null) {
+      String tissueValue = bioSample.getTissue().getId().toString();
+      if (tissueValue != null && !tissueValue.isEmpty())
+        bioSampleAttributes.getAttribute().add(createAttribute("Tissue", tissueValue));
+    }
+
+    // Anatomic Site
+    if (bioSample.getAnatomicSite() != null) {
+      String anatomicSiteValue = bioSample.getAnatomicSite().getValue();
+      if (anatomicSiteValue != null)
+        bioSampleAttributes.getAttribute().add(createAttribute("AnatomicSite", anatomicSiteValue));
+    }
+
+    // Disease State of Sample
+    if (bioSample.getDiseaseStateOfSample() != null) {
+      String diseaseStateOfSampleValue = bioSample.getDiseaseStateOfSample().getValue();
+      if (diseaseStateOfSampleValue != null && !diseaseStateOfSampleValue.isEmpty())
+        bioSampleAttributes.getAttribute().add(createAttribute("DiseaseStateOfSample", diseaseStateOfSampleValue));
+    }
+
+    // Sample Collection Time
+    if (bioSample.getSampleCollectionTime() != null) {
+      String sampleCollectionTimeValue = bioSample.getSampleCollectionTime().getValue();
+      if (sampleCollectionTimeValue != null && !sampleCollectionTimeValue.isEmpty())
+        bioSampleAttributes.getAttribute().add(createAttribute("SampleCollectionTime", sampleCollectionTimeValue));
+    }
+
+    // Collection Time Event T01
+    if (bioSample.getCollectionTimeEventT0() != null) {
+      String collectionTimeEventT01Value = bioSample.getCollectionTimeEventT0().getValue();
+      if (collectionTimeEventT01Value != null && !collectionTimeEventT01Value.isEmpty())
+        bioSampleAttributes.getAttribute().add(createAttribute("CollectionTimeEventT01", collectionTimeEventT01Value));
+    }
+
+    // Biomaterial Provider
+    if (bioSample.getBiomaterialProvider() != null) {
+      String biomaterialProviderValue = bioSample.getBiomaterialProvider().getValue();
+      if (biomaterialProviderValue != null && !biomaterialProviderValue.isEmpty())
+        bioSampleAttributes.getAttribute().add(createAttribute("BiomaterialProvider", biomaterialProviderValue));
+    }
+
+    // Geolocation Name
+    if (bioSample.getGeolocationName() != null) {
+      String geolocationNameValue = bioSample.getGeolocationName().getValue();
+      if (geolocationNameValue != null && !geolocationNameValue.isEmpty())
+        bioSampleAttributes.getAttribute().add(createAttribute("GeolocationName", geolocationNameValue));
+    }
+
+    // Tissue Processing
+    if (bioSample.getTissueProcessing() != null) {
+      String tissueProcessingValue = bioSample.getTissueProcessing().getValue();
+      if (tissueProcessingValue != null && !tissueProcessingValue.isEmpty())
+        bioSampleAttributes.getAttribute().add(createAttribute("TissueProcessing", tissueProcessingValue));
+    }
+
+    // Cell Subset
+    if (bioSample.getCellSubsetPhenotype() != null) {
+      String cellSubsetValue = bioSample.getCellSubsetPhenotype().getValue();
+      if (cellSubsetValue != null && !cellSubsetValue.isEmpty())
+        bioSampleAttributes.getAttribute().add(createAttribute("CellSubset", cellSubsetValue));
+    }
+
+    // Cell Subset Phenotype
+    if (bioSample.getCellSubsetPhenotype() != null) {
+      String cellSubsetPhenotypeValue = bioSample.getCellSubsetPhenotype().getValue();
+      if (cellSubsetPhenotypeValue != null && !cellSubsetPhenotypeValue.isEmpty())
+        bioSampleAttributes.getAttribute().add(createAttribute("CellSubsetPhenotype", cellSubsetPhenotypeValue));
+    }
+
+    // Single-cell Sort
+    if (bioSample.getSingleCellSort() != null) {
+      String singleCellSortValue = bioSample.getSingleCellSort().getValue();
+      if (singleCellSortValue != null && !singleCellSortValue.isEmpty())
+        bioSampleAttributes.getAttribute().add(createAttribute("SingleCellSort", singleCellSortValue));
+    }
+
+    // Number of Cells in Experiment
+    if (bioSample.getNumberOfCellsInExperiment() != null) {
+      String numberOfCellsInExperimentValue = bioSample.getNumberOfCellsInExperiment().getValue();
+      if (numberOfCellsInExperimentValue != null && !numberOfCellsInExperimentValue.isEmpty())
+        bioSampleAttributes.getAttribute()
+          .add(createAttribute("NumberOfCellsInExperiment", numberOfCellsInExperimentValue));
+    }
+
+    // Number of Cells per Sequencing Reaction1
+    if (bioSample.getNumberOfCellsPerSequencingReaction() != null) {
+      String numberOfCellsPerSequencingReactionValue = bioSample.getNumberOfCellsPerSequencingReaction().getValue();
+      if (numberOfCellsPerSequencingReactionValue != null && !numberOfCellsPerSequencingReactionValue.isEmpty())
+        bioSampleAttributes.getAttribute()
+          .add(createAttribute("NumberOfCellsPerSequencingReaction", numberOfCellsPerSequencingReactionValue));
+    }
+
+    // Cell Storage
+    if (bioSample.getCellStorage() != null) {
+      String cellStorageValue = bioSample.getCellStorage().getValue();
+      if (cellStorageValue != null && !cellStorageValue.isEmpty())
+        bioSampleAttributes.getAttribute().add(createAttribute("CellSubsetPhenotype", cellStorageValue));
+    }
+
+    // Cell Quality
+    if (bioSample.getCellQuality() != null) {
+      String cellQualityValue = bioSample.getCellQuality().getValue();
+      if (cellQualityValue != null && !cellQualityValue.isEmpty())
+        bioSampleAttributes.getAttribute().add(createAttribute("CellQuality", cellQualityValue));
+    }
+
+    // Cell Isolation
+    if (bioSample.getCellIsolation() != null) {
+      String cellIsolationValue = bioSample.getCellIsolation().getValue();
+      if (cellIsolationValue != null && !cellIsolationValue.isEmpty())
+        bioSampleAttributes.getAttribute().add(createAttribute("CellIsolationValue", cellIsolationValue));
+    }
+
+    // Processing Protocol
+    if (bioSample.getProcessingProtocol() != null) {
+      String processingProtocolValue = bioSample.getProcessingProtocol().getValue();
+      if (processingProtocolValue != null && !processingProtocolValue.isEmpty())
+        bioSampleAttributes.getAttribute().add(createAttribute("ProcessingProtocol", processingProtocolValue));
+    }
+
+    // Custom CEDAR attribute
+    bioSampleAttributes.getAttribute().add(createAttribute("SubmissionTool", "CEDAR"));
+
+    return bioSampleAttributes;
   }
 
   private XMLGregorianCalendar createXMLGregorianCalendar(String date) throws DatatypeConfigurationException
