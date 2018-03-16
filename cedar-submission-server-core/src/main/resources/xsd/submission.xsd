@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:com="SP.common" xmlns:biosample="biosample" version="2.0">
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:com="SP.common" xmlns:biosample="biosample" xmlns:bioproject="bioproject" version="2.0">
   <xs:import schemaLocation="SP.common.xsd" namespace="SP.common"/>
+  <xs:import schemaLocation="bioproject.xsd" namespace="bioproject"/>
   <xs:import schemaLocation="biosample.xsd" namespace="biosample"/>
 
   <!-- Main Submission XML -->
@@ -438,13 +439,17 @@
         <xs:element name="XmlContent">
           <xs:complexType>
             <xs:sequence>
+              
+              <!-- Here we modified the original XML Schema to hard code BioProject and BioSample content -->             
+              <xs:element name="BioProject" type="bioproject:typeProject"/>
               <xs:element name="BioSample" type="biosample:typeBioSample"/>
+
               <xs:any namespace="##any" processContents="skip" maxOccurs="unbounded">
                 <xs:annotation>
                   <xs:documentation>XML node - we do not care what is inside- it should be just a well-formed XML</xs:documentation>
                 </xs:annotation>
               </xs:any>
-            </xs:sequence>
+            </xs:sequence>            
           </xs:complexType>
         </xs:element>
         <xs:element name="DataContent" type="xs:string"/>
@@ -515,8 +520,8 @@
 
 
   <!--
-    Organization:
-    we have people acting on behalf of organization (like lab or may be whole center or institute)
+      Organization:
+      we have people acting on behalf of organization (like lab or may be whole center or institute)
   -->
   <xs:complexType name="typeOrganization">
     <xs:annotation>
@@ -590,7 +595,7 @@
   </xs:complexType>
 
   <!--
-    Attributes of data (files and inlined data)
+      Attributes of data (files and inlined data)
   -->
   <xs:complexType name="typeFileAttribute">
     <xs:simpleContent>
@@ -635,7 +640,7 @@
   </xs:complexType>
 
   <!--
-    Release status of the data (files and inlined data)
+      Release status of the data (files and inlined data)
   -->
   <xs:complexType name="typeReleaseStatus">
     <xs:choice>
@@ -657,7 +662,7 @@
 
 
   <!--
-    Supported target archives for submissions.
+      Supported target archives for submissions.
   -->
   <xs:simpleType name="typeTargetDb">
     <xs:annotation>

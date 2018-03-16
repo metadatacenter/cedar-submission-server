@@ -10,7 +10,7 @@ import org.metadatacenter.exception.CedarException;
 import org.metadatacenter.rest.context.CedarRequestContext;
 import org.metadatacenter.rest.context.CedarRequestContextFactory;
 import org.metadatacenter.submission.AMIA2016DemoBioSampleTemplate;
-import org.metadatacenter.submission.ncbi.AMIA2016DemoBioSampleTemplate2BioSampleConverter;
+import org.metadatacenter.submission.ncbi.amia.AMIA2016DemoBioSampleTemplate2BioSampleConverter;
 import org.metadatacenter.submission.ncbi.BioSampleValidator;
 
 import javax.ws.rs.Consumes;
