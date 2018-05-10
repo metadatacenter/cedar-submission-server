@@ -19,10 +19,11 @@ import generated.TypeFileAttributeRefId;
 import generated.TypeInlineData;
 import generated.TypeOrganization;
 import generated.TypeTargetDb;
-import org.metadatacenter.submission.BioProject;
-import org.metadatacenter.submission.BioSample;
+import org.metadatacenter.submission.BioProjectForAIRRNCBI;
+import org.metadatacenter.submission.BioSampleForAIRRNCBI;
 import org.metadatacenter.submission.CAIRRTemplate;
-import org.metadatacenter.submission.SequenceReadArchive;
+import org.metadatacenter.submission.Filename;
+import org.metadatacenter.submission.SequenceReadArchiveForAIRRNCBI;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -80,7 +81,7 @@ public class CAIRRTemplateInstance2SRAXMLConverter
   {
     Submission ncbiSubmission = submissionObjectFactory.createSubmission();
 
-    BioProject cairrBioProject = cairrInstance.getBioProject();
+    BioProjectForAIRRNCBI cairrBioProject = cairrInstance.getBioProjectForAIRRNCBI();
     String bioProjectID;
     if (cairrBioProject.getStudyID() != null) {
       bioProjectID = cairrBioProject.getStudyID().getValue();
@@ -94,14 +95,14 @@ public class CAIRRTemplateInstance2SRAXMLConverter
     ncbiSubmission.setDescription(submissionDescription);
 
     // Retrieve the biosamples from the CAIRR instance
-    for (BioSample bioSample : cairrInstance.getBioSample()) {
+    for (BioSampleForAIRRNCBI bioSample : cairrInstance.getBioSampleForAIRRNCBI()) {
       // Start <BioSample> section
       TypeBioSample ncbiBioSample = bioSampleObjectFactory.createTypeBioSample();
       ncbiBioSample.setSchemaVersion("2.0"); // Hard-coded
 
       // Sample Name (which is actually the sample ID )
-      if (bioSample.getSampleName() != null) {
-        String bioSampleID = bioSample.getSampleName().getValue();
+      if (bioSample.getSampleID() != null) {
+        String bioSampleID = bioSample.getSampleID().getValue();
         if (bioSampleID != null && !bioProjectID.isEmpty())
           ncbiBioSample.setSampleId(createBioSampleIdentifier(bioSampleID));
       }
@@ -137,7 +138,8 @@ public class CAIRRTemplateInstance2SRAXMLConverter
       actionIdentifier.setSPUID(bioSampleSpuid);
 
       // Action/AddData
-      Submission.Action.AddData bioSampleSubmissionActionAddData = submissionObjectFactory.createSubmissionActionAddData();
+      Submission.Action.AddData bioSampleSubmissionActionAddData = submissionObjectFactory
+        .createSubmissionActionAddData();
       bioSampleSubmissionActionAddData.setTargetDb(TypeTargetDb.BIO_SAMPLE);
       bioSampleSubmissionActionAddData.setData(bioSampleData);
       bioSampleSubmissionActionAddData.setIdentifier(actionIdentifier);
@@ -150,9 +152,7 @@ public class CAIRRTemplateInstance2SRAXMLConverter
 
     // Retrieve the SRAs from the CAIRR instance
     int sraIndex = 0; // to track the corresponding BioSample record for this SRA entry
-    for (SequenceReadArchive sequenceReadArchive : cairrInstance.getSequenceReadArchive())
-
-    {
+    for (SequenceReadArchiveForAIRRNCBI sequenceReadArchive : cairrInstance.getSequenceReadArchiveForAIRRNCBI()) {
       // AddFiles
       Submission.Action.AddFiles sraAddFiles = submissionObjectFactory.createSubmissionActionAddFiles();
       sraAddFiles.setTargetDb(TypeTargetDb.SRA);
@@ -160,22 +160,25 @@ public class CAIRRTemplateInstance2SRAXMLConverter
       if (sequenceReadArchive.getFileType() != null) {
         String fileType = sequenceReadArchive.getFileType().getValue();
 
-        List<String> fileAttributeNames = sequenceReadArchive.getFilename();
+        List<Filename> fileAttributeNames = sequenceReadArchive.getFilename();
         Map<String, Object> additionalProperties = sequenceReadArchive.getAdditionalProperties();
 
-        for (String fileAttributeName : fileAttributeNames) {
-          if (additionalProperties.containsKey(fileAttributeName)) {
-            //
-            Map<String, Object> fileNameObject = (Map<String, Object>)additionalProperties.get(fileAttributeName);
+        for (Filename fileAttributeName : fileAttributeNames) {
+          if (fileAttributeName.getValue() != null) {
+            if (additionalProperties.containsKey(fileAttributeName.getValue())) {
+              //
+              Map<String, Object> fileNameObject = (Map<String, Object>)additionalProperties.get(fileAttributeName);
 
-            if (fileNameObject.containsKey("@value")) {
-              String fileName = fileNameObject.get("@value").toString();
-              if (fileName != null || fileType != null) {
-                Submission.Action.AddFiles.File sraFile = submissionObjectFactory.createSubmissionActionAddFilesFile();
-                sraFile.setFilePath(fileName);
-                sraFile.setDataType(fileType);
-                sraAddFiles.getFile().add(sraFile);
+              if (fileNameObject.containsKey("@value")) {
+                String fileName = fileNameObject.get("@value").toString();
+                if (fileName != null || fileType != null) {
+                  Submission.Action.AddFiles.File sraFile = submissionObjectFactory
+                    .createSubmissionActionAddFilesFile();
+                  sraFile.setFilePath(fileName);
+                  sraFile.setDataType(fileType);
+                  sraAddFiles.getFile().add(sraFile);
 
+                }
               }
             }
           }
@@ -184,8 +187,8 @@ public class CAIRRTemplateInstance2SRAXMLConverter
 
       // Reference to BioSample ID
 
-      String bioSampleID = sequenceReadArchive.getSampleName().getValue();
-      if (bioSampleID != null) {
+      if (sequenceReadArchive.getSampleID() != null && sequenceReadArchive.getSampleID().getValue() != null) {
+        String bioSampleID = sequenceReadArchive.getSampleID().getValue();
         TypeFileAttributeRefId bioSampleAttributeRefId = submissionObjectFactory.createTypeFileAttributeRefId();
         bioSampleAttributeRefId.setName("BioSample");
         TypeRefId refId = ncbiCommonObjectFactory.createTypeRefId();
@@ -211,15 +214,26 @@ public class CAIRRTemplateInstance2SRAXMLConverter
         sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(bioProjectAttributeRefId);
       }
 
-      // library ID
+      // Library Generation Method
 
-      String libraryIDValue = sequenceReadArchive.getLibraryID().getValue();
-      if (libraryIDValue != null) {
+      String libraryGenerationMethodValue = sequenceReadArchive.getLibraryGenerationMethod().getValue();
+      if (libraryGenerationMethodValue != null) {
         TypeFileAttribute fileAttribute = submissionObjectFactory.createTypeFileAttribute();
-        fileAttribute.setName("library_id");
-        fileAttribute.setValue(libraryIDValue);
-        // TODO Remove for testing sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(fileAttribute);
+        fileAttribute.setName("library_generation_method");
+        fileAttribute.setValue(libraryGenerationMethodValue);
+        sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(fileAttribute);
       }
+      
+      // library generation protocol
+
+      String libraryNameValue = sequenceReadArchive.getLibraryGenerationProtocol().getValue();
+      if (libraryNameValue != null) {
+        TypeFileAttribute fileAttribute = submissionObjectFactory.createTypeFileAttribute();
+        fileAttribute.setName("library_name");
+        fileAttribute.setValue(libraryNameValue);
+        sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(fileAttribute);
+      }
+
 
       // library + sequencing strategy + layout + instrument model must be unique according to
       // https://www.ncbi.nlm.nih.gov/sra/docs/submitmeta/
@@ -232,85 +246,6 @@ public class CAIRRTemplateInstance2SRAXMLConverter
         sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(fileAttribute);
       }
 
-      // Library Name
-
-      String libraryNameValue = sequenceReadArchive.getLibraryName().getValue();
-      if (libraryNameValue != null) {
-        TypeFileAttribute fileAttribute = submissionObjectFactory.createTypeFileAttribute();
-        fileAttribute.setName("library_name");
-        fileAttribute.setValue(libraryNameValue);
-        sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(fileAttribute);
-      }
-
-      // Library Strategy - controlled
-
-      String LibraryStrategyValue = sequenceReadArchive.getLibraryStrategy().getValue();
-      if (LibraryStrategyValue != null) {
-        TypeFileAttribute fileAttribute = submissionObjectFactory.createTypeFileAttribute();
-        fileAttribute.setName("library_strategy");
-        fileAttribute.setValue(LibraryStrategyValue);
-        sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(fileAttribute);
-      }
-
-      // Library Source - controlled
-
-      String librarySourceValue = sequenceReadArchive.getLibrarySource().getValue();
-      if (librarySourceValue != null) {
-        TypeFileAttribute fileAttribute = submissionObjectFactory.createTypeFileAttribute();
-        fileAttribute.setName("library_source");
-        fileAttribute.setValue(librarySourceValue);
-        sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(fileAttribute);
-      }
-
-      // Library Selection - controlled
-
-      String librarySelectionValue = sequenceReadArchive.getLibrarySelection().getValue();
-      if (librarySelectionValue != null) {
-        TypeFileAttribute fileAttribute = submissionObjectFactory.createTypeFileAttribute();
-        fileAttribute.setName("library_selection");
-        fileAttribute.setValue(librarySelectionValue);
-        sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(fileAttribute);
-      }
-
-      // Library Layout - controlled
-
-      String libraryLayoutValue = sequenceReadArchive.getLibraryLayout().getValue();
-      if (libraryLayoutValue != null) {
-        TypeFileAttribute fileAttribute = submissionObjectFactory.createTypeFileAttribute();
-        fileAttribute.setName("library_layout");
-        fileAttribute.setValue(libraryLayoutValue);
-        sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(fileAttribute);
-      }
-
-      // Library Construction Protocol
-
-      String libraryConstructionProtocolValue = sequenceReadArchive.getLibraryConstructionProtocol().getValue();
-      if (libraryConstructionProtocolValue != null) {
-        TypeFileAttribute fileAttribute = submissionObjectFactory.createTypeFileAttribute();
-        fileAttribute.setName("library_construction_protocol");
-        fileAttribute.setValue(libraryConstructionProtocolValue);
-        sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(fileAttribute);
-      }
-
-      // Library instrument
-
-      String LibraryInstrumentValue = sequenceReadArchive.getLibraryInstrument().getValue();
-      if (LibraryInstrumentValue != null) {
-        TypeFileAttribute fileAttribute = submissionObjectFactory.createTypeFileAttribute();
-        fileAttribute.setName("library_instrument");
-        fileAttribute.setValue(LibraryInstrumentValue);
-        sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(fileAttribute);
-      }
-
-      // Design Description
-
-      String designDescriptionValue = sequenceReadArchive.getDesignDescription().getValue();
-      if (designDescriptionValue != null) {
-        TypeFileAttribute fileAttribute = submissionObjectFactory.createTypeFileAttribute();
-        fileAttribute.setName("design_description");
-        fileAttribute.setValue(designDescriptionValue);
-        sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(fileAttribute);
-      }
 
       // Target Substrate
 
@@ -329,16 +264,6 @@ public class CAIRRTemplateInstance2SRAXMLConverter
         TypeFileAttribute fileAttribute = submissionObjectFactory.createTypeFileAttribute();
         fileAttribute.setName("target_substrate_quality");
         fileAttribute.setValue(targetSubstrateQualityValue);
-        sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(fileAttribute);
-      }
-
-      // Library Generation Method
-
-      String libraryGenerationMethodValue = sequenceReadArchive.getLibraryGenerationMethod().getValue();
-      if (libraryGenerationMethodValue != null) {
-        TypeFileAttribute fileAttribute = submissionObjectFactory.createTypeFileAttribute();
-        fileAttribute.setName("library_generation_method");
-        fileAttribute.setValue(libraryGenerationMethodValue);
         sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(fileAttribute);
       }
 
@@ -384,7 +309,7 @@ public class CAIRRTemplateInstance2SRAXMLConverter
 
       // Complete Sequence
 
-      String completeSequenceValue = sequenceReadArchive.getCompleteSequence().getValue();
+      String completeSequenceValue = sequenceReadArchive.getCompleteSequences().getValue();
       if (completeSequenceValue != null) {
         TypeFileAttribute fileAttribute = submissionObjectFactory.createTypeFileAttribute();
         fileAttribute.setName("complete_sequence");
@@ -424,7 +349,7 @@ public class CAIRRTemplateInstance2SRAXMLConverter
 
       // Protocol ID
 
-      String protocolIDValue = sequenceReadArchive.getProtocolID().getValue();
+      String protocolIDValue = sequenceReadArchive.getProtocolIDs().getValue();
       if (protocolIDValue != null) {
         TypeFileAttribute fileAttribute = submissionObjectFactory.createTypeFileAttribute();
         fileAttribute.setName("protocol_id");
@@ -553,24 +478,19 @@ public class CAIRRTemplateInstance2SRAXMLConverter
   /*
    * Object construction for the submission <Description> section
    */
-  private Submission.Description createSubmissionDescription(Submission submission, BioProject cairrBioProject)
-    throws DatatypeConfigurationException
+  private Submission.Description createSubmissionDescription(Submission submission,
+    BioProjectForAIRRNCBI cairrBioProject) throws DatatypeConfigurationException
   {
     Submission.Description submissionDescription = submissionObjectFactory.createSubmissionDescription();
 
-    TypeName contactName = ncbiCommonObjectFactory.createTypeName();
-    contactName.setFirst(cairrBioProject.getFirstGivenName().getValue());
-    contactName.setLast(cairrBioProject.getLastFamilyName().getValue());
-
     TypeContactInfo contactInfo = ncbiCommonObjectFactory.createTypeContactInfo();
-    contactInfo.setEmail(cairrBioProject.getEMail().getValue());
-    contactInfo.setName(contactName);
+    contactInfo.setEmail(cairrBioProject.getContactInformationDataCollection().getValue());
 
     TypeOrganization.Name organizationName = submissionObjectFactory.createTypeOrganizationName();
-    organizationName.setValue(cairrBioProject.getSubmittingOrganization().getValue());
+    organizationName.setValue(cairrBioProject.getLabName().getValue());
 
     TypeAccount contactSubmitter = submissionObjectFactory.createTypeAccount();
-    contactSubmitter.setUserName(cairrBioProject.getContactInformationCorrespondingAuthorEMail().getValue());
+    contactSubmitter.setUserName(cairrBioProject.getContactInformationDataCollection().getValue());
 
     TypeOrganization contactOrganization = submissionObjectFactory.createTypeOrganization();
     contactOrganization.setType("lab");
@@ -589,13 +509,13 @@ public class CAIRRTemplateInstance2SRAXMLConverter
     return submissionDescription;
   }
 
-  private TypeBioSample.Attributes createBioSampleAttributes(BioSample bioSample)
+  private TypeBioSample.Attributes createBioSampleAttributes(BioSampleForAIRRNCBI bioSample)
   {
     // Attributes
     TypeBioSample.Attributes bioSampleAttributes = bioSampleObjectFactory.createTypeBioSampleAttributes();
 
     // Subject ID
-    String subjectIdValue = bioSample.getSubjectId().getValue();
+    String subjectIdValue = bioSample.getSubjectID().getValue();
     if (subjectIdValue != null && !subjectIdValue.isEmpty())
       bioSampleAttributes.getAttribute().add(createAttribute("SubjectId", subjectIdValue));
 
@@ -614,8 +534,8 @@ public class CAIRRTemplateInstance2SRAXMLConverter
     }
 
     // Sex
-    if (bioSample.getSex() != null) {
-      String sexValue = bioSample.getSex().getValue();
+    if (bioSample.getSex() != null && bioSample.getSex().getId() != null) {
+      String sexValue = bioSample.getSex().getId().toString();
       if (sexValue != null && !sexValue.isEmpty())
         bioSampleAttributes.getAttribute().add(createAttribute("Sex", sexValue));
     }
@@ -663,8 +583,8 @@ public class CAIRRTemplateInstance2SRAXMLConverter
     }
 
     // Relation to other Subject
-    if (bioSample.getRelationToOtherSubject() != null) {
-      String relationToOtherSubjectValue = bioSample.getRelationToOtherSubject().getValue();
+    if (bioSample.getRelatedSubjects() != null) {
+      String relationToOtherSubjectValue = bioSample.getRelatedSubjects().getValue();
       if (relationToOtherSubjectValue != null && !relationToOtherSubjectValue.isEmpty())
         bioSampleAttributes.getAttribute().add(createAttribute("RelationToOtherSubject", relationToOtherSubjectValue));
     }
@@ -685,15 +605,15 @@ public class CAIRRTemplateInstance2SRAXMLConverter
     }
 
     // Isolate
-    if (bioSample.getIsolate() != null) {
-      String isolateValue = bioSample.getIsolate().getValue();
+    if (bioSample.getCellIsolation() != null) {
+      String isolateValue = bioSample.getCellIsolation().getValue();
       if (isolateValue != null && !isolateValue.isEmpty())
         bioSampleAttributes.getAttribute().add(createAttribute("Isolate", isolateValue));
     }
 
     // Diagnosis
     if (bioSample.getDiagnosis() != null) {
-      String diagnosisValue = bioSample.getDiagnosis().getValue();
+      String diagnosisValue = bioSample.getDiagnosis().toString();
       if (diagnosisValue != null && !diagnosisValue.isEmpty())
         bioSampleAttributes.getAttribute().add(createAttribute("Diagnosis", diagnosisValue));
     }
@@ -787,8 +707,8 @@ public class CAIRRTemplateInstance2SRAXMLConverter
     }
 
     // Collection Time Event T01
-    if (bioSample.getCollectionTimeEventT0() != null) {
-      String collectionTimeEventT01Value = bioSample.getCollectionTimeEventT0().getValue();
+    if (bioSample.getCollectionTimeEvent() != null) {
+      String collectionTimeEventT01Value = bioSample.getCollectionTimeEvent().getValue();
       if (collectionTimeEventT01Value != null && !collectionTimeEventT01Value.isEmpty())
         bioSampleAttributes.getAttribute().add(createAttribute("CollectionTimeEventT01", collectionTimeEventT01Value));
     }
@@ -798,13 +718,6 @@ public class CAIRRTemplateInstance2SRAXMLConverter
       String biomaterialProviderValue = bioSample.getBiomaterialProvider().getValue();
       if (biomaterialProviderValue != null && !biomaterialProviderValue.isEmpty())
         bioSampleAttributes.getAttribute().add(createAttribute("BiomaterialProvider", biomaterialProviderValue));
-    }
-
-    // Geolocation Name
-    if (bioSample.getGeolocationName() != null) {
-      String geolocationNameValue = bioSample.getGeolocationName().getValue();
-      if (geolocationNameValue != null && !geolocationNameValue.isEmpty())
-        bioSampleAttributes.getAttribute().add(createAttribute("GeolocationName", geolocationNameValue));
     }
 
     // Tissue Processing
@@ -873,10 +786,10 @@ public class CAIRRTemplateInstance2SRAXMLConverter
     }
 
     // Processing Protocol
-    if (bioSample.getProcessingProtocol() != null) {
-      String processingProtocolValue = bioSample.getProcessingProtocol().getValue();
+    if (bioSample.getCellProcessingProtocol() != null) {
+      String processingProtocolValue = bioSample.getCellProcessingProtocol().getValue();
       if (processingProtocolValue != null && !processingProtocolValue.isEmpty())
-        bioSampleAttributes.getAttribute().add(createAttribute("ProcessingProtocol", processingProtocolValue));
+        bioSampleAttributes.getAttribute().add(createAttribute("CellProcessingProtocol", processingProtocolValue));
     }
 
     // Custom CEDAR attribute
