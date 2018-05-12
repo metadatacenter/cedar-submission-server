@@ -3,6 +3,7 @@ package org.metadatacenter.submission.ncbi.upload;
 import com.google.common.base.Stopwatch;
 import com.google.common.io.Files;
 import org.metadatacenter.config.FTPConfig;
+import org.metadatacenter.submission.ncbi.NcbiConstants;
 import org.metadatacenter.submission.upload.ftp.FileUploader;
 import org.metadatacenter.submission.upload.ftp.FtpUploader;
 import org.metadatacenter.submission.upload.ftp.UploaderCreationException;
@@ -35,14 +36,16 @@ public class NcbiFtpUploadService {
       UploaderCreationException {
     FileUploader uploader = null;
 
-    logger.info("Submission upload, submissionDir = " + submissionDir + ", conf.submissionDir " + ftpConfig.getSubmissionDirectory());
+    //logger.info("Submission upload, submissionDir = " + submissionDir + ", conf.submissionDir " + ftpConfig.getSubmissionDirectory());
+    // TODO: read from the .yml file again
+    logger.info("Submission upload, submissionDir = " + submissionDir + ", conf.submissionDir " + NcbiConstants.FTP_SUBMISSION_DIR);
 
     try {
       uploader = FtpUploader.createNewUploader(
           ftpConfig.getHost(),
           ftpConfig.getUser(),
           ftpConfig.getPassword(),
-          Optional.of(ftpConfig.getSubmissionDirectory()));
+          Optional.of(NcbiConstants.FTP_SUBMISSION_DIR));  // TODO: read from the .yml file again (ftpConfig.getSubmissionDirectory())
       uploadResourceFiles(uploader, submissionDir, listOfFiles);
       if (uploadSubmitReadyFile) {
         uploadSubmitReadyFile(uploader, submissionDir);

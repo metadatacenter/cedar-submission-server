@@ -14,6 +14,9 @@ public class NcbiConstants {
   public static String NCBI_XSLT_PATH = "xslt/ncbi_report.xsl";
   public static String NCBI_TEST_SUBMISSION_PATH = "submit/Test/2017-07-24T20-48-57.829Z_test"; // used for testing
 
+  // TODO: this is temporary. Read the submission directory from the .yml file in the cedar-core project
+  public static String FTP_SUBMISSION_DIR = "submit/Test";
+
   // PRIVATE //
 
   /**
