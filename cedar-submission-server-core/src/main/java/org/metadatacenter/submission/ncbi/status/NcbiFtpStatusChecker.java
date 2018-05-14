@@ -37,10 +37,8 @@ public class NcbiFtpStatusChecker {
     SubmissionStatus submissionStatus = null;
     try {
 
-      //String submissionPath = ftpConfig.getSubmissionDirectory() + "/" + submissionFolder;
-      //TODO: read from .yml file again
-      String submissionPath = NcbiConstants.FTP_SUBMISSION_DIR + "/" + submissionFolder;
-      
+      String submissionPath = ftpConfig.getSubmissionDirectory() + "/" + submissionFolder;
+
       logger.info("Checking NCBI submission status (submissionPath: " + submissionPath + ")");
 
       // Open the FTP connection
