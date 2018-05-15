@@ -217,7 +217,7 @@ public class CAIRRTemplateInstance2SRAXMLConverter {
       String libraryGenerationMethodValue = sequenceReadArchive.getLibraryGenerationMethod().getValue();
       if (libraryGenerationMethodValue != null) {
         TypeFileAttribute fileAttribute = submissionObjectFactory.createTypeFileAttribute();
-        fileAttribute.setName("library_generation_method");
+        fileAttribute.setName("library_strategy");
         fileAttribute.setValue(libraryGenerationMethodValue);
         sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(fileAttribute);
       }
@@ -270,7 +270,7 @@ public class CAIRRTemplateInstance2SRAXMLConverter {
       String libraryGenerationProtocolValue = sequenceReadArchive.getLibraryGenerationProtocol().getValue();
       if (libraryGenerationProtocolValue != null) {
         TypeFileAttribute fileAttribute = submissionObjectFactory.createTypeFileAttribute();
-        fileAttribute.setName("library_generation_protocol");
+        fileAttribute.setName("library_construction_protocol");
         fileAttribute.setValue(libraryGenerationProtocolValue);
         sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(fileAttribute);
       }
