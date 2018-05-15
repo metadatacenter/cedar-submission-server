@@ -65,6 +65,9 @@ public class CAIRRTemplateInstance2SRAXMLConverter {
    * <p>
    * See https://github.com/airr-community/airr-standards/blob/master/NCBI_implementation/mapping_MiAIRR_BioProject.tsv
    * for CAIRR BioProject element to NCBI BioProject element mapping.
+   *
+   * See https://github.com/airr-community/airr-standards/blob/master/NCBI_implementation/mapping_MiAIRR_SRA.tsv
+   * for mapping to NCBI SRA.
    * <p>
    * An example BioProject submission can be found here:
    * https://www.ncbi.nlm.nih.gov/viewvc/v1/trunk/submit/public-docs/bioproject/samples/bp.submission.xml?view=markup
@@ -212,39 +215,6 @@ public class CAIRRTemplateInstance2SRAXMLConverter {
         sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(bioProjectAttributeRefId);
       }
 
-      // Library Generation Method
-
-      String libraryGenerationMethodValue = sequenceReadArchive.getLibraryGenerationMethod().getValue();
-      if (libraryGenerationMethodValue != null) {
-        TypeFileAttribute fileAttribute = submissionObjectFactory.createTypeFileAttribute();
-        fileAttribute.setName("library_strategy");
-        fileAttribute.setValue(libraryGenerationMethodValue);
-        sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(fileAttribute);
-      }
-
-      // library generation protocol
-
-      String libraryNameValue = sequenceReadArchive.getLibraryGenerationProtocol().getValue();
-      if (libraryNameValue != null) {
-        TypeFileAttribute fileAttribute = submissionObjectFactory.createTypeFileAttribute();
-        fileAttribute.setName("library_name");
-        fileAttribute.setValue(libraryNameValue);
-        sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(fileAttribute);
-      }
-
-
-      // library + sequencing strategy + layout + instrument model must be unique according to
-      // https://www.ncbi.nlm.nih.gov/sra/docs/submitmeta/
-
-      String instrumentModelValue = sequenceReadArchive.getSequencingPlatform().getValue();
-      if (instrumentModelValue != null) {
-        TypeFileAttribute fileAttribute = submissionObjectFactory.createTypeFileAttribute();
-        fileAttribute.setName("instrument_model");
-        fileAttribute.setValue(instrumentModelValue);
-        sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(fileAttribute);
-      }
-
-
       // Target Substrate
 
       String targetSubstrateValue = sequenceReadArchive.getTargetSubstrate().getValue();
@@ -265,13 +235,53 @@ public class CAIRRTemplateInstance2SRAXMLConverter {
         sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(fileAttribute);
       }
 
+      // Nucleic Acid Processing ID
+
+      String libraryIdValue = sequenceReadArchive.getNucleicAcidProcessingID().getValue();
+      if (libraryIdValue != null) {
+        TypeFileAttribute fileAttribute = submissionObjectFactory.createTypeFileAttribute();
+        fileAttribute.setName("library_ID");
+        fileAttribute.setValue(libraryIdValue);
+        sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(fileAttribute);
+      }
+
+      // Template Amount
+
+      String TemplateAmountValue = sequenceReadArchive.getTemplateAmount().getValue();
+      if (TemplateAmountValue != null) {
+        TypeFileAttribute fileAttribute = submissionObjectFactory.createTypeFileAttribute();
+        fileAttribute.setName("template_amount");
+        fileAttribute.setValue(TemplateAmountValue);
+        sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(fileAttribute);
+      }
+
+      // Library Generation Method
+
+      String libraryGenerationMethodValue = sequenceReadArchive.getLibraryGenerationMethod().getValue();
+      if (libraryGenerationMethodValue != null) {
+        TypeFileAttribute fileAttribute = submissionObjectFactory.createTypeFileAttribute();
+        fileAttribute.setName("library_generation_method");
+        fileAttribute.setValue(libraryGenerationMethodValue);
+        sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(fileAttribute);
+      }
+
       // Library Generation Protocol
 
-      String libraryGenerationProtocolValue = sequenceReadArchive.getLibraryGenerationProtocol().getValue();
-      if (libraryGenerationProtocolValue != null) {
+      String libraryNameValue = sequenceReadArchive.getLibraryGenerationProtocol().getValue();
+      if (libraryNameValue != null) {
         TypeFileAttribute fileAttribute = submissionObjectFactory.createTypeFileAttribute();
-        fileAttribute.setName("library_construction_protocol");
-        fileAttribute.setValue(libraryGenerationProtocolValue);
+        fileAttribute.setName("design_description");
+        fileAttribute.setValue(libraryNameValue);
+        sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(fileAttribute);
+      }
+
+      // Protocol ID
+
+      String protocolIDValue = sequenceReadArchive.getProtocolIDs().getValue();
+      if (protocolIDValue != null) {
+        TypeFileAttribute fileAttribute = submissionObjectFactory.createTypeFileAttribute();
+        fileAttribute.setName("protocol_ids");
+        fileAttribute.setValue(protocolIDValue);
         sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(fileAttribute);
       }
 
@@ -280,7 +290,7 @@ public class CAIRRTemplateInstance2SRAXMLConverter {
       String TargetLocusForPCRValue = sequenceReadArchive.getTargetLocusForPCR().getValue();
       if (TargetLocusForPCRValue != null) {
         TypeFileAttribute fileAttribute = submissionObjectFactory.createTypeFileAttribute();
-        fileAttribute.setName("target_locus_for_pcr");
+        fileAttribute.setName("pcr_target_locus");
         fileAttribute.setValue(TargetLocusForPCRValue);
         sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(fileAttribute);
       }
@@ -310,7 +320,7 @@ public class CAIRRTemplateInstance2SRAXMLConverter {
       String completeSequenceValue = sequenceReadArchive.getCompleteSequences().getValue();
       if (completeSequenceValue != null) {
         TypeFileAttribute fileAttribute = submissionObjectFactory.createTypeFileAttribute();
-        fileAttribute.setName("complete_sequence");
+        fileAttribute.setName("complete_sequences");
         fileAttribute.setValue(completeSequenceValue);
         sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(fileAttribute);
       }
@@ -320,18 +330,8 @@ public class CAIRRTemplateInstance2SRAXMLConverter {
       String physicalLinkageOfDifferentLociValue = sequenceReadArchive.getPhysicalLinkageOfDifferentLoci().getValue();
       if (physicalLinkageOfDifferentLociValue != null) {
         TypeFileAttribute fileAttribute = submissionObjectFactory.createTypeFileAttribute();
-        fileAttribute.setName("physical_linkage_of_different_loci");
+        fileAttribute.setName("physical_linkage");
         fileAttribute.setValue(physicalLinkageOfDifferentLociValue);
-        sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(fileAttribute);
-      }
-
-      // Template Amount
-
-      String TemplateAmountValue = sequenceReadArchive.getTemplateAmount().getValue();
-      if (TemplateAmountValue != null) {
-        TypeFileAttribute fileAttribute = submissionObjectFactory.createTypeFileAttribute();
-        fileAttribute.setName("template_amount");
-        fileAttribute.setValue(TemplateAmountValue);
         sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(fileAttribute);
       }
 
@@ -345,22 +345,15 @@ public class CAIRRTemplateInstance2SRAXMLConverter {
         sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(fileAttribute);
       }
 
-      // Protocol ID
-
-      String protocolIDValue = sequenceReadArchive.getProtocolIDs().getValue();
-      if (protocolIDValue != null) {
-        TypeFileAttribute fileAttribute = submissionObjectFactory.createTypeFileAttribute();
-        fileAttribute.setName("protocol_id");
-        fileAttribute.setValue(protocolIDValue);
-        sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(fileAttribute);
-      }
+      // library + sequencing strategy + layout + instrument model must be unique according to
+      // https://www.ncbi.nlm.nih.gov/sra/docs/submitmeta/
 
       // Sequencing Platform
 
       String sequencingPlatformValue = sequenceReadArchive.getSequencingPlatform().getValue();
       if (sequencingPlatformValue != null) {
         TypeFileAttribute fileAttribute = submissionObjectFactory.createTypeFileAttribute();
-        fileAttribute.setName("sequencing_platform");
+        fileAttribute.setName("instrument_model");
         fileAttribute.setValue(sequencingPlatformValue);
         sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(fileAttribute);
       }
@@ -400,13 +393,14 @@ public class CAIRRTemplateInstance2SRAXMLConverter {
       String dateOfSequencingRunValue = sequenceReadArchive.getDateOfSequencingRun().getValue();
       if (dateOfSequencingRunValue != null) {
         TypeFileAttribute fileAttribute = submissionObjectFactory.createTypeFileAttribute();
-        fileAttribute.setName("date_of_sequencing_run");
+        fileAttribute.setName("sequencing_run_date");
         fileAttribute.setValue(dateOfSequencingRunValue);
         // TODO Possible date format issue
         //sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(fileAttribute);
       }
 
       // Sequencing Kit
+
       String sequencingKitValue = sequenceReadArchive.getSequencingKit().getValue();
       if (sequencingKitValue != null) {
         TypeFileAttribute fileAttribute = submissionObjectFactory.createTypeFileAttribute();
@@ -414,6 +408,34 @@ public class CAIRRTemplateInstance2SRAXMLConverter {
         fileAttribute.setValue(sequencingKitValue);
         sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(fileAttribute);
       }
+
+      // Library Strategy (default)
+
+      TypeFileAttribute libraryStrategy = submissionObjectFactory.createTypeFileAttribute();
+      libraryStrategy.setName("library_strategy");
+      libraryStrategy.setValue("WGS");
+      sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(libraryStrategy);
+
+      // Library Strategy (default)
+
+      TypeFileAttribute librarySource = submissionObjectFactory.createTypeFileAttribute();
+      librarySource.setName("library_source");
+      librarySource.setValue("GENOMIC");
+      sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(librarySource);
+
+      // Library Strategy (default)
+
+      TypeFileAttribute librarySelection = submissionObjectFactory.createTypeFileAttribute();
+      librarySelection.setName("library_selection");
+      librarySelection.setValue("RANDOM");
+      sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(librarySelection);
+
+      // Library Strategy (default)
+
+      TypeFileAttribute libraryLayout = submissionObjectFactory.createTypeFileAttribute();
+      libraryLayout.setName("library_layout");
+      libraryLayout.setValue("PAIRED");
+      sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(libraryLayout);
 
       // End of AIRR SRA Elements
 
