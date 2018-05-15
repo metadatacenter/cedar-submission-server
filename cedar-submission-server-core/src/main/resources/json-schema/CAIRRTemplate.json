@@ -1241,6 +1241,10 @@
             "Target Substrate Quality",
             "Template Amount",
             "Nucleic Acid Processing ID",
+            "Library Strategy",
+            "Library Source",
+            "Library Selection",
+            "Library Layout",
             "Library Generation Method",
             "Library Generation Protocol",
             "Protocol IDs",
@@ -1266,6 +1270,10 @@
             "Date of Sequencing Run": "Date of Sequencing Run",
             "Sequencing Platform": "Sequencing Platform",
             "Sequencing Facility": "Sequencing Facility",
+            "Library Strategy": "Library Strategy",
+            "Library Source": "Library Source",
+            "Library Selection": "Library Selection",
+            "Library Layout": "Library Layout",
             "Library Generation Protocol": "Library Generation Protocol",
             "Target Substrate Quality": "Target Substrate Quality",
             "Forward PCR Primer Target Location": "Forward PCR Primer Target Location",
@@ -1289,17 +1297,17 @@
             "properties": {
               "Read Lengths": {
                 "enum": [
-                  "https://schema.staging.metadatacenter.net/properties/readLength"
+                  "https://schema.staging.metadatacenter.net/properties/bc3c1959-c3e0-4bbb-a194-d9a19c53bec6"
                 ]
               },
               "Template Amount": {
                 "enum": [
-                  "https://schema.staging.metadatacenter.net/properties/nGTemplate"
+                  "https://schema.staging.metadatacenter.net/properties/fbcb9e03-c15e-4f61-bbf4-097e63ab6091"
                 ]
               },
               "Target Locus for PCR": {
                 "enum": [
-                  "https://schema.staging.metadatacenter.net/properties/targetLocusPCR"
+                  "https://schema.staging.metadatacenter.net/properties/5002b23a-699f-4cac-acaa-263924b8d436"
                 ]
               },
               "Date of Sequencing Run": {
@@ -1314,47 +1322,67 @@
               },
               "Sequencing Platform": {
                 "enum": [
-                  "https://schema.staging.metadatacenter.net/properties/sequencingPlatform"
+                  "https://schema.staging.metadatacenter.net/properties/b1085cf1-3179-411e-9436-a4deb83a76bc"
                 ]
               },
               "Sequencing Facility": {
                 "enum": [
-                  "https://schema.staging.metadatacenter.net/properties/sequencingFacility"
+                  "https://schema.staging.metadatacenter.net/properties/29460275-ce21-467f-902f-5de5a5b5b367"
+                ]
+              },
+              "Library Strategy": {
+                "enum": [
+                  "https://schema.staging.metadatacenter.net/properties/dcc704e5-9c9d-4bc8-a91e-5310ed0eb396"
+                ]
+              },
+              "Library Source": {
+                "enum": [
+                  "https://schema.staging.metadatacenter.net/properties/67acf9f4-7e37-4bf5-bc73-567a9db1dd8a"
+                ]
+              },
+              "Library Selection": {
+                "enum": [
+                  "https://schema.staging.metadatacenter.net/properties/b7397d5d-d00d-459a-8972-5a9b49bcb4d0"
+                ]
+              },
+              "Library Layout": {
+                "enum": [
+                  "https://schema.staging.metadatacenter.net/properties/0a6bf83c-6fd3-4d73-8530-cf247cc37c30"
                 ]
               },
               "Library Generation Protocol": {
                 "enum": [
-                  "https://schema.staging.metadatacenter.net/properties/libraryGenerationProtocol"
+                  "https://schema.staging.metadatacenter.net/properties/d4b8f998-e8ef-4ab2-9229-931d6f4b3fc1"
                 ]
               },
               "Target Substrate Quality": {
                 "enum": [
-                  "https://schema.staging.metadatacenter.net/properties/targetSubstrateQuality"
+                  "https://schema.staging.metadatacenter.net/properties/587cff6f-fcb7-420d-ba16-b94c4495ce68"
                 ]
               },
               "Forward PCR Primer Target Location": {
                 "enum": [
-                  "https://schema.staging.metadatacenter.net/properties/forwardPCRPrimerTargetLocation"
+                  "https://schema.staging.metadatacenter.net/properties/88f89225-f46d-458c-95e6-a289326b43bf"
                 ]
               },
               "Reverse PCR Primer Target Location": {
                 "enum": [
-                  "https://schema.staging.metadatacenter.net/properties/reversePCRPrimerTargetLocation"
+                  "https://schema.staging.metadatacenter.net/properties/a3e0efaf-be23-4457-8383-48b9d3cffac1"
                 ]
               },
               "Batch Number": {
                 "enum": [
-                  "https://schema.staging.metadatacenter.net/properties/batchNumber"
+                  "https://schema.staging.metadatacenter.net/properties/35a3786e-02c9-4483-8914-e86231801e5b"
                 ]
               },
               "Total Reads Passing QC Filter": {
                 "enum": [
-                  "https://schema.staging.metadatacenter.net/properties/totalReadsPassingQCFilter"
+                  "https://schema.staging.metadatacenter.net/properties/34122d4c-8885-4927-82d4-5ed82cc68f6c"
                 ]
               },
               "Sequencing Kit": {
                 "enum": [
-                  "https://schema.staging.metadatacenter.net/properties/sequencingKit"
+                  "https://schema.staging.metadatacenter.net/properties/974b2927-8fb7-497e-8318-248a2c9b9d32"
                 ]
               },
               "Target Substrate": {
@@ -1369,7 +1397,7 @@
               },
               "Protocol IDs": {
                 "enum": [
-                  "https://schema.staging.metadatacenter.net/properties/protocolID"
+                  "https://schema.staging.metadatacenter.net/properties/93409804-5757-4f86-9a7e-c9b2bce050d7"
                 ]
               },
               "Complete Sequences": {
@@ -1395,6 +1423,10 @@
             },
             "required": [
               "Target Substrate Quality",
+              "Library Strategy",
+              "Library Source",
+              "Library Selection",
+              "Library Layout",
               "Library Generation Protocol",
               "Target Locus for PCR",
               "Forward PCR Primer Target Location",
@@ -1408,6 +1440,7 @@
               "Sequencing Kit",
               "Sequencing Platform",
               "Date of Sequencing Run",
+              "filename",
               "File Type",
               "Target Substrate",
               "Library Generation Method",
@@ -2683,6 +2716,579 @@
             "@id": "https://repo.staging.metadatacenter.org/template-fields/1156be21-b30b-461b-a74c-2a3e0642e7b8",
             "$schema": "http://json-schema.org/draft-04/schema#"
           },
+          "Library Strategy": {
+            "@type": "https://schema.metadatacenter.org/core/TemplateField",
+            "@context": {
+              "xsd": "http://www.w3.org/2001/XMLSchema#",
+              "pav": "http://purl.org/pav/",
+              "bibo": "http://purl.org/ontology/bibo/",
+              "oslc": "http://open-services.net/ns/core#",
+              "schema": "http://schema.org/",
+              "schema:name": {
+                "@type": "xsd:string"
+              },
+              "schema:description": {
+                "@type": "xsd:string"
+              },
+              "pav:createdOn": {
+                "@type": "xsd:dateTime"
+              },
+              "pav:createdBy": {
+                "@type": "@id"
+              },
+              "pav:lastUpdatedOn": {
+                "@type": "xsd:dateTime"
+              },
+              "oslc:modifiedBy": {
+                "@type": "@id"
+              }
+            },
+            "type": "object",
+            "title": "Library Strategy field schema",
+            "description": "Library Strategy field schema generated by the CEDAR Template Editor 1.8.0",
+            "_ui": {
+              "inputType": "list"
+            },
+            "_valueConstraints": {
+              "requiredValue": true,
+              "multipleChoice": false,
+              "literals": [
+                {
+                  "label": "WGA"
+                },
+                {
+                  "label": "WGS"
+                },
+                {
+                  "label": "WXS"
+                },
+                {
+                  "label": "RNA-Seq"
+                },
+                {
+                  "label": "miRNA-Seq"
+                },
+                {
+                  "label": "WCS"
+                },
+                {
+                  "label": "CLONE"
+                },
+                {
+                  "label": "POOLCLONE"
+                },
+                {
+                  "label": "AMPLICON"
+                },
+                {
+                  "label": "CLONEEND"
+                },
+                {
+                  "label": "FINISHING"
+                },
+                {
+                  "label": "ChIP-Seq"
+                },
+                {
+                  "label": "MNase-Seq"
+                },
+                {
+                  "label": "DNase-Hypersensitivity"
+                },
+                {
+                  "label": "Bisulfite-Seq"
+                },
+                {
+                  "label": "Tn-Seq"
+                },
+                {
+                  "label": "EST"
+                },
+                {
+                  "label": "FL-cDNA"
+                },
+                {
+                  "label": "CTS"
+                },
+                {
+                  "label": "MRE-Seq"
+                },
+                {
+                  "label": "MeDIP-Seq"
+                },
+                {
+                  "label": "MBD-Seq"
+                },
+                {
+                  "label": "Synthetic-Long-Read"
+                },
+                {
+                  "label": "ATAC-seq"
+                },
+                {
+                  "label": "ChIA-PET"
+                },
+                {
+                  "label": "FAIRE-seq"
+                },
+                {
+                  "label": "Hi-C"
+                },
+                {
+                  "label": "ncRNA-Seq"
+                },
+                {
+                  "label": "RAD-Seq"
+                },
+                {
+                  "label": "RIP-Seq"
+                },
+                {
+                  "label": "SELEX"
+                },
+                {
+                  "label": "ssRNA-seq"
+                },
+                {
+                  "label": "Targeted-Capture"
+                },
+                {
+                  "label": "Tethered Chromatin Conformation Capture"
+                },
+                {
+                  "label": "OTHER"
+                }
+              ]
+            },
+            "properties": {
+              "@type": {
+                "oneOf": [
+                  {
+                    "type": "string",
+                    "format": "uri"
+                  },
+                  {
+                    "type": "array",
+                    "minItems": 1,
+                    "items": {
+                      "type": "string",
+                      "format": "uri"
+                    },
+                    "uniqueItems": true
+                  }
+                ]
+              },
+              "@value": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "rdfs:label": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "@value"
+            ],
+            "schema:name": "Library Strategy",
+            "schema:description": "",
+            "pav:createdOn": "2018-05-09T23:05:17-0700",
+            "pav:createdBy": "https://metadatacenter.org/users/e189ae8c-3b09-4225-a0b1-de4e62bf9e3c",
+            "pav:lastUpdatedOn": "2018-05-09T23:05:17-0700",
+            "oslc:modifiedBy": "https://metadatacenter.org/users/e189ae8c-3b09-4225-a0b1-de4e62bf9e3c",
+            "schema:schemaVersion": "1.4.0",
+            "additionalProperties": false,
+            "@id": "https://repo.staging.metadatacenter.org/template-fields/43a3ce74-49d0-425a-a6b9-0a69a906ebdb",
+            "$schema": "http://json-schema.org/draft-04/schema#"
+          },
+          "Library Source": {
+            "@type": "https://schema.metadatacenter.org/core/TemplateField",
+            "@context": {
+              "xsd": "http://www.w3.org/2001/XMLSchema#",
+              "pav": "http://purl.org/pav/",
+              "bibo": "http://purl.org/ontology/bibo/",
+              "oslc": "http://open-services.net/ns/core#",
+              "schema": "http://schema.org/",
+              "schema:name": {
+                "@type": "xsd:string"
+              },
+              "schema:description": {
+                "@type": "xsd:string"
+              },
+              "pav:createdOn": {
+                "@type": "xsd:dateTime"
+              },
+              "pav:createdBy": {
+                "@type": "@id"
+              },
+              "pav:lastUpdatedOn": {
+                "@type": "xsd:dateTime"
+              },
+              "oslc:modifiedBy": {
+                "@type": "@id"
+              }
+            },
+            "type": "object",
+            "title": "Library Source field schema",
+            "description": "Library Source field schema generated by the CEDAR Template Editor 1.8.0",
+            "_ui": {
+              "inputType": "radio"
+            },
+            "_valueConstraints": {
+              "requiredValue": true,
+              "multipleChoice": false,
+              "literals": [
+                {
+                  "label": "GENOMIC"
+                },
+                {
+                  "label": "TRANSCRIPTOMIC"
+                },
+                {
+                  "label": "METAGENOMIC"
+                },
+                {
+                  "label": "METATRANSCRIPTOMIC"
+                },
+                {
+                  "label": "SYNTHETIC"
+                },
+                {
+                  "label": "VIRAL RNA"
+                },
+                {
+                  "label": "GENOMIC SINGLE CELL"
+                },
+                {
+                  "label": "TRANSCRIPTOMIC SINGLE CELL"
+                },
+                {
+                  "label": "OTHER"
+                }
+              ]
+            },
+            "properties": {
+              "@type": {
+                "oneOf": [
+                  {
+                    "type": "string",
+                    "format": "uri"
+                  },
+                  {
+                    "type": "array",
+                    "minItems": 1,
+                    "items": {
+                      "type": "string",
+                      "format": "uri"
+                    },
+                    "uniqueItems": true
+                  }
+                ]
+              },
+              "@value": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "rdfs:label": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "@value"
+            ],
+            "schema:name": "Library Source",
+            "schema:description": "",
+            "pav:createdOn": "2018-05-09T23:05:17-0700",
+            "pav:createdBy": "https://metadatacenter.org/users/e189ae8c-3b09-4225-a0b1-de4e62bf9e3c",
+            "pav:lastUpdatedOn": "2018-05-09T23:05:17-0700",
+            "oslc:modifiedBy": "https://metadatacenter.org/users/e189ae8c-3b09-4225-a0b1-de4e62bf9e3c",
+            "schema:schemaVersion": "1.4.0",
+            "additionalProperties": false,
+            "@id": "https://repo.staging.metadatacenter.org/template-fields/53a3ce74-49d0-425a-a6b9-0a69a906ebdb",
+            "$schema": "http://json-schema.org/draft-04/schema#"
+          },
+          "Library Selection": {
+            "@type": "https://schema.metadatacenter.org/core/TemplateField",
+            "@context": {
+              "xsd": "http://www.w3.org/2001/XMLSchema#",
+              "pav": "http://purl.org/pav/",
+              "bibo": "http://purl.org/ontology/bibo/",
+              "oslc": "http://open-services.net/ns/core#",
+              "schema": "http://schema.org/",
+              "schema:name": {
+                "@type": "xsd:string"
+              },
+              "schema:description": {
+                "@type": "xsd:string"
+              },
+              "pav:createdOn": {
+                "@type": "xsd:dateTime"
+              },
+              "pav:createdBy": {
+                "@type": "@id"
+              },
+              "pav:lastUpdatedOn": {
+                "@type": "xsd:dateTime"
+              },
+              "oslc:modifiedBy": {
+                "@type": "@id"
+              }
+            },
+            "type": "object",
+            "title": "Library Selection field schema",
+            "description": "Library Selection field schema generated by the CEDAR Template Editor 1.8.0",
+            "_ui": {
+              "inputType": "list"
+            },
+            "_valueConstraints": {
+              "requiredValue": true,
+              "multipleChoice": false,
+              "literals": [
+                {
+                  "label": "RANDOM"
+                },
+                {
+                  "label": "PCR"
+                },
+                {
+                  "label": "RANDOM PCR"
+                },
+                {
+                  "label": "RT-PCR"
+                },
+                {
+                  "label": "HMPR"
+                },
+                {
+                  "label": "MF"
+                },
+                {
+                  "label": "CF-S"
+                },
+                {
+                  "label": "CF-M"
+                },
+                {
+                  "label": "CF-H"
+                },
+                {
+                  "label": "CF-T"
+                },
+                {
+                  "label": "MDA"
+                },
+                {
+                  "label": "MSLL"
+                },
+                {
+                  "label": "cDNA"
+                },
+                {
+                  "label": "ChIP"
+                },
+                {
+                  "label": "MNase"
+                },
+                {
+                  "label": "DNAse"
+                },
+                {
+                  "label": "Hybrid Selection"
+                },
+                {
+                  "label": "Reduced Representation"
+                },
+                {
+                  "label": "Restriction Digest"
+                },
+                {
+                  "label": "5-methylcytidine antibody"
+                },
+                {
+                  "label": "MBD2 protein methyl-CpG binding domain"
+                },
+                {
+                  "label": "CAGE"
+                },
+                {
+                  "label": "RACE"
+                },
+                {
+                  "label": "size fractionation"
+                },
+                {
+                  "label": "Padlock probes capture method"
+                },
+                {
+                  "label": "other"
+                },
+                {
+                  "label": "unspecified"
+                },
+                {
+                  "label": "cDNA_oligo_dT"
+                },
+                {
+                  "label": "cDNA_randomPriming"
+                },
+                {
+                  "label": "Inverse rRNA"
+                },
+                {
+                  "label": "Oligo-dT"
+                },
+                {
+                  "label": "PolyA"
+                },
+                {
+                  "label": "repeat fractionation"
+                }
+              ]
+            },
+            "properties": {
+              "@type": {
+                "oneOf": [
+                  {
+                    "type": "string",
+                    "format": "uri"
+                  },
+                  {
+                    "type": "array",
+                    "minItems": 1,
+                    "items": {
+                      "type": "string",
+                      "format": "uri"
+                    },
+                    "uniqueItems": true
+                  }
+                ]
+              },
+              "@value": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "rdfs:label": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "@value"
+            ],
+            "schema:name": "Library Selection",
+            "schema:description": "",
+            "pav:createdOn": "2018-05-09T23:05:17-0700",
+            "pav:createdBy": "https://metadatacenter.org/users/e189ae8c-3b09-4225-a0b1-de4e62bf9e3c",
+            "pav:lastUpdatedOn": "2018-05-09T23:05:17-0700",
+            "oslc:modifiedBy": "https://metadatacenter.org/users/e189ae8c-3b09-4225-a0b1-de4e62bf9e3c",
+            "schema:schemaVersion": "1.4.0",
+            "additionalProperties": false,
+            "@id": "https://repo.staging.metadatacenter.org/template-fields/63a3ce74-49d0-425a-a6b9-0a69a906ebdb",
+            "$schema": "http://json-schema.org/draft-04/schema#"
+          },
+          "Library Layout": {
+            "@type": "https://schema.metadatacenter.org/core/TemplateField",
+            "@context": {
+              "xsd": "http://www.w3.org/2001/XMLSchema#",
+              "pav": "http://purl.org/pav/",
+              "bibo": "http://purl.org/ontology/bibo/",
+              "oslc": "http://open-services.net/ns/core#",
+              "schema": "http://schema.org/",
+              "schema:name": {
+                "@type": "xsd:string"
+              },
+              "schema:description": {
+                "@type": "xsd:string"
+              },
+              "pav:createdOn": {
+                "@type": "xsd:dateTime"
+              },
+              "pav:createdBy": {
+                "@type": "@id"
+              },
+              "pav:lastUpdatedOn": {
+                "@type": "xsd:dateTime"
+              },
+              "oslc:modifiedBy": {
+                "@type": "@id"
+              }
+            },
+            "type": "object",
+            "title": "Library Layout field schema",
+            "description": "Library Layout field schema generated by the CEDAR Template Editor 1.8.0",
+            "_ui": {
+              "inputType": "radio"
+            },
+            "_valueConstraints": {
+              "requiredValue": true,
+              "multipleChoice": false,
+              "literals": [
+                {
+                  "label": "single"
+                },
+                {
+                  "label": "paired"
+                }
+              ]
+            },
+            "properties": {
+              "@type": {
+                "oneOf": [
+                  {
+                    "type": "string",
+                    "format": "uri"
+                  },
+                  {
+                    "type": "array",
+                    "minItems": 1,
+                    "items": {
+                      "type": "string",
+                      "format": "uri"
+                    },
+                    "uniqueItems": true
+                  }
+                ]
+              },
+              "@value": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "rdfs:label": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "@value"
+            ],
+            "schema:name": "Library Layout",
+            "schema:description": "Generic type of library generation (Example: 'RT(oligo-dT)+TS(UMI)+PCR')",
+            "pav:createdOn": "2018-05-09T23:05:17-0700",
+            "pav:createdBy": "https://metadatacenter.org/users/e189ae8c-3b09-4225-a0b1-de4e62bf9e3c",
+            "pav:lastUpdatedOn": "2018-05-09T23:05:17-0700",
+            "oslc:modifiedBy": "https://metadatacenter.org/users/e189ae8c-3b09-4225-a0b1-de4e62bf9e3c",
+            "schema:schemaVersion": "1.4.0",
+            "additionalProperties": false,
+            "@id": "https://repo.staging.metadatacenter.org/template-fields/73a3ce74-49d0-425a-a6b9-0a69a906ebdb",
+            "$schema": "http://json-schema.org/draft-04/schema#"
+          },
           "Library Generation Method": {
             "@type": "https://schema.metadatacenter.org/core/TemplateField",
             "@context": {
@@ -3240,6 +3846,10 @@
           "Protocol IDs",
           "Sequencing Platform",
           "Sequencing Facility",
+          "Library Strategy",
+          "Library Source",
+          "Library Selection",
+          "Library Layout",
           "Library Generation Protocol",
           "Target Substrate Quality",
           "Read Lengths",
@@ -3419,12 +4029,12 @@
               },
               "Biomaterial Provider": {
                 "enum": [
-                  "https://schema.staging.metadatacenter.net/properties/biomaterialProvider"
+                  "https://schema.staging.metadatacenter.net/properties/ece66e91-badc-4ed3-8008-38bd98f05d63"
                 ]
               },
               "Cell Quality": {
                 "enum": [
-                  "https://schema.staging.metadatacenter.net/properties/cellQuality"
+                  "https://schema.staging.metadatacenter.net/properties/e1bdd82a-a669-4fa5-b1f8-de954c548d48"
                 ]
               },
               "Sex": {
@@ -3434,27 +4044,27 @@
               },
               "Age Event": {
                 "enum": [
-                  "https://schema.staging.metadatacenter.net/properties/ageEvent"
+                  "https://schema.staging.metadatacenter.net/properties/bbfc5e9c-a20e-4404-b399-b46aa66392f1"
                 ]
               },
               "Cell Subset": {
                 "enum": [
-                  "https://schema.staging.metadatacenter.net/properties/cellType"
+                  "https://schema.staging.metadatacenter.net/properties/b2550a77-f64d-4c69-bdb2-462d97474b6b"
                 ]
               },
               "Cell Isolation": {
                 "enum": [
-                  "https://schema.staging.metadatacenter.net/properties/cellIsolation"
+                  "https://schema.staging.metadatacenter.net/properties/c71363ba-69d3-4065-b6f5-57c1e79cf183"
                 ]
               },
               "Ethnicity": {
                 "enum": [
-                  "https://schema.staging.metadatacenter.net/properties/ethnicity"
+                  "https://schema.staging.metadatacenter.net/properties/f23ba4c2-5933-4b6f-a81c-3da44cd35cb4"
                 ]
               },
               "Length of Disease": {
                 "enum": [
-                  "https://schema.staging.metadatacenter.net/properties/diseaseLength"
+                  "https://schema.staging.metadatacenter.net/properties/ff2779ad-0c31-4bef-96d6-15870de1432f"
                 ]
               },
               "Tissue": {
@@ -3464,17 +4074,17 @@
               },
               "Tissue Processing": {
                 "enum": [
-                  "https://schema.staging.metadatacenter.net/properties/tissueProcessing"
+                  "https://schema.staging.metadatacenter.net/properties/f02da330-7b47-430a-a04b-e767e74c060d"
                 ]
               },
               "Sample Type": {
                 "enum": [
-                  "https://schema.staging.metadatacenter.net/properties/bioSample"
+                  "https://schema.staging.metadatacenter.net/properties/a14d4494-2dde-4699-8bdf-83ca5c330437"
                 ]
               },
               "Other Relevant Medical History": {
                 "enum": [
-                  "https://schema.staging.metadatacenter.net/properties/medicalHistory"
+                  "https://schema.staging.metadatacenter.net/properties/54915177-8373-4c45-8be9-7be494f36b16"
                 ]
               },
               "Organism": {
@@ -3484,47 +4094,47 @@
               },
               "Anatomic Site": {
                 "enum": [
-                  "https://schema.staging.metadatacenter.net/properties/anatomicSite"
+                  "https://schema.staging.metadatacenter.net/properties/0e525376-c5a0-4064-9388-edc3b0865cb7"
                 ]
               },
               "Race": {
                 "enum": [
-                  "https://schema.staging.metadatacenter.net/properties/race"
+                  "https://schema.staging.metadatacenter.net/properties/464f7098-ca18-434c-b007-bfe9fbe3e46b"
                 ]
               },
               "Prior Therapies for Primary Disease under Study": {
                 "enum": [
-                  "https://schema.staging.metadatacenter.net/properties/priorTherapies"
+                  "https://schema.staging.metadatacenter.net/properties/96057cb1-629f-4e6d-b5ec-c1d64e5ba8be"
                 ]
               },
               "Intervention Definition": {
                 "enum": [
-                  "https://schema.staging.metadatacenter.net/properties/interventionDefinition"
+                  "https://schema.staging.metadatacenter.net/properties/6442daa8-fa25-4a83-b8fe-a49ac7ec5572"
                 ]
               },
               "Ancestry Population": {
                 "enum": [
-                  "https://schema.staging.metadatacenter.net/properties/ancestryPopulation"
+                  "https://schema.staging.metadatacenter.net/properties/09fd5734-9217-4957-9dc7-192e2f75720f"
                 ]
               },
               "Study Group Description": {
                 "enum": [
-                  "https://schema.staging.metadatacenter.net/properties/studyGroupDescription"
+                  "https://schema.staging.metadatacenter.net/properties/db2e3708-0e8e-40fd-9098-5dec53e01979"
                 ]
               },
               "Cell Subset Phenotype": {
                 "enum": [
-                  "https://schema.staging.metadatacenter.net/properties/phenotype"
+                  "https://schema.staging.metadatacenter.net/properties/340ebd08-cac1-4e75-bfa3-dcafd294cb1a"
                 ]
               },
               "Immunogen": {
                 "enum": [
-                  "https://schema.staging.metadatacenter.net/properties/immunogen"
+                  "https://schema.staging.metadatacenter.net/properties/b4112a09-2b07-44a3-8b95-089f0d1d88c4"
                 ]
               },
               "Relation Type": {
                 "enum": [
-                  "https://schema.staging.metadatacenter.net/properties/linkType"
+                  "https://schema.staging.metadatacenter.net/properties/542b51c2-1b77-42ab-9b36-b7ed1f2107af"
                 ]
               },
               "Projected Release Date": {
@@ -3534,17 +4144,17 @@
               },
               "Disease State of Sample": {
                 "enum": [
-                  "https://schema.staging.metadatacenter.net/properties/diseaseStateSample"
+                  "https://schema.staging.metadatacenter.net/properties/b8f02e1e-6cd4-469e-b414-2f7334f0fd49"
                 ]
               },
               "Number of Cells per Sequencing Reaction": {
                 "enum": [
-                  "https://schema.staging.metadatacenter.net/properties/cellNumber"
+                  "https://schema.staging.metadatacenter.net/properties/9035fee2-3bf1-42d9-ae3a-760746230779"
                 ]
               },
               "Number of Cells in Experiment": {
                 "enum": [
-                  "https://schema.staging.metadatacenter.net/properties/cellSubtype"
+                  "https://schema.staging.metadatacenter.net/properties/d044e0be-8016-48e5-884d-92f1b8c127d2"
                 ]
               },
               "Sample Collection Time": {
@@ -3564,17 +4174,17 @@
               },
               "Strain Name": {
                 "enum": [
-                  "https://schema.staging.metadatacenter.net/properties/starinName"
+                  "https://schema.staging.metadatacenter.net/properties/c8879ae5-1f23-4c86-9867-c31baee89756"
                 ]
               },
               "Related Subjects": {
                 "enum": [
-                  "https://schema.staging.metadatacenter.net/properties/subjectLinked"
+                  "https://schema.staging.metadatacenter.net/properties/a50c9b43-c33f-4483-b306-fda8cb1b6ccf"
                 ]
               },
               "Disease Stage": {
                 "enum": [
-                  "https://schema.staging.metadatacenter.net/properties/diseaseStage"
+                  "https://schema.staging.metadatacenter.net/properties/6ac60bc7-176f-4cfc-a0a3-d97977fba898"
                 ]
               },
               "Sample ID": {
@@ -3584,7 +4194,7 @@
               },
               "Collection Time Event": {
                 "enum": [
-                  "https://schema.staging.metadatacenter.net/properties/collectionTimeEvent"
+                  "https://schema.staging.metadatacenter.net/properties/32ce3fa4-7c8a-4189-b21c-0cf7e56531bc"
                 ]
               },
               "Subject ID": {
@@ -3599,7 +4209,7 @@
               },
               "Cell Processing Protocol": {
                 "enum": [
-                  "https://schema.staging.metadatacenter.net/properties/processingProtocol"
+                  "https://schema.staging.metadatacenter.net/properties/0de991bb-d414-41ba-828f-011a26b70d2f"
                 ]
               },
               "Diagnosis1": {
@@ -3647,6 +4257,7 @@
               "Sample Collection Time",
               "Single-cell Sort",
               "Cell Storage",
+              "Optional BioSample Attribute",
               "Synthetic Library"
             ],
             "additionalProperties": false,

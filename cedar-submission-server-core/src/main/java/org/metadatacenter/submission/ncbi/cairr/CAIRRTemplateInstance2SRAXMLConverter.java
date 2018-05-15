@@ -409,33 +409,45 @@ public class CAIRRTemplateInstance2SRAXMLConverter {
         sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(fileAttribute);
       }
 
-      // Library Strategy (default)
+      // Library Strategy
 
-      TypeFileAttribute libraryStrategy = submissionObjectFactory.createTypeFileAttribute();
-      libraryStrategy.setName("library_strategy");
-      libraryStrategy.setValue("WGS");
-      sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(libraryStrategy);
+//      String libraryStrategyValue = sequenceReadArchive.getLibraryStrategy().getValue();
+//      if (libraryStrategyValue != null) {
+//        TypeFileAttribute fileAttribute = submissionObjectFactory.createTypeFileAttribute();
+//        fileAttribute.setName("library_strategy");
+//        fileAttribute.setValue(libraryStrategyValue);
+//        sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(fileAttribute);
+//      }
 
-      // Library Strategy (default)
+      // Library Source
 
-      TypeFileAttribute librarySource = submissionObjectFactory.createTypeFileAttribute();
-      librarySource.setName("library_source");
-      librarySource.setValue("GENOMIC");
-      sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(librarySource);
+      String librarySourceValue = sequenceReadArchive.getLibrarySource().getValue();
+      if (librarySourceValue != null) {
+        TypeFileAttribute fileAttribute = submissionObjectFactory.createTypeFileAttribute();
+        fileAttribute.setName("library_source");
+        fileAttribute.setValue(librarySourceValue);
+        sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(fileAttribute);
+      }
 
-      // Library Strategy (default)
+      // Library Selection
 
-      TypeFileAttribute librarySelection = submissionObjectFactory.createTypeFileAttribute();
-      librarySelection.setName("library_selection");
-      librarySelection.setValue("RANDOM");
-      sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(librarySelection);
+      String librarySelectionValue = sequenceReadArchive.getLibrarySelection().getValue();
+      if (librarySelectionValue != null) {
+        TypeFileAttribute fileAttribute = submissionObjectFactory.createTypeFileAttribute();
+        fileAttribute.setName("library_selection");
+        fileAttribute.setValue(librarySelectionValue);
+        sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(fileAttribute);
+      }
 
-      // Library Strategy (default)
+      // Library Layout
 
-      TypeFileAttribute libraryLayout = submissionObjectFactory.createTypeFileAttribute();
-      libraryLayout.setName("library_layout");
-      libraryLayout.setValue("PAIRED");
-      sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(libraryLayout);
+      String libraryLayoutValue = sequenceReadArchive.getLibraryLayout().getValue();
+      if (libraryLayoutValue != null) {
+        TypeFileAttribute fileAttribute = submissionObjectFactory.createTypeFileAttribute();
+        fileAttribute.setName("library_layout");
+        fileAttribute.setValue(libraryLayoutValue);
+        sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(fileAttribute);
+      }
 
       // End of AIRR SRA Elements
 
