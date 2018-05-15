@@ -411,13 +411,13 @@ public class CAIRRTemplateInstance2SRAXMLConverter {
 
       // Library Strategy
 
-//      String libraryStrategyValue = sequenceReadArchive.getLibraryStrategy().getValue();
-//      if (libraryStrategyValue != null) {
-//        TypeFileAttribute fileAttribute = submissionObjectFactory.createTypeFileAttribute();
-//        fileAttribute.setName("library_strategy");
-//        fileAttribute.setValue(libraryStrategyValue);
-//        sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(fileAttribute);
-//      }
+      String libraryStrategyValue = sequenceReadArchive.getLibraryStrategy().getValue();
+      if (libraryStrategyValue != null) {
+        TypeFileAttribute fileAttribute = submissionObjectFactory.createTypeFileAttribute();
+        fileAttribute.setName("library_strategy");
+        fileAttribute.setValue(libraryStrategyValue);
+        sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(fileAttribute);
+      }
 
       // Library Source
 
