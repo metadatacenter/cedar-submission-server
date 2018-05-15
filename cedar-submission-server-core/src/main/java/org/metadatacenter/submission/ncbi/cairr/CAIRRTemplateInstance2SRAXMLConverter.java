@@ -532,7 +532,8 @@ public class CAIRRTemplateInstance2SRAXMLConverter {
 
     // Sex
     if (bioSample.getSex() != null && bioSample.getSex().getId() != null) {
-      String sexValue = bioSample.getSex().getId().toString();
+      //String sexValue = bioSample.getSex().getId().toString();
+      String sexValue = bioSample.getSex().getRdfsLabel().toLowerCase();
       if (sexValue != null && !sexValue.isEmpty()) {
         bioSampleAttributes.getAttribute().add(createAttribute("Sex", sexValue));
       }
