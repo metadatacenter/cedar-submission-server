@@ -83,7 +83,7 @@ public class CAIRRTemplateInstance2SRAXMLConverter {
 
     BioProjectForAIRRNCBI cairrBioProject = cairrInstance.getBioProjectForAIRRNCBI();
     String bioProjectID;
-    if (cairrBioProject.getStudyID() != null) {
+    if (cairrBioProject.getStudyID() != null && cairrBioProject.getStudyID().getValue() != null) {
       bioProjectID = cairrBioProject.getStudyID().getValue();
     } else {
       bioProjectID = "";
