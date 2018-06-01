@@ -35,7 +35,8 @@ public class NcbiFtpUploadService {
       UploaderCreationException {
     FileUploader uploader = null;
 
-    logger.info("Submission upload, submissionDir = " + submissionDir + ", conf.submissionDir " + ftpConfig.getSubmissionDirectory());
+    logger.info("Submission upload, submissionDir = " + submissionDir + ", conf.submissionDir " + ftpConfig
+        .getSubmissionDirectory());
 
     try {
       uploader = FtpUploader.createNewUploader(
