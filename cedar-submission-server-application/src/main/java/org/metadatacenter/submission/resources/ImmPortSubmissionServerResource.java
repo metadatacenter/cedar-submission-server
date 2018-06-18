@@ -143,7 +143,6 @@ public class ImmPortSubmissionServerResource extends CedarMicroserviceResource {
   public Response immPortWorkspaces() throws CedarException {
     CedarRequestContext c = CedarRequestContextFactory.fromRequest(request);
     c.must(c.user()).be(LoggedIn);
-    c.must(c.user()).have(CedarPermission.POST_SUBMISSION);
 
     Optional<String> immPortBearerToken = immPortUtil.getImmPortBearerToken();
     if (!immPortBearerToken.isPresent()) {
@@ -187,7 +186,6 @@ public class ImmPortSubmissionServerResource extends CedarMicroserviceResource {
   public Response submitImmPort() throws CedarException {
     CedarRequestContext c = CedarRequestContextFactory.fromRequest(request);
     c.must(c.user()).be(LoggedIn);
-    c.must(c.user()).have(CedarPermission.POST_SUBMISSION);
 
     Optional<String> immPortBearerToken = immPortUtil.getImmPortBearerToken();
     if (!immPortBearerToken.isPresent()) {
@@ -268,7 +266,6 @@ public class ImmPortSubmissionServerResource extends CedarMicroserviceResource {
   public Response submitImmPortOld() throws CedarException {
     CedarRequestContext c = CedarRequestContextFactory.fromRequest(request);
     c.must(c.user()).be(LoggedIn);
-    c.must(c.user()).have(CedarPermission.POST_SUBMISSION);
 
     String workspaceID = request.getParameter("workspaceId"); // TODO CEDAR constant for parameter
     if (workspaceID == null || workspaceID.isEmpty()) {
