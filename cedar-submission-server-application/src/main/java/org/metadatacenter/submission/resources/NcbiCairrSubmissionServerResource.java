@@ -36,6 +36,7 @@ import javax.ws.rs.core.Response;
 import javax.xml.bind.JAXBException;
 import javax.xml.datatype.DatatypeConfigurationException;
 import java.io.IOException;
+import java.text.ParseException;
 
 import static org.metadatacenter.rest.assertion.GenericAssertions.LoggedIn;
 
@@ -99,7 +100,7 @@ import static org.metadatacenter.rest.assertion.GenericAssertions.LoggedIn;
 
         return Response.ok(this.bioSampleValidator.validateBioSampleSubmission(submissionXML)).build();
       }
-    } catch (JAXBException | DatatypeConfigurationException e) {
+    } catch (JAXBException | DatatypeConfigurationException | ParseException e) {
       return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
     }
   }

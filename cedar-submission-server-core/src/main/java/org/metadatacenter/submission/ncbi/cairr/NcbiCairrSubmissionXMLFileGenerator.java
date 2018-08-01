@@ -13,6 +13,7 @@ import javax.xml.bind.JAXBException;
 import javax.xml.datatype.DatatypeConfigurationException;
 import java.io.File;
 import java.io.IOException;
+import java.text.ParseException;
 
 public class NcbiCairrSubmissionXMLFileGenerator implements NcbiSubmissionXMLFileGenerator {
 
@@ -23,12 +24,15 @@ public class NcbiCairrSubmissionXMLFileGenerator implements NcbiSubmissionXMLFil
     CAIRRTemplateInstance2SRAXMLConverter converter = new CAIRRTemplateInstance2SRAXMLConverter();
 
     CAIRRTemplate cairrInstance;
+    String submissionXml = null;
     try {
       cairrInstance = JsonMapper.MAPPER.readValue(instanceFile, CAIRRTemplate.class);
+      submissionXml = converter.convertTemplateInstanceToXML(cairrInstance);
     } catch (JsonMappingException e) {
       throw new IOException("The instance uploaded is not compatible with the CAIRR template", e);
+    } catch (ParseException e) {
+      logger.error(e.getMessage());
     }
-    String submissionXml = converter.convertTemplateInstanceToXML(cairrInstance);
 
     logger.info("XML: " + submissionXml);
 
