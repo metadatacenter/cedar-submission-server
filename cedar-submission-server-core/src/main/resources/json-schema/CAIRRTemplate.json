@@ -7940,7 +7940,7 @@
   "pav:lastUpdatedOn": "2018-08-02T16:34:41-0700",
   "oslc:modifiedBy": "https://metadatacenter.org/users/cd36dea6-9222-412b-99ab-bec50f6ecd00",
   "schema:schemaVersion": "1.4.0",
-  "additionalProperties": false,
+  "additionalProperties": true,
   "pav:version": "0.0.1",
   "bibo:status": "bibo:draft",
   "pav:derivedFrom": "https://repo.staging.metadatacenter.org/templates/ade1336d-a292-49f8-8fb9-d62c11997820",
