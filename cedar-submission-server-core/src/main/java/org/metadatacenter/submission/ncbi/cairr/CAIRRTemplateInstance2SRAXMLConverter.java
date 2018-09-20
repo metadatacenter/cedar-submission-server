@@ -558,19 +558,10 @@ public class CAIRRTemplateInstance2SRAXMLConverter {
     }
 
     // Synthetic Library
-    if (bioSample.getSyntheticLibrary() != null && bioSample.getSyntheticLibrary().size() > 0) {
-      String syntheticLibraries = "";
-      for (SyntheticLibrary library : bioSample.getSyntheticLibrary()) {
-        if (library.getValue() != null && library.getValue().length() > 0) {
-          if (syntheticLibraries.isEmpty()) {
-            syntheticLibraries = syntheticLibraries.concat(library.getValue());
-          } else {
-            syntheticLibraries = syntheticLibraries.concat(", " + library.getValue());
-          }
-        }
-      }
-      if (!syntheticLibraries.isEmpty()) {
-        bioSampleAttributes.getAttribute().add(createAttribute("SyntheticLibrary", syntheticLibraries));
+    if (bioSample.getSyntheticLibrary() != null && bioSample.getSyntheticLibrary().getValue() != null) {
+      String syntheticLibraryValue = bioSample.getSyntheticLibrary().getValue().toLowerCase();
+      if (syntheticLibraryValue != null && !syntheticLibraryValue.isEmpty()) {
+        bioSampleAttributes.getAttribute().add(createAttribute("SyntheticLibrary", syntheticLibraryValue));
       }
     }
 
@@ -656,7 +647,7 @@ public class CAIRRTemplateInstance2SRAXMLConverter {
     }
 
     // Release Date
-    if (!releaseDate.isEmpty()) {  // Use the top-level release date
+    if (releaseDate != null && !releaseDate.isEmpty()) {  // Use the top-level release date
       String xmlReleaseDate = convertDateFormat(releaseDate, instanceDateFormat, xmlDateFormat);
       bioSampleAttributes.getAttribute().add(createAttribute("ProjectedReleaseDate", xmlReleaseDate));
     }
