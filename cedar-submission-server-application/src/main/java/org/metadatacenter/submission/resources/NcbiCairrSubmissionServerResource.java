@@ -8,8 +8,6 @@ import org.metadatacenter.cedar.util.dw.CedarMicroserviceResource;
 import org.metadatacenter.config.CedarConfig;
 import org.metadatacenter.exception.CedarException;
 import org.metadatacenter.rest.context.CedarRequestContext;
-import org.metadatacenter.rest.context.CedarRequestContextFactory;
-import org.metadatacenter.server.security.model.auth.CedarPermission;
 import org.metadatacenter.submission.CAIRRTemplate;
 import org.metadatacenter.submission.CEDARValidationResponse;
 import org.metadatacenter.submission.exception.SubmissionInstanceNotFoundException;
@@ -85,7 +83,7 @@ import static org.metadatacenter.rest.assertion.GenericAssertions.LoggedIn;
     CAIRRTemplate cairrInstance) throws CedarException
   {
 
-    CedarRequestContext c = CedarRequestContextFactory.fromRequest(request);
+    CedarRequestContext c = buildRequestContext();
     c.must(c.user()).be(LoggedIn);
 
     try {
@@ -114,7 +112,7 @@ import static org.metadatacenter.rest.assertion.GenericAssertions.LoggedIn;
     throws CedarException
   {
 
-    CedarRequestContext c = CedarRequestContextFactory.fromRequest(request);
+    CedarRequestContext c = buildRequestContext();
     c.must(c.user()).be(LoggedIn);
 
     // Check that this is a file upload request

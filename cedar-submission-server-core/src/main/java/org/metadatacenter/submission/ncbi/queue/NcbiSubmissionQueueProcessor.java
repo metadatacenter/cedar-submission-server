@@ -1,12 +1,9 @@
 package org.metadatacenter.submission.ncbi.queue;
 
 import io.dropwizard.lifecycle.Managed;
-import org.metadatacenter.config.CacheServerPersistent;
-import org.metadatacenter.server.cache.util.CacheService;
 import org.metadatacenter.util.json.JsonMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import redis.clients.jedis.Jedis;
 
 import java.io.IOException;
 import java.util.List;
@@ -15,38 +12,35 @@ import java.util.concurrent.Executors;
 
 public class NcbiSubmissionQueueProcessor implements Managed {
 
-  private static final Logger log = LoggerFactory.getLogger(NcbiSubmissionExecutorService.class);
+  private static final Logger log = LoggerFactory.getLogger(NcbiSubmissionQueueProcessor.class);
 
-  private final CacheService cacheService;
-  private final CacheServerPersistent cacheConfig;
+  private final NcbiSubmissionQueueService ncbiSubmissionQueueService;
   private final NcbiSubmissionExecutorService ncbiSubmissionExecutorService;
   private boolean doProcessing;
-  private Jedis jedis;
 
-  public NcbiSubmissionQueueProcessor(CacheService cacheService, CacheServerPersistent cacheConfig,
+  public NcbiSubmissionQueueProcessor(NcbiSubmissionQueueService ncbiSubmissionQueueService,
                                       NcbiSubmissionExecutorService ncbiSubmissionExecutorService) {
-    this.cacheService = cacheService;
-    this.cacheConfig = cacheConfig;
+    this.ncbiSubmissionQueueService = ncbiSubmissionQueueService;
     this.ncbiSubmissionExecutorService = ncbiSubmissionExecutorService;
     doProcessing = true;
   }
 
   private void digestMessages() {
     log.info("NcbiSubmissionQueueProcessor.start()");
-    jedis = cacheService.getJedis();
-    List<String> submissions = null;
-    String queueName = cacheConfig.getQueueName(NcbiSubmissionQueueService.NCBI_SUBMISSION_QUEUE_ID);
+    ncbiSubmissionQueueService.initializeBlockingQueue();
+    List<String> submissionMessages;
     while (doProcessing) {
-      log.info("Waiting for a submission in the NCBI submission queue");
-      submissions = jedis.blpop(0, queueName);
-      log.info("Got the submission on: " + queueName);
-      String value = submissions.get(1);
-      //String value = submissions.get(0);
+      log.info("Waiting for a submission in the NCBI submission queue.");
+      submissionMessages = ncbiSubmissionQueueService.waitForMessages();
       NcbiSubmissionQueueEvent event = null;
-      try {
-        event = JsonMapper.MAPPER.readValue(value, NcbiSubmissionQueueEvent.class);
-      } catch (IOException e) {
-        log.error("There was an error while deserializing submission", e);
+      if (submissionMessages != null && !submissionMessages.isEmpty()) {
+        log.info("Got submission message.");
+        String value = submissionMessages.get(1);
+        try {
+          event = JsonMapper.MAPPER.readValue(value, NcbiSubmissionQueueEvent.class);
+        } catch (IOException e) {
+          log.error("There was an error while deserializing submission", e);
+        }
       }
       if (event != null) {
         try {
@@ -66,17 +60,16 @@ public class NcbiSubmissionQueueProcessor implements Managed {
   @Override
   public void start() throws Exception {
     ExecutorService executor = Executors.newSingleThreadExecutor();
-    executor.submit(() -> {
-      this.digestMessages();
-    });
+    executor.submit(this::digestMessages);
   }
 
   @Override
   public void stop() throws Exception {
     log.info("NcbiSubmissionQueueProcessor.stop()");
-    log.info("set looping flag to false");
+    log.info("Set looping flag to false");
     doProcessing = false;
-    log.info("close Jedis");
-    jedis.close();
+    log.info("Close Jedis");
+    ncbiSubmissionQueueService.enqueueSubmission(null);
+    ncbiSubmissionQueueService.close();
   }
 }
