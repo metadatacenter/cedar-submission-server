@@ -23,8 +23,6 @@ import org.metadatacenter.config.CedarConfig;
 import org.metadatacenter.exception.CedarException;
 import org.metadatacenter.model.trimmer.JsonLdDocument;
 import org.metadatacenter.rest.context.CedarRequestContext;
-import org.metadatacenter.rest.context.CedarRequestContextFactory;
-import org.metadatacenter.server.security.model.auth.CedarPermission;
 import org.metadatacenter.submission.CEDARSubmitResponse;
 import org.metadatacenter.submission.CEDARWorkspaceResponse;
 import org.metadatacenter.submission.Workspace;
@@ -60,7 +58,7 @@ import static org.metadatacenter.util.json.JsonMapper.MAPPER;
 @Path("/command")
 @Produces(MediaType.APPLICATION_JSON)
 public class ImmPortSubmissionServerResource extends CedarMicroserviceResource {
-  private final static Logger logger = LoggerFactory.getLogger(ImmPortSubmissionServerResource.class);
+  private static final Logger logger = LoggerFactory.getLogger(ImmPortSubmissionServerResource.class);
 
   private final String immPortSubmissionUrl;
   private final String immPortUserName;
@@ -141,7 +139,7 @@ public class ImmPortSubmissionServerResource extends CedarMicroserviceResource {
   @Path("/immport-workspaces")
   @Consumes(MediaType.MULTIPART_FORM_DATA)
   public Response immPortWorkspaces() throws CedarException {
-    CedarRequestContext c = CedarRequestContextFactory.fromRequest(request);
+    CedarRequestContext c = buildRequestContext();
     c.must(c.user()).be(LoggedIn);
 
     Optional<String> immPortBearerToken = immPortUtil.getImmPortBearerToken();
@@ -184,7 +182,7 @@ public class ImmPortSubmissionServerResource extends CedarMicroserviceResource {
   @Path("/immport-submit")
   @Consumes(MediaType.MULTIPART_FORM_DATA)
   public Response submitImmPort() throws CedarException {
-    CedarRequestContext c = CedarRequestContextFactory.fromRequest(request);
+    CedarRequestContext c = buildRequestContext();
     c.must(c.user()).be(LoggedIn);
 
     Optional<String> immPortBearerToken = immPortUtil.getImmPortBearerToken();
@@ -264,7 +262,7 @@ public class ImmPortSubmissionServerResource extends CedarMicroserviceResource {
   @Path("/immport-submit-old")
   @Consumes(MediaType.MULTIPART_FORM_DATA)
   public Response submitImmPortOld() throws CedarException {
-    CedarRequestContext c = CedarRequestContextFactory.fromRequest(request);
+    CedarRequestContext c = buildRequestContext();
     c.must(c.user()).be(LoggedIn);
 
     String workspaceID = request.getParameter("workspaceId"); // TODO CEDAR constant for parameter
