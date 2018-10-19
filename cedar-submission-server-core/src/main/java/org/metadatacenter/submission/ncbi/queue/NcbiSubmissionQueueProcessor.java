@@ -51,7 +51,7 @@ public class NcbiSubmissionQueueProcessor implements Managed {
           log.error("There was an error while handling the message", e);
         }
       } else {
-        log.error("Unable to handle message, it is null.");
+        log.warn("Unable to handle message, it is null.");
       }
     }
     log.info("NcbiSubmissionQueueProcessor finished gracefully");
