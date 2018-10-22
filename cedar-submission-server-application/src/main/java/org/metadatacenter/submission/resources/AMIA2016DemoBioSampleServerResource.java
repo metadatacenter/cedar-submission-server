@@ -8,10 +8,9 @@ import org.metadatacenter.cedar.util.dw.CedarMicroserviceResource;
 import org.metadatacenter.config.CedarConfig;
 import org.metadatacenter.exception.CedarException;
 import org.metadatacenter.rest.context.CedarRequestContext;
-import org.metadatacenter.rest.context.CedarRequestContextFactory;
 import org.metadatacenter.submission.AMIA2016DemoBioSampleTemplate;
-import org.metadatacenter.submission.ncbi.amia.AMIA2016DemoBioSampleTemplate2BioSampleConverter;
 import org.metadatacenter.submission.ncbi.BioSampleValidator;
+import org.metadatacenter.submission.ncbi.amia.AMIA2016DemoBioSampleTemplate2BioSampleConverter;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
@@ -21,7 +20,6 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.xml.bind.JAXBException;
 import javax.xml.datatype.DatatypeConfigurationException;
-
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.Map;
@@ -52,7 +50,7 @@ public class AMIA2016DemoBioSampleServerResource extends CedarMicroserviceResour
   @Timed
   @Path("/validate-biosample")
   public Response validate() throws CedarException {
-    CedarRequestContext c = CedarRequestContextFactory.fromRequest(request);
+    CedarRequestContext c = buildRequestContext();
     c.must(c.user()).be(LoggedIn);
 
     String payload = c.request().getRequestBody().asJsonString();

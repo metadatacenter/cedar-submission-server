@@ -39,7 +39,7 @@ import java.util.*;
 public class CAIRRTemplateInstance2SRAXMLConverter {
   final static Logger logger = LoggerFactory.getLogger(CAIRRTemplateInstance2SRAXMLConverter.class);
 
-  private final static String CEDAR_NAMESPACE = "CEDAR";
+  private static final String CEDAR_NAMESPACE = "CEDAR";
 
   //private List<String> bioSampleIds = new ArrayList<>();
   private List<String> sraIds = new ArrayList<>();

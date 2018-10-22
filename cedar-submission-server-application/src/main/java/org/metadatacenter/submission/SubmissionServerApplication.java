@@ -5,7 +5,6 @@ import io.dropwizard.setup.Environment;
 import org.metadatacenter.cedar.util.dw.CedarMicroserviceApplication;
 import org.metadatacenter.config.CedarConfig;
 import org.metadatacenter.model.ServerName;
-import org.metadatacenter.server.cache.util.CacheService;
 import org.metadatacenter.submission.health.SubmissionServerHealthCheck;
 import org.metadatacenter.submission.ncbi.queue.NcbiSubmissionExecutorService;
 import org.metadatacenter.submission.ncbi.queue.NcbiSubmissionQueueProcessor;
@@ -16,7 +15,7 @@ import org.metadatacenter.submission.resources.*;
 public class SubmissionServerApplication extends CedarMicroserviceApplication<SubmissionServerConfiguration> {
 
   private static NcbiSubmissionExecutorService ncbiSubmissionExecutorService;
-  private static CacheService cacheService;
+  private static NcbiSubmissionQueueService ncbiSubmissionQueueService;
 
   public static void main(String[] args) throws Exception {
     new SubmissionServerApplication().run(args);
@@ -33,7 +32,7 @@ public class SubmissionServerApplication extends CedarMicroserviceApplication<Su
 
   @Override
   public void initializeApp() {
-    cacheService = new CacheService(cedarConfig.getCacheConfig().getPersistent());
+    ncbiSubmissionQueueService = new NcbiSubmissionQueueService(cedarConfig.getCacheConfig().getPersistent());
 
     NcbiSubmissionQueueService ncbiSubmissionQueueService =
         new NcbiSubmissionQueueService(cedarConfig.getCacheConfig().getPersistent());
@@ -71,8 +70,8 @@ public class SubmissionServerApplication extends CedarMicroserviceApplication<Su
     environment.healthChecks().register("message", healthCheck);
 
     // NCBI submission processor
-    NcbiSubmissionQueueProcessor ncbiSubmissionProcessor = new NcbiSubmissionQueueProcessor(cacheService,
-        cedarConfig.getCacheConfig().getPersistent(), ncbiSubmissionExecutorService);
+    NcbiSubmissionQueueProcessor ncbiSubmissionProcessor =
+        new NcbiSubmissionQueueProcessor(ncbiSubmissionQueueService, ncbiSubmissionExecutorService);
     environment.lifecycle().manage(ncbiSubmissionProcessor);
   }
 }
