@@ -1,4 +1,4 @@
-package org.metadatacenter.submission.ncbi.cairr;
+package org.metadatacenter.submission.ncbi.pipelines.cairr;
 
 import generated.Submission;
 import org.metadatacenter.submission.BioProjectForAIRRNCBI;

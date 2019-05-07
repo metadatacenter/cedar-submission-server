@@ -1,4 +1,4 @@
-package org.metadatacenter.submission.ncbi.cairr;
+package org.metadatacenter.submission.ncbi.pipelines.cairr;
 
 import org.metadatacenter.exception.CedarException;
 import org.metadatacenter.submission.BioProjectForAIRRNCBI;

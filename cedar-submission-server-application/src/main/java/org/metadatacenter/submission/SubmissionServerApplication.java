@@ -37,6 +37,7 @@ public class SubmissionServerApplication extends CedarMicroserviceApplication<Su
     NcbiSubmissionQueueService ncbiSubmissionQueueService =
         new NcbiSubmissionQueueService(cedarConfig.getCacheConfig().getPersistent());
 
+    NcbiGenericSubmissionServerResource.injectServices(ncbiSubmissionQueueService);
     NcbiCairrSubmissionServerResource.injectServices(ncbiSubmissionQueueService);
 
     ncbiSubmissionExecutorService = new NcbiSubmissionExecutorService(cedarConfig);
@@ -54,6 +55,10 @@ public class SubmissionServerApplication extends CedarMicroserviceApplication<Su
     final AMIA2016DemoBioSampleServerResource amia2016DemoBioSampleServerResource = new
         AMIA2016DemoBioSampleServerResource(cedarConfig);
     environment.jersey().register(amia2016DemoBioSampleServerResource);
+
+    final NcbiGenericSubmissionServerResource ncbiSubmissionServerResource =
+        new NcbiGenericSubmissionServerResource(cedarConfig);
+    environment.jersey().register(ncbiSubmissionServerResource);
 
     final NcbiCairrSubmissionServerResource cairrSubmissionServerResource =
         new NcbiCairrSubmissionServerResource(cedarConfig);

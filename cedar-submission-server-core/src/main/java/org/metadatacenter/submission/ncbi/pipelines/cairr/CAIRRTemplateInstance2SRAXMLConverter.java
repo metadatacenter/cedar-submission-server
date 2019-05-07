@@ -1,4 +1,4 @@
-package org.metadatacenter.submission.ncbi.cairr;
+package org.metadatacenter.submission.ncbi.pipelines.cairr;
 
 import biosample.TypeAttribute;
 import biosample.TypeBioSample;
@@ -7,7 +7,6 @@ import common.sp.TypeBlock;
 import common.sp.TypeContactInfo;
 import common.sp.TypeDescriptor;
 import common.sp.TypeIdentifier;
-import common.sp.TypeName;
 import common.sp.TypeOrganism;
 import common.sp.TypePrimaryId;
 import common.sp.TypeRefId;
