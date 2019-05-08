@@ -7,9 +7,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import common.sp.*;
 import generated.ObjectFactory;
 import generated.*;
-import org.metadatacenter.submission.BioProjectForAIRRNCBI;
-import org.metadatacenter.submission.BioSampleForAIRRNCBI;
-import org.metadatacenter.submission.SequenceReadArchiveForAIRRNCBI;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -47,121 +44,138 @@ public class NcbiGenericTemplateInstance2XMLConverter {
   private final String instanceDateFormat = "yyyy-MM-dd";
   private final String xmlDateFormat = "yyyy-MM-dd'-'hh:mm";
 
-  public String convertTemplateInstanceToXML(JsonNode instance)
-      throws JAXBException, DatatypeConfigurationException, ParseException {
+  public String convertTemplateInstanceToXML(JsonNode instance) throws JAXBException, DatatypeConfigurationException, ParseException {
+
     Submission ncbiSubmission = submissionObjectFactory.createSubmission();
 
-    // Release date
-    //String releaseDate = cairrInstance.getSubmissionsReleaseDate().getValue();
-    String releaseDate = DEFAULT_RELEASE_DATE;
+    // TODO: Release date
+    String releaseDate = null;
 
+    // Submission description
     Submission.Description submissionDescription = createSubmissionDescription(instance);
     ncbiSubmission.setDescription(submissionDescription);
 
-    /****** QUEDE AQUI ******/
+    /*** BioProject ***/
 
-//    BioProjectForAIRRNCBI cairrBioProject = cairrInstance.getBioProjectForAIRRNCBI();
-//
-//    String bioProjectID;
-//    if (cairrBioProject.getStudyID() != null && cairrBioProject.getStudyID().getValue() != null) {
-//      bioProjectID = cairrBioProject.getStudyID().getValue();
-//    } else {
-//      bioProjectID = "";
-//    }
-//
-//    // Retrieve the biosamples from the CAIRR instance
-//    for (BioSampleForAIRRNCBI bioSample : cairrInstance.getBioSampleForAIRRNCBI()) {
-//      // Start <BioSample> section
-//      TypeBioSample ncbiBioSample = bioSampleObjectFactory.createTypeBioSample();
-//      ncbiBioSample.setSchemaVersion("2.0"); // Hard-coded
-//
-//      // Sample Name (which is actually the sample ID )
+    JsonNode bioProject = getTemplateElementNode(instance, BIOPROJECT_ELEMENT);
+
+    // BioProject ID
+    String bioProjectID = null;
+    Optional<String> studyId = getTemplateFieldValue(bioProject, STUDY_ID_FIELD);
+    if (studyId.isPresent()) {
+      bioProjectID = studyId.get();
+    }
+    else {
+      throw new IllegalArgumentException("Missing required value: " + STUDY_ID_FIELD);
+    }
+
+    /*** BioSample ***/
+    JsonNode biosamples = getTemplateElementNode(instance, BIOSAMPLE_ELEMENT);
+
+    for (JsonNode bioSample : biosamples) {
+
+      // Start <BioSample> section
+      TypeBioSample ncbiBioSample = bioSampleObjectFactory.createTypeBioSample();
+      ncbiBioSample.setSchemaVersion(BIOSAMPLE_SCHEMA_VERSION);
+
+      // TODO Sample Name (which is actually the sample ID )
 //      if (bioSample.getSampleID() != null) {
 //        String bioSampleID = bioSample.getSampleID().getValue();
 //        if (bioSampleID != null && !bioProjectID.isEmpty()) {
 //          ncbiBioSample.setSampleId(createBioSampleIdentifier(bioSampleID));
 //        }
 //      }
+
+      // Descriptor
+      ncbiBioSample.setDescriptor(createDescriptor(BIOSAMPLE_SUBMISSION_DESCRIPTOR, BIOSAMPLE_SUBMISSION_DESCRIPTOR));
+
+      // Organism
+      ncbiBioSample.setOrganism(createOrganism(BIOSAMPLE_ORGANISM));
+
+      // Package
+      ncbiBioSample.setPackage(BIOSAMPLE_PACKAGE);
+
+      // Attributes
+      ncbiBioSample.setAttributes(createBioSampleAttributes(bioSample, releaseDate));
+
+      // XmlContent
+      // Development Note: The original NCBI submission doesn't include the BioSample element, so it
+      // is required to modify the submission.xsd file (See submission.xsd:441)
+      TypeInlineData.XmlContent xmlContent = submissionObjectFactory.createTypeInlineDataXmlContent();
+      xmlContent.setBioSample(ncbiBioSample);
+
+      // Data
+      Submission.Action.AddData.Data bioSampleData = submissionObjectFactory.createSubmissionActionAddDataData();
+      bioSampleData.setContentType("XML");
+      bioSampleData.setXmlContent(xmlContent);
+
+      // Identifier
+      TypeIdentifier actionIdentifier = ncbiCommonObjectFactory.createTypeIdentifier();
+      TypeSPUID bioSampleSpuid = ncbiCommonObjectFactory.createTypeSPUID();
+      bioSampleSpuid.setSpuidNamespace(CEDAR_NAMESPACE);
+      bioSampleSpuid.setValue(createNewActionId());
+      actionIdentifier.setSPUID(bioSampleSpuid);
+
+      // Action/AddData
+      Submission.Action.AddData bioSampleSubmissionActionAddData = submissionObjectFactory.createSubmissionActionAddData();
+      bioSampleSubmissionActionAddData.setTargetDb(TypeTargetDb.BIO_SAMPLE);
+      bioSampleSubmissionActionAddData.setData(bioSampleData);
+      bioSampleSubmissionActionAddData.setIdentifier(actionIdentifier);
+
+      // Action
+      Submission.Action bioSampleAction = submissionObjectFactory.createSubmissionAction();
+      bioSampleAction.setAddData(bioSampleSubmissionActionAddData);
+      ncbiSubmission.getAction().add(bioSampleAction);
+
+    }
+
+    /*** SRA ***/
+    JsonNode sras = getTemplateElementNode(instance, SRA_ELEMENT);
+
+    // Retrieve the SRAs from the instance
+    for (JsonNode sra : sras) {
+
+      Submission.Action.AddFiles sraAddFiles = submissionObjectFactory.createSubmissionActionAddFiles();
+      sraAddFiles.setTargetDb(TypeTargetDb.SRA);
+
+
+      // TODO
+      // File type and file names
+//      Optional<String> fileType = getTemplateFieldValue(sra, SRA_FILE_TYPE_FIELD);
 //
-//      // Descriptor
-//      ncbiBioSample.setDescriptor(createDescriptor("AIRR Submission", "AIRR Submission")); // TODO
+//      if (fileType.isPresent()) {
 //
-//      // Organism
-//      ncbiBioSample.setOrganism(createOrganism("Homo sapiens")); // TODO
+//        if (sra.hasNonNull(SRA_FILE_NAME_FIELD) && sra.get(SRA_FILE_NAME_FIELD).size() > 0) {
 //
-//      // Package
-//      ncbiBioSample.setPackage("Human.1.0"); // TODO
+//          Iterator fileNameFieldsIt = sra.get(SRA_FILE_NAME_FIELD).iterator();
 //
-//      // Attributes
-//      ncbiBioSample.setAttributes(createBioSampleAttributes(bioSample, releaseDate));
+//          while (fileNameFieldsIt.hasNext()) {
 //
-//      // XmlContent
-//      // Development Note: The original NCBI submission doesn't include the BioSample element, so it
-//      // is required to modify the submission.xsd file (See submission.xsd:441)
-//      TypeInlineData.XmlContent xmlContent = submissionObjectFactory.createTypeInlineDataXmlContent();
-//      xmlContent.setBioSample(ncbiBioSample);
+//            String fileNameField = fileNameFieldsIt.next().toString();
 //
-//      // Data
-//      Submission.Action.AddData.Data bioSampleData = submissionObjectFactory.createSubmissionActionAddDataData();
-//      bioSampleData.setContentType("XML");
-//      bioSampleData.setXmlContent(xmlContent);
+//            Optional<String> fileName = getTemplateFieldValue(sra, fileNameField);
 //
-//      // Identifier
-//      TypeIdentifier actionIdentifier = ncbiCommonObjectFactory.createTypeIdentifier();
-//      TypeSPUID bioSampleSpuid = ncbiCommonObjectFactory.createTypeSPUID();
-//      bioSampleSpuid.setSpuidNamespace(CEDAR_NAMESPACE);
-//      bioSampleSpuid.setValue(createNewActionId());
-//      actionIdentifier.setSPUID(bioSampleSpuid);
+//            if (fileName.isPresent()) {
 //
-//      // Action/AddData
-//      Submission.Action.AddData bioSampleSubmissionActionAddData = submissionObjectFactory
-//          .createSubmissionActionAddData();
-//      bioSampleSubmissionActionAddData.setTargetDb(TypeTargetDb.BIO_SAMPLE);
-//      bioSampleSubmissionActionAddData.setData(bioSampleData);
-//      bioSampleSubmissionActionAddData.setIdentifier(actionIdentifier);
+//              Submission.Action.AddFiles.File sraFile = submissionObjectFactory.createSubmissionActionAddFilesFile();
+//              sraFile.setFilePath(fileName.get());
+//              sraFile.setDataType(fileType.get());
+//              sraAddFiles.getFile().add(sraFile);
 //
-//      // Action
-//      Submission.Action bioSampleAction = submissionObjectFactory.createSubmissionAction();
-//      bioSampleAction.setAddData(bioSampleSubmissionActionAddData);
-//      ncbiSubmission.getAction().add(bioSampleAction);
-//    }
-//
-//    // Retrieve the SRAs from the CAIRR instance
-//    int sraIndex = 0; // to track the corresponding BioSample record for this SRA entry
-//    for (SequenceReadArchiveForAIRRNCBI sequenceReadArchive : cairrInstance.getSequenceReadArchiveForAIRRNCBI()) {
-//      // AddFiles
-//      Submission.Action.AddFiles sraAddFiles = submissionObjectFactory.createSubmissionActionAddFiles();
-//      sraAddFiles.setTargetDb(TypeTargetDb.SRA);
-//
-//      if (sequenceReadArchive.getFileType() != null) {
-//        String fileType = sequenceReadArchive.getFileType().getValue();
-//
-//        List<String> fileAttributeNames = sequenceReadArchive.getFilename();
-//        Map<String, Object> additionalProperties = sequenceReadArchive.getAdditionalProperties();
-//
-//        for (String fileAttributeName : fileAttributeNames) {
-//
-//          if (additionalProperties.containsKey(fileAttributeName)) {
-//            //
-//            Map<String, Object> fileNameObject = (Map<String, Object>) additionalProperties.get(fileAttributeName);
-//
-//            if (fileNameObject.containsKey("@value")) {
-//              String fileName = fileNameObject.get("@value").toString();
-//              if (fileName != null || fileType != null) {
-//                Submission.Action.AddFiles.File sraFile = submissionObjectFactory
-//                    .createSubmissionActionAddFilesFile();
-//                sraFile.setFilePath(fileName);
-//                sraFile.setDataType(fileType);
-//                sraAddFiles.getFile().add(sraFile);
-//
-//              }
+//            } else {
+//              throw new IllegalArgumentException("File name field not present: " + fileNameField);
 //            }
 //          }
+//        } else {
+//          // In this case there is a file type but no file names, so we throw an exception
+//          throw new IllegalArgumentException("Missing array of file names");
 //        }
+//      } else {
+//        // do nothing
 //      }
-//
-//      // Reference to BioSample ID
-//
+
+      // Reference to BioSample ID
+
 //      if (sequenceReadArchive.getSampleID() != null && sequenceReadArchive.getSampleID().getValue() != null) {
 //        String bioSampleID = sequenceReadArchive.getSampleID().getValue();
 //        TypeFileAttributeRefId bioSampleAttributeRefId = submissionObjectFactory.createTypeFileAttributeRefId();
@@ -174,283 +188,308 @@ public class NcbiGenericTemplateInstance2XMLConverter {
 //        bioSampleAttributeRefId.setRefId(refId);
 //        sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(bioSampleAttributeRefId);
 //      }
-//
-//      // Reference to BioProject ID
-//
-//      if (!bioProjectID.isEmpty()) {
-//        TypeFileAttributeRefId bioProjectAttributeRefId = submissionObjectFactory.createTypeFileAttributeRefId();
-//        bioProjectAttributeRefId.setName("BioProject");
-//        TypeRefId refId = ncbiCommonObjectFactory.createTypeRefId();
-//        TypePrimaryId primaryId = ncbiCommonObjectFactory.createTypePrimaryId();
-//        primaryId.setDb("BioProject");
-//        primaryId.setValue(bioProjectID);
-//        refId.setPrimaryId(primaryId);
-//        bioProjectAttributeRefId.setRefId(refId);
-//        sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(bioProjectAttributeRefId);
-//      }
-//
-//      // Target Substrate
-//
-//      String targetSubstrateValue = sequenceReadArchive.getTargetSubstrate().getValue();
-//      if (targetSubstrateValue != null) {
-//        TypeFileAttribute fileAttribute = submissionObjectFactory.createTypeFileAttribute();
-//        fileAttribute.setName("target_substrate");
-//        fileAttribute.setValue(targetSubstrateValue);
-//        sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(fileAttribute);
-//      }
-//
-//      // Target Substrate Quality
-//
-//      String targetSubstrateQualityValue = sequenceReadArchive.getTargetSubstrateQuality().getValue();
-//      if (targetSubstrateQualityValue != null) {
-//        TypeFileAttribute fileAttribute = submissionObjectFactory.createTypeFileAttribute();
-//        fileAttribute.setName("target_substrate_quality");
-//        fileAttribute.setValue(targetSubstrateQualityValue);
-//        sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(fileAttribute);
-//      }
-//
-//      // Nucleic Acid Processing ID
-//
-//      String libraryIdValue = sequenceReadArchive.getNucleicAcidProcessingID().getValue();
-//      if (libraryIdValue != null) {
-//        TypeFileAttribute fileAttribute = submissionObjectFactory.createTypeFileAttribute();
-//        fileAttribute.setName("library_ID");
-//        fileAttribute.setValue(libraryIdValue);
-//        sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(fileAttribute);
-//      }
-//
-//      // Template Amount
-//
-//      String TemplateAmountValue = sequenceReadArchive.getTemplateAmount().getValue();
-//      if (TemplateAmountValue != null) {
-//        TypeFileAttribute fileAttribute = submissionObjectFactory.createTypeFileAttribute();
-//        fileAttribute.setName("template_amount");
-//        fileAttribute.setValue(TemplateAmountValue);
-//        sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(fileAttribute);
-//      }
-//
-//      // Library Generation Method
-//
-//      String libraryGenerationMethodValue = sequenceReadArchive.getLibraryGenerationMethod().getValue();
-//      if (libraryGenerationMethodValue != null) {
-//        TypeFileAttribute fileAttribute = submissionObjectFactory.createTypeFileAttribute();
-//        fileAttribute.setName("library_generation_method");
-//        fileAttribute.setValue(libraryGenerationMethodValue);
-//        sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(fileAttribute);
-//      }
-//
-//      // Library Generation Protocol
-//
-//      String libraryNameValue = sequenceReadArchive.getLibraryGenerationProtocol().getValue();
-//      if (libraryNameValue != null) {
-//        TypeFileAttribute fileAttribute = submissionObjectFactory.createTypeFileAttribute();
-//        fileAttribute.setName("design_description");
-//        fileAttribute.setValue(libraryNameValue);
-//        sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(fileAttribute);
-//      }
-//
-//      // Protocol ID
-//
-//      String protocolIDValue = sequenceReadArchive.getProtocolIDs().getValue();
-//      if (protocolIDValue != null) {
-//        TypeFileAttribute fileAttribute = submissionObjectFactory.createTypeFileAttribute();
-//        fileAttribute.setName("protocol_ids");
-//        fileAttribute.setValue(protocolIDValue);
-//        sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(fileAttribute);
-//      }
-//
-//      // Target Locus for PCR
-//
-//      String TargetLocusForPCRValue = sequenceReadArchive.getTargetLocusForPCR().getValue();
-//      if (TargetLocusForPCRValue != null) {
-//        TypeFileAttribute fileAttribute = submissionObjectFactory.createTypeFileAttribute();
-//        fileAttribute.setName("pcr_target_locus");
-//        fileAttribute.setValue(TargetLocusForPCRValue);
-//        sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(fileAttribute);
-//      }
-//
-//      // Forward PCR Primer Target Location
-//
-//      String forwardPCRPrimerTargetLocationValue = sequenceReadArchive.getForwardPCRPrimerTargetLocation().getValue();
-//      if (forwardPCRPrimerTargetLocationValue != null) {
-//        TypeFileAttribute fileAttribute = submissionObjectFactory.createTypeFileAttribute();
-//        fileAttribute.setName("forward_pcr_primer_target_location");
-//        fileAttribute.setValue(forwardPCRPrimerTargetLocationValue);
-//        sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(fileAttribute);
-//      }
-//
-//      // Reverse PCR Primer Target Location
-//
-//      String reversePCRPrimerTargetLocationValue = sequenceReadArchive.getReversePCRPrimerTargetLocation().getValue();
-//      if (reversePCRPrimerTargetLocationValue != null) {
-//        TypeFileAttribute fileAttribute = submissionObjectFactory.createTypeFileAttribute();
-//        fileAttribute.setName("reverse_pcr_primer_target_location");
-//        fileAttribute.setValue(reversePCRPrimerTargetLocationValue);
-//        sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(fileAttribute);
-//      }
-//
-//      // Complete Sequence
-//
-//      String completeSequenceValue = sequenceReadArchive.getCompleteSequences().getValue();
-//      if (completeSequenceValue != null) {
-//        TypeFileAttribute fileAttribute = submissionObjectFactory.createTypeFileAttribute();
-//        fileAttribute.setName("complete_sequences");
-//        fileAttribute.setValue(completeSequenceValue);
-//        sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(fileAttribute);
-//      }
-//
-//      // Physical Linkage of Different Loci
-//
-//      String physicalLinkageOfDifferentLociValue = sequenceReadArchive.getPhysicalLinkageOfDifferentLoci().getValue();
-//      if (physicalLinkageOfDifferentLociValue != null) {
-//        TypeFileAttribute fileAttribute = submissionObjectFactory.createTypeFileAttribute();
-//        fileAttribute.setName("physical_linkage");
-//        fileAttribute.setValue(physicalLinkageOfDifferentLociValue);
-//        sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(fileAttribute);
-//      }
-//
-//      // Total Reads Passing QC Filter
-//
-//      String totalReadsPassingQCFilterValue = sequenceReadArchive.getTotalReadsPassingQCFilter().getValue();
-//      if (totalReadsPassingQCFilterValue != null) {
-//        TypeFileAttribute fileAttribute = submissionObjectFactory.createTypeFileAttribute();
-//        fileAttribute.setName("total_reads_passing_qc_filter");
-//        fileAttribute.setValue(totalReadsPassingQCFilterValue);
-//        sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(fileAttribute);
-//      }
-//
-//      // library + sequencing strategy + layout + instrument model must be unique according to
-//      // https://www.ncbi.nlm.nih.gov/sra/docs/submitmeta/
-//
-//      // Sequencing Platform
-//
-//      String sequencingPlatformValue = sequenceReadArchive.getSequencingPlatform().getValue();
-//      if (sequencingPlatformValue != null) {
-//        TypeFileAttribute fileAttribute = submissionObjectFactory.createTypeFileAttribute();
-//        fileAttribute.setName("instrument_model");
-//        fileAttribute.setValue(sequencingPlatformValue);
-//        sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(fileAttribute);
-//      }
-//
-//      // Sequencing Read Lengths
-//
-//      String readLengthsValue = sequenceReadArchive.getReadLengths().getValue();
-//      if (readLengthsValue != null) {
-//        TypeFileAttribute fileAttribute = submissionObjectFactory.createTypeFileAttribute();
-//        fileAttribute.setName("read_lengths");
-//        fileAttribute.setValue(readLengthsValue);
-//        sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(fileAttribute);
-//      }
-//
-//      // Sequencing Facility
-//
-//      String sequencingFacilityValue = sequenceReadArchive.getSequencingFacility().getValue();
-//      if (sequencingFacilityValue != null) {
-//        TypeFileAttribute fileAttribute = submissionObjectFactory.createTypeFileAttribute();
-//        fileAttribute.setName("sequencing_facility");
-//        fileAttribute.setValue(sequencingFacilityValue);
-//        sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(fileAttribute);
-//      }
-//
-//      // Batch Number
-//
-//      String batchNumberValue = sequenceReadArchive.getBatchNumber().getValue();
-//      if (batchNumberValue != null) {
-//        TypeFileAttribute fileAttribute = submissionObjectFactory.createTypeFileAttribute();
-//        fileAttribute.setName("batch_number");
-//        fileAttribute.setValue(batchNumberValue);
-//        sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(fileAttribute);
-//      }
-//
-//      // Date of Sequencing Run
-//
-//      String dateOfSequencingRunValue = sequenceReadArchive.getDateOfSequencingRun().getValue();
-//      if (dateOfSequencingRunValue != null) {
-//        TypeFileAttribute fileAttribute = submissionObjectFactory.createTypeFileAttribute();
-//        fileAttribute.setName("sequencing_run_date");
-//        fileAttribute.setValue(dateOfSequencingRunValue);
-//        // TODO Possible date format issue
-//        //sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(fileAttribute);
-//      }
-//
-//      // Sequencing Kit
-//
-//      String sequencingKitValue = sequenceReadArchive.getSequencingKit().getValue();
-//      if (sequencingKitValue != null) {
-//        TypeFileAttribute fileAttribute = submissionObjectFactory.createTypeFileAttribute();
-//        fileAttribute.setName("sequencing_kit");
-//        fileAttribute.setValue(sequencingKitValue);
-//        sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(fileAttribute);
-//      }
-//
-//      // Library Strategy
-//
-//      String libraryStrategyValue = sequenceReadArchive.getLibraryStrategy().getValue();
-//      if (libraryStrategyValue != null) {
-//        TypeFileAttribute fileAttribute = submissionObjectFactory.createTypeFileAttribute();
-//        fileAttribute.setName("library_strategy");
-//        fileAttribute.setValue(libraryStrategyValue);
-//        sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(fileAttribute);
-//      }
-//
-//      // Library Source
-//
-//      String librarySourceValue = sequenceReadArchive.getLibrarySource().getValue();
-//      if (librarySourceValue != null) {
-//        TypeFileAttribute fileAttribute = submissionObjectFactory.createTypeFileAttribute();
-//        fileAttribute.setName("library_source");
-//        fileAttribute.setValue(librarySourceValue);
-//        sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(fileAttribute);
-//      }
-//
-//      // Library Selection
-//
-//      String librarySelectionValue = sequenceReadArchive.getLibrarySelection().getValue();
-//      if (librarySelectionValue != null) {
-//        TypeFileAttribute fileAttribute = submissionObjectFactory.createTypeFileAttribute();
-//        fileAttribute.setName("library_selection");
-//        fileAttribute.setValue(librarySelectionValue);
-//        sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(fileAttribute);
-//      }
-//
-//      // Library Layout
-//
-//      String libraryLayoutValue = sequenceReadArchive.getLibraryLayout().getValue();
-//      if (libraryLayoutValue != null) {
-//        TypeFileAttribute fileAttribute = submissionObjectFactory.createTypeFileAttribute();
-//        fileAttribute.setName("library_layout");
-//        fileAttribute.setValue(libraryLayoutValue);
-//        sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(fileAttribute);
-//      }
-//
-//      // Release Status
-//      if (releaseDate != null && !releaseDate.isEmpty()) {
-//        TypeReleaseStatus typeReleaseStatus = submissionObjectFactory.createTypeReleaseStatus();
-//        TypeReleaseStatus.SetReleaseDate filesReleaseDate = submissionObjectFactory.createTypeReleaseStatusSetReleaseDate();
-//        filesReleaseDate.setReleaseDate(createXMLGregorianCalendar(releaseDate, instanceDateFormat));
-//        typeReleaseStatus.setSetReleaseDate(filesReleaseDate);
-//        sraAddFiles.setStatus(typeReleaseStatus);
-//      }
-//
-//      // End of AIRR SRA Elements
-//
-//      TypeSPUID sraSampleSpuid = ncbiCommonObjectFactory.createTypeSPUID();
-//      sraSampleSpuid.setSpuidNamespace(CEDAR_NAMESPACE);
-//      sraSampleSpuid.setValue(createNewSraId());
-//
-//      TypeIdentifier sraIdentifier = ncbiCommonObjectFactory.createTypeIdentifier();
-//      sraIdentifier.setSPUID(sraSampleSpuid);
-//
-//      sraAddFiles.setIdentifier(sraIdentifier);
-//
-//      // Action
-//      Submission.Action sraAction = submissionObjectFactory.createSubmissionAction();
-//      sraAction.setAddFiles(sraAddFiles);
-//
-//      ncbiSubmission.getAction().add(sraAction);
-//
-//      sraIndex++; // increment the index counter
-//    }
+
+      // Reference to BioProject ID
+
+      if (!bioProjectID.isEmpty()) {
+        TypeFileAttributeRefId bioProjectAttributeRefId = submissionObjectFactory.createTypeFileAttributeRefId();
+        bioProjectAttributeRefId.setName("BioProject");
+        TypeRefId refId = ncbiCommonObjectFactory.createTypeRefId();
+        TypePrimaryId primaryId = ncbiCommonObjectFactory.createTypePrimaryId();
+        primaryId.setDb("BioProject");
+        primaryId.setValue(bioProjectID);
+        refId.setPrimaryId(primaryId);
+        bioProjectAttributeRefId.setRefId(refId);
+        sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(bioProjectAttributeRefId);
+      }
+
+      // Library ID
+      Optional<String> libraryId = getTemplateFieldValue(sra, SRA_LIBRARY_ID_FIELD);
+      if (libraryId.isPresent()) {
+        TypeFileAttribute fileAttribute = submissionObjectFactory.createTypeFileAttribute();
+        fileAttribute.setName("library_ID");
+        fileAttribute.setValue(libraryId.get());
+        sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(fileAttribute);
+      }
+      else {
+        throw new IllegalArgumentException("Missing required value: " + SRA_LIBRARY_ID_FIELD);
+      }
+
+      // Library Name
+      Optional<String> libraryName = getTemplateFieldValue(sra, SRA_LIBRARY_NAME_FIELD);
+      if (libraryName.isPresent()) {
+        TypeFileAttribute fileAttribute = submissionObjectFactory.createTypeFileAttribute();
+        fileAttribute.setName("library_name");
+        fileAttribute.setValue(libraryName.get());
+        sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(fileAttribute);
+      }
+      else {
+        throw new IllegalArgumentException("Missing required value: " + SRA_LIBRARY_NAME_FIELD);
+      }
+
+      // Library Instrument
+      Optional<String> libraryInstrument = getTemplateFieldValue(sra, SRA_LIBRARY_INSTRUMENT_FIELD);
+      if (libraryInstrument.isPresent()) {
+        TypeFileAttribute fileAttribute = submissionObjectFactory.createTypeFileAttribute();
+        fileAttribute.setName("library_instrument");
+        fileAttribute.setValue(libraryInstrument.get());
+        sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(fileAttribute);
+      }
+      else {
+        throw new IllegalArgumentException("Missing required value: " + SRA_LIBRARY_INSTRUMENT_FIELD);
+      }
+
+      // Library Strategy
+      Optional<String> libraryStrategy = getTemplateFieldValue(sra, SRA_LIBRARY_STRATEGY_FIELD);
+      if (libraryStrategy.isPresent()) {
+        TypeFileAttribute fileAttribute = submissionObjectFactory.createTypeFileAttribute();
+        fileAttribute.setName("library_strategy");
+        fileAttribute.setValue(libraryStrategy.get());
+        sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(fileAttribute);
+      }
+      else {
+        throw new IllegalArgumentException("Missing required value: " + SRA_LIBRARY_STRATEGY_FIELD);
+      }
+
+      // Library Source
+      Optional<String> librarySource = getTemplateFieldValue(sra, SRA_LIBRARY_SOURCE_FIELD);
+      if (librarySource.isPresent()) {
+        TypeFileAttribute fileAttribute = submissionObjectFactory.createTypeFileAttribute();
+        fileAttribute.setName("library_source");
+        fileAttribute.setValue(librarySource.get());
+        sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(fileAttribute);
+      }
+      else {
+        throw new IllegalArgumentException("Missing required value: " + SRA_LIBRARY_SOURCE_FIELD);
+      }
+
+      // Library Selection
+      Optional<String> librarySelection = getTemplateFieldValue(sra, SRA_LIBRARY_SELECTION_FIELD);
+      if (librarySelection.isPresent()) {
+        TypeFileAttribute fileAttribute = submissionObjectFactory.createTypeFileAttribute();
+        fileAttribute.setName("library_selection");
+        fileAttribute.setValue(librarySelection.get());
+        sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(fileAttribute);
+      }
+      else {
+        throw new IllegalArgumentException("Missing required value: " + SRA_LIBRARY_SELECTION_FIELD);
+      }
+
+      // Library Layout
+      Optional<String> libraryLayout = getTemplateFieldValue(sra, SRA_LIBRARY_LAYOUT_FIELD);
+      if (libraryLayout.isPresent()) {
+        TypeFileAttribute fileAttribute = submissionObjectFactory.createTypeFileAttribute();
+        fileAttribute.setName("library_layout");
+        fileAttribute.setValue(libraryLayout.get());
+        sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(fileAttribute);
+      }
+
+      // Library Construction Protocol
+      Optional<String> libraryConstructionProtocol = getTemplateFieldValue(sra, SRA_LIBRARY_CONSTRUCTION_PROTOCOL_FIELD);
+      if (libraryConstructionProtocol.isPresent()) {
+        TypeFileAttribute fileAttribute = submissionObjectFactory.createTypeFileAttribute();
+        fileAttribute.setName("library_construction_protocol");
+        fileAttribute.setValue(libraryConstructionProtocol.get());
+        sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(fileAttribute);
+      }
+
+      // Design Description
+      Optional<String> designDescription = getTemplateFieldValue(sra, SRA_DESIGN_DESCRIPTION_FIELD);
+      if (designDescription.isPresent()) {
+        TypeFileAttribute fileAttribute = submissionObjectFactory.createTypeFileAttribute();
+        fileAttribute.setName("design_description");
+        fileAttribute.setValue(designDescription.get());
+        sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(fileAttribute);
+      }
+
+      // Target Substrate
+      Optional<String> targetSubstrate = getTemplateFieldValue(sra, SRA_TARGET_SUBSTRATE_FIELD);
+      if (targetSubstrate.isPresent()) {
+        TypeFileAttribute fileAttribute = submissionObjectFactory.createTypeFileAttribute();
+        fileAttribute.setName("target_substrate");
+        fileAttribute.setValue(targetSubstrate.get());
+        sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(fileAttribute);
+      }
+
+      // Target Substrate Quality
+      Optional<String> targetSubstrateQuality = getTemplateFieldValue(sra, SRA_TARGET_SUBSTRATE_QUALITY_FIELD);
+      if (targetSubstrateQuality.isPresent()) {
+        TypeFileAttribute fileAttribute = submissionObjectFactory.createTypeFileAttribute();
+        fileAttribute.setName("target_substrate_quality");
+        fileAttribute.setValue(targetSubstrateQuality.get());
+        sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(fileAttribute);
+      }
+
+      // Library Generation Method
+      Optional<String> libraryGenerationMethod = getTemplateFieldValue(sra, SRA_LIBRARY_GENERATION_METHOD_FIELD);
+      if (libraryGenerationMethod.isPresent()) {
+        TypeFileAttribute fileAttribute = submissionObjectFactory.createTypeFileAttribute();
+        fileAttribute.setName("library_generation_method");
+        fileAttribute.setValue(libraryGenerationMethod.get());
+        sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(fileAttribute);
+      }
+
+      // Library Generation Protocol
+      Optional<String> libraryGenerationProtocol = getTemplateFieldValue(sra, SRA_LIBRARY_GENERATION_PROTOCOL_FIELD);
+      if (libraryGenerationProtocol.isPresent()) {
+        TypeFileAttribute fileAttribute = submissionObjectFactory.createTypeFileAttribute();
+        fileAttribute.setName("library_generation_protocol");
+        fileAttribute.setValue(libraryGenerationProtocol.get());
+        sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(fileAttribute);
+      }
+
+      // Target Locus PCR
+      Optional<String> targetLocusPcr = getTemplateFieldValue(sra, SRA_TARGET_LOCUS_PCR_FIELD);
+      if (targetLocusPcr.isPresent()) {
+        TypeFileAttribute fileAttribute = submissionObjectFactory.createTypeFileAttribute();
+        fileAttribute.setName("target_locus_pcr");
+        fileAttribute.setValue(targetLocusPcr.get());
+        sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(fileAttribute);
+      }
+
+      // Forward PCR Primer Target Location
+      Optional<String> forwardPcrPrimerTargetLocation = getTemplateFieldValue(sra, SRA_FORWARD_PCR_PRIMER_TARGET_LOCATION_FIELD);
+      if (forwardPcrPrimerTargetLocation.isPresent()) {
+        TypeFileAttribute fileAttribute = submissionObjectFactory.createTypeFileAttribute();
+        fileAttribute.setName("forward_pcr_primer_target_location");
+        fileAttribute.setValue(forwardPcrPrimerTargetLocation.get());
+        sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(fileAttribute);
+      }
+
+      // Reverse PCR Primer Target Location
+      Optional<String> reversePcrPrimerTargetLocation = getTemplateFieldValue(sra, SRA_REVERSE_PCR_PRIMER_TARGET_LOCATION_FIELD);
+      if (reversePcrPrimerTargetLocation.isPresent()) {
+        TypeFileAttribute fileAttribute = submissionObjectFactory.createTypeFileAttribute();
+        fileAttribute.setName("reverse_pcr_primer_target_location");
+        fileAttribute.setValue(reversePcrPrimerTargetLocation.get());
+        sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(fileAttribute);
+      }
+
+      // Whole vs Partial Sequences
+      Optional<String> wholeVsPartialSequences = getTemplateFieldValue(sra, SRA_WHOLE_VS_PARTIAL_SEQUENCES_FIELD);
+      if (wholeVsPartialSequences.isPresent()) {
+        TypeFileAttribute fileAttribute = submissionObjectFactory.createTypeFileAttribute();
+        fileAttribute.setName("whole_vs_partial_sequences");
+        fileAttribute.setValue(wholeVsPartialSequences.get());
+        sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(fileAttribute);
+      }
+      // Comparison Heavy Light Paired Chains
+      Optional<String> comparisonHeavyLightPairedChains = getTemplateFieldValue(sra, SRA_COMPARISON_HEAVY_LIGHT_PAIRED_CHAINS_FIELD);
+      if (comparisonHeavyLightPairedChains.isPresent()) {
+        TypeFileAttribute fileAttribute = submissionObjectFactory.createTypeFileAttribute();
+        fileAttribute.setName("comparison_heavy_light_paired_chains");
+        fileAttribute.setValue(comparisonHeavyLightPairedChains.get());
+        sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(fileAttribute);
+      }
+      // NG Template
+      Optional<String> ngTemplate = getTemplateFieldValue(sra, SRA_NG_TEMPLATE_FIELD);
+      if (ngTemplate.isPresent()) {
+        TypeFileAttribute fileAttribute = submissionObjectFactory.createTypeFileAttribute();
+        fileAttribute.setName("ng_template");
+        fileAttribute.setValue(ngTemplate.get());
+        sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(fileAttribute);
+      }
+
+      // Total Reads Passing QC Filter
+      Optional<String> totalReadsPassingQcFilter = getTemplateFieldValue(sra, SRA_TOTAL_READS_PASSING_QC_FILTER_FIELD);
+      if (totalReadsPassingQcFilter.isPresent()) {
+        TypeFileAttribute fileAttribute = submissionObjectFactory.createTypeFileAttribute();
+        fileAttribute.setName("total_reads_passing_qc_filter");
+        fileAttribute.setValue(totalReadsPassingQcFilter.get());
+        sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(fileAttribute);
+      }
+
+      // Protocol ID
+      Optional<String> protocolId = getTemplateFieldValue(sra, SRA_PROTOCOL_ID_FIELD);
+      if (protocolId.isPresent()) {
+        TypeFileAttribute fileAttribute = submissionObjectFactory.createTypeFileAttribute();
+        fileAttribute.setName("protocol_ID");
+        fileAttribute.setValue(protocolId.get());
+        sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(fileAttribute);
+      }
+
+      // Read Length
+      Optional<String> readLength = getTemplateFieldValue(sra, SRA_READ_LENGTH_FIELD);
+      if (readLength.isPresent()) {
+        TypeFileAttribute fileAttribute = submissionObjectFactory.createTypeFileAttribute();
+        fileAttribute.setName("read_length");
+        fileAttribute.setValue(readLength.get());
+        sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(fileAttribute);
+      }
+
+      // Sequencing Platform
+      Optional<String> sequencingPlatform = getTemplateFieldValue(sra, SRA_SEQUENCING_PLATFORM_FIELD);
+      if (sequencingPlatform.isPresent()) {
+        TypeFileAttribute fileAttribute = submissionObjectFactory.createTypeFileAttribute();
+        fileAttribute.setName("sequencing_platform");
+        fileAttribute.setValue(sequencingPlatform.get());
+        sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(fileAttribute);
+      }
+
+      // Date of Sequencing Run
+      Optional<String> dateOfSequencingRun = getTemplateFieldValue(sra, SRA_DATE_OF_SEQUENCING_RUN_FIELD);
+      if (dateOfSequencingRun.isPresent()) {
+        TypeFileAttribute fileAttribute = submissionObjectFactory.createTypeFileAttribute();
+        fileAttribute.setName("date_of_sequencing_run");
+        fileAttribute.setValue(createXMLGregorianCalendar(dateOfSequencingRun.get(), instanceDateFormat).toString());
+        sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(fileAttribute);
+      }
+
+      // Sequencing Facility
+      Optional<String> sequencingFacility = getTemplateFieldValue(sra, SRA_SEQUENCING_FACILITY_FIELD);
+      if (sequencingFacility.isPresent()) {
+        TypeFileAttribute fileAttribute = submissionObjectFactory.createTypeFileAttribute();
+        fileAttribute.setName("sequencing_facility");
+        fileAttribute.setValue(sequencingFacility.get());
+        sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(fileAttribute);
+      }
+
+      // Batch Number
+      Optional<String> batchNumber = getTemplateFieldValue(sra, SRA_BATCH_NUMBER_FIELD);
+      if (batchNumber.isPresent()) {
+        TypeFileAttribute fileAttribute = submissionObjectFactory.createTypeFileAttribute();
+        fileAttribute.setName("batch_number");
+        fileAttribute.setValue(batchNumber.get());
+        sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(fileAttribute);
+      }
+
+      // Sequencing Kit
+      Optional<String> sequencingKit = getTemplateFieldValue(sra, SRA_SEQUENCING_KIT_FIELD);
+      if (sequencingKit.isPresent()) {
+        TypeFileAttribute fileAttribute = submissionObjectFactory.createTypeFileAttribute();
+        fileAttribute.setName("sequencing_kit");
+        fileAttribute.setValue(sequencingKit.get());
+        sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(fileAttribute);
+      }
+
+      // TODO: check if needed
+      // Release Status
+      if (releaseDate != null && !releaseDate.isEmpty()) {
+        TypeReleaseStatus typeReleaseStatus = submissionObjectFactory.createTypeReleaseStatus();
+        TypeReleaseStatus.SetReleaseDate filesReleaseDate = submissionObjectFactory.createTypeReleaseStatusSetReleaseDate();
+        filesReleaseDate.setReleaseDate(createXMLGregorianCalendar(releaseDate, instanceDateFormat));
+        typeReleaseStatus.setSetReleaseDate(filesReleaseDate);
+        sraAddFiles.setStatus(typeReleaseStatus);
+      }
+
+      // End of AIRR SRA Elements
+
+      TypeSPUID sraSampleSpuid = ncbiCommonObjectFactory.createTypeSPUID();
+      sraSampleSpuid.setSpuidNamespace(CEDAR_NAMESPACE);
+      sraSampleSpuid.setValue(createNewSraId());
+
+      TypeIdentifier sraIdentifier = ncbiCommonObjectFactory.createTypeIdentifier();
+      sraIdentifier.setSPUID(sraSampleSpuid);
+
+      sraAddFiles.setIdentifier(sraIdentifier);
+
+      // Action
+      Submission.Action sraAction = submissionObjectFactory.createSubmissionAction();
+      sraAction.setAddFiles(sraAddFiles);
+
+      ncbiSubmission.getAction().add(sraAction);
+
+    }
 
     // Generate XML from the submission instance
     StringWriter writer = new StringWriter();
@@ -532,346 +571,155 @@ public class NcbiGenericTemplateInstance2XMLConverter {
     submissionDescription.getOrganization().add(contactOrganization);
 
     // TODO: Release date
-    Submission.Description.Hold submissionDescriptionHold = submissionObjectFactory.createSubmissionDescriptionHold();
-    //String releaseDate = cairrInstance.getSubmissionsReleaseDate().getValue();
-    String releaseDate = DEFAULT_RELEASE_DATE;
-    if (releaseDate != null && !releaseDate.isEmpty()) {
-      submissionDescriptionHold.setReleaseDate(createXMLGregorianCalendar(releaseDate, instanceDateFormat));
-      submissionDescription.setHold(submissionDescriptionHold);
-    }
+//    Submission.Description.Hold submissionDescriptionHold = submissionObjectFactory.createSubmissionDescriptionHold();
+//    //String releaseDate = cairrInstance.getSubmissionsReleaseDate().getValue();
+//    String releaseDate = DEFAULT_RELEASE_DATE;
+//    if (releaseDate != null && !releaseDate.isEmpty()) {
+//      submissionDescriptionHold.setReleaseDate(createXMLGregorianCalendar(releaseDate, instanceDateFormat));
+//      submissionDescription.setHold(submissionDescriptionHold);
+//    }
 
     return submissionDescription;
   }
 
-  private TypeBioSample.Attributes createBioSampleAttributes(BioSampleForAIRRNCBI bioSample, String releaseDate) throws ParseException {
+  private TypeBioSample.Attributes createBioSampleAttributes(JsonNode bioSample, String releaseDate) throws ParseException {
     // Attributes
     TypeBioSample.Attributes bioSampleAttributes = bioSampleObjectFactory.createTypeBioSampleAttributes();
 
-    // Subject ID
-    String subjectIdValue = bioSample.getSubjectID().getValue();
-    if (subjectIdValue != null && !subjectIdValue.isEmpty()) {
-      bioSampleAttributes.getAttribute().add(createAttribute("SubjectId", subjectIdValue));
-    }
-
-    // Synthetic Library
-    if (bioSample.getSyntheticLibrary() != null && bioSample.getSyntheticLibrary().getValue() != null) {
-      String syntheticLibraryValue = bioSample.getSyntheticLibrary().getValue().toLowerCase();
-      if (syntheticLibraryValue != null && !syntheticLibraryValue.isEmpty()) {
-        bioSampleAttributes.getAttribute().add(createAttribute("SyntheticLibrary", syntheticLibraryValue));
-      }
-    }
-
     // Organism
-    if (bioSample.getOrganism() != null && bioSample.getOrganism().getId() != null) {
-      String organismValue = bioSample.getOrganism().getId().toString();
-      if (organismValue != null && !organismValue.isEmpty()) {
-        bioSampleAttributes.getAttribute().add(createAttribute("Organism", organismValue));
-      }
+    Optional<String> organism = getTemplateFieldValue(bioSample, BIOSAMPLE_ORGANISM_FIELD);
+    if (organism.isPresent()) {
+      bioSampleAttributes.getAttribute().add(createAttribute("Organism", organism.get()));
     }
 
-    // Sex
-    if (bioSample.getSex() != null && bioSample.getSex().getValue() != null) {
-      String sexValue = bioSample.getSex().getValue().toLowerCase();
-      if (sexValue != null && !sexValue.isEmpty()) {
-        bioSampleAttributes.getAttribute().add(createAttribute("Sex", sexValue));
-      }
+    // Isolate
+    Optional<String> isolate = getTemplateFieldValue(bioSample, BIOSAMPLE_ISOLATE_FIELD);
+    if (isolate.isPresent()) {
+      bioSampleAttributes.getAttribute().add(createAttribute("Isolate", isolate.get()));
     }
 
     // Age
-    if (bioSample.getAge() != null) {
-      String ageValue = bioSample.getAge().getValue();
-      if (ageValue != null && !ageValue.isEmpty()) {
-        bioSampleAttributes.getAttribute().add(createAttribute("Age", ageValue));
-      }
+    Optional<String> age = getTemplateFieldValue(bioSample, BIOSAMPLE_AGE_FIELD);
+    if (age.isPresent()) {
+      bioSampleAttributes.getAttribute().add(createAttribute("Age", age.get()));
     }
 
-    // Age Event
-    if (bioSample.getAgeEvent() != null) {
-      String ageEventValue = bioSample.getAgeEvent().getValue();
-      if (ageEventValue != null && !ageEventValue.isEmpty()) {
-        bioSampleAttributes.getAttribute().add(createAttribute("AgeEvent", ageEventValue));
-      }
+    // Biomaterial Provider
+    Optional<String> biomaterialProvider = getTemplateFieldValue(bioSample, BIOSAMPLE_BIOMATERIAL_PROVIDER_FIELD);
+    if (biomaterialProvider.isPresent()) {
+      bioSampleAttributes.getAttribute().add(createAttribute("BiomaterialProvider", biomaterialProvider.get()));
     }
 
-    // Ancestry Population
-    if (bioSample.getAncestryPopulation() != null) {
-      String ancestryPopulationValue = bioSample.getAncestryPopulation().getValue();
-      if (ancestryPopulationValue != null && !ancestryPopulationValue.isEmpty()) {
-        bioSampleAttributes.getAttribute().add(createAttribute("AncestryPopulation", ancestryPopulationValue));
-      }
+    // Sex
+    Optional<String> sex = getTemplateFieldValue(bioSample, BIOSAMPLE_SEX_FIELD);
+    if (sex.isPresent()) {
+      bioSampleAttributes.getAttribute().add(createAttribute("Sex", sex.get()));
+    }
+
+    // Tissue
+    Optional<String> tissue = getTemplateFieldValue(bioSample, BIOSAMPLE_TISSUE_FIELD);
+    if (tissue.isPresent()) {
+      bioSampleAttributes.getAttribute().add(createAttribute("Tissue", tissue.get()));
+    }
+
+    // Cell line
+    Optional<String> cellLine = getTemplateFieldValue(bioSample, BIOSAMPLE_CELL_LINE_FIELD);
+    if (cellLine.isPresent()) {
+      bioSampleAttributes.getAttribute().add(createAttribute("CellLine", cellLine.get()));
+    }
+
+    // Cell type
+    Optional<String> cellType = getTemplateFieldValue(bioSample, BIOSAMPLE_CELL_TYPE_FIELD);
+    if (cellType.isPresent()) {
+      bioSampleAttributes.getAttribute().add(createAttribute("CellType", cellType.get()));
+    }
+
+    // Cell subtype
+    Optional<String> cellSubtype = getTemplateFieldValue(bioSample, BIOSAMPLE_CELL_SUBTYPE_FIELD);
+    if (cellSubtype.isPresent()) {
+      bioSampleAttributes.getAttribute().add(createAttribute("CellSubtype", cellSubtype.get()));
+    }
+
+    // Culture collection
+    Optional<String> cultureCollection = getTemplateFieldValue(bioSample, BIOSAMPLE_CULTURE_COLLECTION_FIELD);
+    if (cultureCollection.isPresent()) {
+      bioSampleAttributes.getAttribute().add(createAttribute("CultureCollection", cultureCollection.get()));
+    }
+
+    // Development stage
+    Optional<String> developmentStage = getTemplateFieldValue(bioSample, BIOSAMPLE_DEVELOPMENT_STAGE_FIELD);
+    if (developmentStage.isPresent()) {
+      bioSampleAttributes.getAttribute().add(createAttribute("DevelopmentStage", developmentStage.get()));
+    }
+
+    // Disease
+    Optional<String> disease = getTemplateFieldValue(bioSample, BIOSAMPLE_DISEASE_FIELD);
+    if (disease.isPresent()) {
+      bioSampleAttributes.getAttribute().add(createAttribute("Disease", disease.get()));
+    }
+
+    // Disease stage
+    Optional<String> diseaseStage = getTemplateFieldValue(bioSample, BIOSAMPLE_DISEASE_STAGE_FIELD);
+    if (diseaseStage.isPresent()) {
+      bioSampleAttributes.getAttribute().add(createAttribute("DiseaseStage", diseaseStage.get()));
     }
 
     // Ethnicity
-    if (bioSample.getEthnicity() != null) {
-      String ethnicityValue = bioSample.getEthnicity().getValue();
-      if (ethnicityValue != null && !ethnicityValue.isEmpty()) {
-        bioSampleAttributes.getAttribute().add(createAttribute("Ethnicity", ethnicityValue));
-      }
+    Optional<String> ethnicity = getTemplateFieldValue(bioSample, BIOSAMPLE_ETHNICITY_FIELD);
+    if (ethnicity.isPresent()) {
+      bioSampleAttributes.getAttribute().add(createAttribute("Ethnicity", ethnicity.get()));
+    }
+
+    // Health state
+    Optional<String> healthState = getTemplateFieldValue(bioSample, BIOSAMPLE_HEALTH_STATE_FIELD);
+    if (healthState.isPresent()) {
+      bioSampleAttributes.getAttribute().add(createAttribute("HealthState", healthState.get()));
+    }
+
+    // Karyotype
+    Optional<String> karyotype = getTemplateFieldValue(bioSample, BIOSAMPLE_KARYOTYPE_FIELD);
+    if (karyotype.isPresent()) {
+      bioSampleAttributes.getAttribute().add(createAttribute("Karyotype", karyotype.get()));
+    }
+
+    // Phenotype
+    Optional<String> phenotype = getTemplateFieldValue(bioSample, BIOSAMPLE_PHENOTYPE_FIELD);
+    if (phenotype.isPresent()) {
+      bioSampleAttributes.getAttribute().add(createAttribute("Phenotype", phenotype.get()));
+    }
+
+    // Population
+    Optional<String> population = getTemplateFieldValue(bioSample, BIOSAMPLE_POPULATION_FIELD);
+    if (population.isPresent()) {
+      bioSampleAttributes.getAttribute().add(createAttribute("Population", population.get()));
     }
 
     // Race
-    if (bioSample.getRace() != null) {
-      String raceValue = bioSample.getRace().getValue();
-      if (raceValue != null && !raceValue.isEmpty()) {
-        bioSampleAttributes.getAttribute().add(createAttribute("Race", raceValue));
-      }
+    Optional<String> race = getTemplateFieldValue(bioSample, BIOSAMPLE_RACE_FIELD);
+    if (race.isPresent()) {
+      bioSampleAttributes.getAttribute().add(createAttribute("Race", race.get()));
     }
 
-    // Strain Name
-    if (bioSample.getStrainName() != null) {
-      String strainNameValue = bioSample.getStrainName().getValue();
-      if (strainNameValue != null && !strainNameValue.isEmpty()) {
-        bioSampleAttributes.getAttribute().add(createAttribute("StrainName", strainNameValue));
-      }
+    // Sample type
+    Optional<String> sampleType = getTemplateFieldValue(bioSample, BIOSAMPLE_SAMPLE_TYPE_FIELD);
+    if (sampleType.isPresent()) {
+      bioSampleAttributes.getAttribute().add(createAttribute("SampleType", sampleType.get()));
     }
 
-    // Relation to other Subject
-    if (bioSample.getRelationToOtherSubjects() != null) {
-      String relationToOtherSubjectValue = bioSample.getRelationToOtherSubjects().getValue();
-      if (relationToOtherSubjectValue != null && !relationToOtherSubjectValue.isEmpty()) {
-        bioSampleAttributes.getAttribute().add(createAttribute("RelationToOtherSubject",
-            relationToOtherSubjectValue));
-      }
+    // Treatment
+    Optional<String> treatment = getTemplateFieldValue(bioSample, BIOSAMPLE_TREATMENT_FIELD);
+    if (treatment.isPresent()) {
+      bioSampleAttributes.getAttribute().add(createAttribute("Treatment", treatment.get()));
     }
 
-    // Relation Type
-    if (bioSample.getRelationType() != null) {
-      String relationTypeValue = bioSample.getRelationType().getValue();
-      if (relationTypeValue != null && !relationTypeValue.isEmpty()) {
-        bioSampleAttributes.getAttribute().add(createAttribute("RelationType", relationTypeValue));
-      }
-    }
-
+    // TODO: check if needed
     // Release Date
     if (releaseDate != null && !releaseDate.isEmpty()) {  // Use the top-level release date
       String xmlReleaseDate = convertDateFormat(releaseDate, instanceDateFormat, xmlDateFormat);
       bioSampleAttributes.getAttribute().add(createAttribute("ProjectedReleaseDate", xmlReleaseDate));
     }
-    else if (bioSample.getEstimatedReleaseDate() != null) { // Use the release date from the BioSample element
-      String projectedReleaseDateValue = bioSample.getEstimatedReleaseDate().getValue();
-      if (projectedReleaseDateValue != null && !projectedReleaseDateValue.isEmpty()) {
-        bioSampleAttributes.getAttribute().add(createAttribute("ProjectedReleaseDate", projectedReleaseDateValue));
-      }
-    }
 
-    // Isolate
-    if (bioSample.getCellIsolation() != null) {
-      String isolateValue = bioSample.getCellIsolation().getValue();
-      if (isolateValue != null && !isolateValue.isEmpty()) {
-        bioSampleAttributes.getAttribute().add(createAttribute("Isolate", isolateValue));
-      }
-    }
-
-    // Study Group Description
-    if (bioSample.getStudyGroupDescription() != null) {
-      String studyGroupDescriptionValue = bioSample.getStudyGroupDescription().getValue();
-      if (studyGroupDescriptionValue != null && !studyGroupDescriptionValue.isEmpty()) {
-        bioSampleAttributes.getAttribute().add(createAttribute("StudyGroupDescription", studyGroupDescriptionValue));
-      }
-    }
-
-    // Diagnosis
-    if (bioSample.getDiagnosis() != null) {
-      String diagnosisValue = bioSample.getDiagnosis().toString();
-      if (diagnosisValue != null && !diagnosisValue.isEmpty()) {
-        bioSampleAttributes.getAttribute().add(createAttribute("Diagnosis", diagnosisValue));
-      }
-    }
-
-    // Length of Disease
-    if (bioSample.getLengthOfDisease() != null) {
-      String lengthOfDiseaseValue = bioSample.getLengthOfDisease().getValue();
-      if (lengthOfDiseaseValue != null && !lengthOfDiseaseValue.isEmpty()) {
-        bioSampleAttributes.getAttribute().add(createAttribute("LengthOfDisease", lengthOfDiseaseValue));
-      }
-    }
-
-    // Disease Stage
-    if (bioSample.getDiseaseStage() != null) {
-      String diseaseStageValue = bioSample.getDiseaseStage().getValue();
-      if (diseaseStageValue != null && !diseaseStageValue.isEmpty()) {
-        bioSampleAttributes.getAttribute().add(createAttribute("DiseaseStage", diseaseStageValue));
-      }
-    }
-
-    // Prior Therapies For Primary Disease Under Study
-    if (bioSample.getPriorTherapiesForPrimaryDiseaseUnderStudy() != null) {
-      String priorTherapiesForPrimaryDiseaseUnderStudyValue = bioSample.getPriorTherapiesForPrimaryDiseaseUnderStudy()
-          .getValue();
-      if (priorTherapiesForPrimaryDiseaseUnderStudyValue != null && !priorTherapiesForPrimaryDiseaseUnderStudyValue
-          .isEmpty()) {
-        bioSampleAttributes.getAttribute().add(
-            createAttribute("PriorTherapiesForPrimaryDiseaseUnderStudy",
-                priorTherapiesForPrimaryDiseaseUnderStudyValue));
-      }
-    }
-
-    // Immunogen
-    if (bioSample.getImmunogen() != null) {
-      String immunogenValue = bioSample.getImmunogen().getValue();
-      if (immunogenValue != null && !immunogenValue.isEmpty()) {
-        bioSampleAttributes.getAttribute().add(createAttribute("Immunogen", immunogenValue));
-      }
-    }
-
-    // Intervention Definition
-    if (bioSample.getInterventionDefinition() != null) {
-      String interventionDefinitionValue = bioSample.getInterventionDefinition().getValue();
-      if (interventionDefinitionValue != null) {
-        bioSampleAttributes.getAttribute().add(createAttribute("InterventionDefinition",
-            interventionDefinitionValue));
-      }
-    }
-
-    // Other Relevant Medical History
-    if (bioSample.getOtherRelevantMedicalHistory() != null) {
-      String otherRelevantMedicalHistoryValue = bioSample.getOtherRelevantMedicalHistory().getValue();
-      if (otherRelevantMedicalHistoryValue != null) {
-        bioSampleAttributes.getAttribute()
-            .add(createAttribute("OtherRelevantMedicalHistory", otherRelevantMedicalHistoryValue));
-      }
-    }
-
-    // Sample Type
-    if (bioSample.getSampleType() != null) {
-      String sampleTypeValue = bioSample.getSampleType().getValue();
-      if (sampleTypeValue != null && !sampleTypeValue.isEmpty()) {
-        bioSampleAttributes.getAttribute().add(createAttribute("SampleType", sampleTypeValue));
-      }
-    }
-
-    // Tissue
-    if (bioSample.getTissue() != null && bioSample.getTissue().getId() != null) {
-      String tissueValue = bioSample.getTissue().getId().toString();
-      if (tissueValue != null && !tissueValue.isEmpty()) {
-        bioSampleAttributes.getAttribute().add(createAttribute("Tissue", tissueValue));
-      }
-    }
-
-    // Anatomic Site
-    if (bioSample.getAnatomicSite() != null) {
-      String anatomicSiteValue = bioSample.getAnatomicSite().getValue();
-      if (anatomicSiteValue != null) {
-        bioSampleAttributes.getAttribute().add(createAttribute("AnatomicSite", anatomicSiteValue));
-      }
-    }
-
-    // Disease State of Sample
-    if (bioSample.getDiseaseStateOfSample() != null) {
-      String diseaseStateOfSampleValue = bioSample.getDiseaseStateOfSample().getValue();
-      if (diseaseStateOfSampleValue != null && !diseaseStateOfSampleValue.isEmpty()) {
-        bioSampleAttributes.getAttribute().add(createAttribute("DiseaseStateOfSample", diseaseStateOfSampleValue));
-      }
-    }
-
-    // Sample Collection Time
-    if (bioSample.getSampleCollectionTime() != null) {
-      String sampleCollectionTimeValue = bioSample.getSampleCollectionTime().getValue();
-      if (sampleCollectionTimeValue != null && !sampleCollectionTimeValue.isEmpty()) {
-        bioSampleAttributes.getAttribute().add(createAttribute("SampleCollectionTime", sampleCollectionTimeValue));
-      }
-    }
-
-    // Collection Time Event T01
-    if (bioSample.getCollectionTimeEvent() != null) {
-      String collectionTimeEventT01Value = bioSample.getCollectionTimeEvent().getValue();
-      if (collectionTimeEventT01Value != null && !collectionTimeEventT01Value.isEmpty()) {
-        bioSampleAttributes.getAttribute().add(createAttribute("CollectionTimeEventT01",
-            collectionTimeEventT01Value));
-      }
-    }
-
-    // Biomaterial Provider
-    if (bioSample.getBiomaterialProvider() != null) {
-      String biomaterialProviderValue = bioSample.getBiomaterialProvider().getValue();
-      if (biomaterialProviderValue != null && !biomaterialProviderValue.isEmpty()) {
-        bioSampleAttributes.getAttribute().add(createAttribute("BiomaterialProvider", biomaterialProviderValue));
-      }
-    }
-
-    // Tissue Processing
-    if (bioSample.getTissueProcessing() != null) {
-      String tissueProcessingValue = bioSample.getTissueProcessing().getValue();
-      if (tissueProcessingValue != null && !tissueProcessingValue.isEmpty()) {
-        bioSampleAttributes.getAttribute().add(createAttribute("TissueProcessing", tissueProcessingValue));
-      }
-    }
-
-    // Cell Subset
-    if (bioSample.getCellSubsetPhenotype() != null) {
-      String cellSubsetValue = bioSample.getCellSubsetPhenotype().getValue();
-      if (cellSubsetValue != null && !cellSubsetValue.isEmpty()) {
-        bioSampleAttributes.getAttribute().add(createAttribute("CellSubset", cellSubsetValue));
-      }
-    }
-
-    // Cell Subset Phenotype
-    if (bioSample.getCellSubsetPhenotype() != null) {
-      String cellSubsetPhenotypeValue = bioSample.getCellSubsetPhenotype().getValue();
-      if (cellSubsetPhenotypeValue != null && !cellSubsetPhenotypeValue.isEmpty()) {
-        bioSampleAttributes.getAttribute().add(createAttribute("CellSubsetPhenotype", cellSubsetPhenotypeValue));
-      }
-    }
-
-    // Single-cell Sort
-    if (bioSample.getSingleCellSort() != null) {
-      String singleCellSortValue = bioSample.getSingleCellSort().getValue();
-      if (singleCellSortValue != null && !singleCellSortValue.isEmpty()) {
-        bioSampleAttributes.getAttribute().add(createAttribute("SingleCellSort", singleCellSortValue));
-      }
-    }
-
-    // Number of Cells in Experiment
-    if (bioSample.getNumberOfCellsInExperiment() != null) {
-      String numberOfCellsInExperimentValue = bioSample.getNumberOfCellsInExperiment().getValue();
-      if (numberOfCellsInExperimentValue != null && !numberOfCellsInExperimentValue.isEmpty()) {
-        bioSampleAttributes.getAttribute()
-            .add(createAttribute("NumberOfCellsInExperiment", numberOfCellsInExperimentValue));
-      }
-    }
-
-    // Number of Cells per Sequencing Reaction1
-    if (bioSample.getNumberOfCellsPerSequencingReaction() != null) {
-      String numberOfCellsPerSequencingReactionValue = bioSample.getNumberOfCellsPerSequencingReaction().getValue();
-      if (numberOfCellsPerSequencingReactionValue != null && !numberOfCellsPerSequencingReactionValue.isEmpty()) {
-        bioSampleAttributes.getAttribute()
-            .add(createAttribute("NumberOfCellsPerSequencingReaction", numberOfCellsPerSequencingReactionValue));
-      }
-    }
-
-    // Cell Storage
-    if (bioSample.getCellStorage() != null) {
-      String cellStorageValue = bioSample.getCellStorage().getValue();
-      if (cellStorageValue != null && !cellStorageValue.isEmpty()) {
-        bioSampleAttributes.getAttribute().add(createAttribute("CellSubsetPhenotype", cellStorageValue));
-      }
-    }
-
-    // Cell Quality
-    if (bioSample.getCellQuality() != null) {
-      String cellQualityValue = bioSample.getCellQuality().getValue();
-      if (cellQualityValue != null && !cellQualityValue.isEmpty()) {
-        bioSampleAttributes.getAttribute().add(createAttribute("CellQuality", cellQualityValue));
-      }
-    }
-
-    // Cell Isolation
-    if (bioSample.getCellIsolation() != null) {
-      String cellIsolationValue = bioSample.getCellIsolation().getValue();
-      if (cellIsolationValue != null && !cellIsolationValue.isEmpty()) {
-        bioSampleAttributes.getAttribute().add(createAttribute("CellIsolationValue", cellIsolationValue));
-      }
-    }
-
-    // Processing Protocol
-    if (bioSample.getProcessingProtocol() != null) {
-      String processingProtocolValue = bioSample.getProcessingProtocol().getValue();
-      if (processingProtocolValue != null && !processingProtocolValue.isEmpty()) {
-        bioSampleAttributes.getAttribute().add(createAttribute("CellProcessingProtocol", processingProtocolValue));
-      }
-    }
-
-    // Custom CEDAR attribute
+    // Custom attribute to specify that the submission was done using CEDAR
     bioSampleAttributes.getAttribute().add(createAttribute("SubmissionTool", "CEDAR"));
 
     return bioSampleAttributes;
