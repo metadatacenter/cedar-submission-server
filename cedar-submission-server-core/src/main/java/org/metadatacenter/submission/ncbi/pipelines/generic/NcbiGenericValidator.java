@@ -1,5 +1,6 @@
 package org.metadatacenter.submission.ncbi.pipelines.generic;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import org.metadatacenter.exception.CedarException;
 import org.metadatacenter.submission.BioProjectForAIRRNCBI;
 import org.metadatacenter.submission.BioSampleForAIRRNCBI;
@@ -10,58 +11,67 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static org.metadatacenter.submission.ncbi.pipelines.generic.NcbiGenericConstants.*;
+
+// TODO: do validation
 public class NcbiGenericValidator
 {
-  public CEDARValidationResponse validate(CAIRRTemplate cairrInstance) throws CedarException
+  public CEDARValidationResponse validate(JsonNode instance) throws CedarException
   {
     CEDARValidationResponse validationResponse = new CEDARValidationResponse();
     List<String> messages = new ArrayList<>();
+
+    // Validate BioProject
+    JsonNode bioProjectNode = NcbiGenericUtil.getTemplateElementNode(instance, BIOPROJECT_ELEMENT);
+    messages.addAll(validateBioProject(bioProjectNode));
+
+    // Validate BioSample
+    JsonNode bioSampleNode = NcbiGenericUtil.getTemplateElementNode(instance, BIOSAMPLE_ELEMENT);
+    // TODO: validate biosample
+
+
+    // TODO: validate SRA?
+
     validationResponse.setMessages(messages);
 
-    messages.addAll(validateBioProject(cairrInstance.getBioProjectForAIRRNCBI()));
-
-    List<BioSampleForAIRRNCBI> bioSamples = cairrInstance.getBioSampleForAIRRNCBI();
-
-    List<String> sampleIDs = bioSamples.stream().filter(e -> e.getSampleID() != null)
-      .map(e -> e.getSampleID().getValue()).collect(Collectors.toList());
-
-    for (BioSampleForAIRRNCBI bioSample : bioSamples) {
-
+    if (messages.size() == 0) {
+      validationResponse.setIsValid(true);
     }
-
-    validationResponse.setIsValid(true);
+    else {
+      validationResponse.setIsValid(false);
+    }
 
     return validationResponse;
   }
 
-  private List<String> validateBioProject(BioProjectForAIRRNCBI bioProject)
+  private List<String> validateBioProject(JsonNode bioProject)
   {
     List<String> messages = new ArrayList<>();
 
-    if (bioProject.getStudyTitle() == null || bioProject.getStudyTitle().getValue() == null || bioProject
-      .getStudyTitle().getValue().isEmpty())
+    if (!NcbiGenericUtil.getTemplateFieldValue(bioProject, BIOPROJECT_STUDY_TITLE_FIELD).isPresent()) {
       messages.add("Study Title field must be supplied for BioProject");
+    }
 
-    if (bioProject.getStudyType() == null || bioProject.getStudyType().getId() == null )
+    if (!NcbiGenericUtil.getTemplateFieldValue(bioProject, BIOPROJECT_STUDY_TYPE_FIELD).isPresent()) {
       messages.add("Study Type field must be supplied for BioProject");
+    }
 
-    if (bioProject.getFundingAgency() == null || bioProject.getFundingAgency().getValue() == null || bioProject
-      .getFundingAgency().getValue().isEmpty())
+    if (!NcbiGenericUtil.getTemplateFieldValue(bioProject, BIOPROJECT_FUNDING_AGENCY_FIELD).isPresent()) {
       messages.add("Funding Agency field must be supplied for BioProject");
+    }
 
-    if (bioProject.getLabName() == null || bioProject.getLabName().getValue() == null || bioProject.getLabName()
-      .getValue().isEmpty())
+    if (!NcbiGenericUtil.getTemplateFieldValue(bioProject, BIOPROJECT_LAB_NAME_FIELD).isPresent()) {
       messages.add("Lab Name field must be supplied for BioProject");
+    }
 
-    if (bioProject.getContactInformationDataCollection() == null || bioProject.getContactInformationDataCollection().getValue() == null || bioProject.getContactInformationDataCollection().getValue()
-      .isEmpty())
-      messages.add("Email field must be supplied for BioProject");
-
+    if (!NcbiGenericUtil.getTemplateFieldValue(bioProject, BIOPROJECT_CONTACT_INFO_FIELD).isPresent()) {
+      messages.add("Contact Information field must be supplied for BioProject");
+    }
 
     return messages;
   }
 
-  private List<String> validateBioSample(BioSampleForAIRRNCBI bioSample)
+  private List<String> validateBioSample(JsonNode bioSample)
   {
     List<String> messages = new ArrayList<>();
 

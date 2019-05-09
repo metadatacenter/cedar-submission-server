@@ -11,13 +11,18 @@ public class NcbiGenericConstants {
 
   /*** BioProject section ***/
   public static final String BIOPROJECT_ELEMENT = "CEDAR-NCBI(BioProject)";
-  public static final String CONTACT_INFO_FIELD = "Contact Information (data collection)";
-  public static final String LAB_NAME_FIELD = "Lab Name";
-  public static final String STUDY_ID_FIELD = "Study ID";
+  public static final String BIOPROJECT_CONTACT_INFO_FIELD = "Contact Information (data collection)";
+  public static final String BIOPROJECT_STUDY_ID_FIELD = "Study ID";
+  public static final String BIOPROJECT_STUDY_TITLE_FIELD = "Study Title";
+  public static final String BIOPROJECT_STUDY_TYPE_FIELD = "Study Type";
+  public static final String BIOPROJECT_FUNDING_AGENCY_FIELD = "Funding Agency";
+  public static final String BIOPROJECT_LAB_NAME_FIELD = "Lab Name";
 
   /*** BioSample section ***/
+
   // Instance fields
   public static final String BIOSAMPLE_ELEMENT = "CEDAR-NCBI(BioSample)";
+  public static final String BIOSAMPLE_SAMPLE_ID = "Sample ID";
   public static final String BIOSAMPLE_ORGANISM_FIELD = "Organism";
   public static final String BIOSAMPLE_ISOLATE_FIELD = "Isolate";
   public static final String BIOSAMPLE_AGE_FIELD = "Age";
@@ -40,12 +45,11 @@ public class NcbiGenericConstants {
   public static final String BIOSAMPLE_SAMPLE_TYPE_FIELD = "Sample Type";
   public static final String BIOSAMPLE_TREATMENT_FIELD = "Treatment";
 
-  // Other fields
+  // Other BioSample fields
   public static final String BIOSAMPLE_SCHEMA_VERSION = "2.0";
   public static final String BIOSAMPLE_SUBMISSION_DESCRIPTOR = "CEDAR-NCBI Submission";
   public static final String BIOSAMPLE_ORGANISM = "Homo sapiens";
   public static final String BIOSAMPLE_PACKAGE = "Human.1.0";
-
 
   /*** SRA section ***/
   public static final String SRA_ELEMENT = "sequenceReadArchive";
@@ -78,6 +82,10 @@ public class NcbiGenericConstants {
   public static final String SRA_SEQUENCING_KIT_FIELD = "sequencingKit";
   public static final String SRA_FILE_TYPE_FIELD = "File Type";
   public static final String SRA_FILE_NAME_FIELD = "File Name";
+
+  /*** Other ***/
+  public static final String NOT_COLLECTED_VALUE = "not collected";
+  public static final String MISSING_VALUE = "missing";
 
   // PRIVATE //
 

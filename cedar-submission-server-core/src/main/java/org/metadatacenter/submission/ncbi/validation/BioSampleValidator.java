@@ -1,4 +1,4 @@
-package org.metadatacenter.submission.ncbi;
+package org.metadatacenter.submission.ncbi.validation;
 
 import generated.BioSampleValidate;
 import generated.TypeActionStatus;
@@ -59,12 +59,12 @@ public class BioSampleValidator
 
     try {
       // TODO Temporary for debugging of generated XML - write a temporary file and log its location
-      File sraAIRRXMLSubmissionFile = File.createTempFile("AIRRSRASubmission", ".xml");
-      logger.info("Temporary SRA submission XML file path:" + sraAIRRXMLSubmissionFile.toPath() + ":");
-      PrintWriter writer = new PrintWriter(sraAIRRXMLSubmissionFile);
+      File ncbiXMLSubmissionFile = File.createTempFile("NcbiSubmission", ".xml");
+      logger.info("Temporary SRA submission XML file path:" + ncbiXMLSubmissionFile.toPath() + ":");
+      PrintWriter writer = new PrintWriter(ncbiXMLSubmissionFile);
       writer.print(bioSampleSubmissionXML);
       writer.close();
-      logger.info("Generated temporary SRA submission XML file " + sraAIRRXMLSubmissionFile.toPath());
+      logger.info("Generated temporary SRA submission XML file " + ncbiXMLSubmissionFile.toPath());
 
       post.setHeader("Accept", "application/xml");
       post.setHeader("Content-type", "application/xml");

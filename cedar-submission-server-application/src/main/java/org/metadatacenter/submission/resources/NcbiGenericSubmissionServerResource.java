@@ -10,8 +10,9 @@ import org.metadatacenter.cedar.util.dw.CedarMicroserviceResource;
 import org.metadatacenter.config.CedarConfig;
 import org.metadatacenter.exception.CedarException;
 import org.metadatacenter.rest.context.CedarRequestContext;
+import org.metadatacenter.submission.CEDARValidationResponse;
 import org.metadatacenter.submission.exception.SubmissionInstanceNotFoundException;
-import org.metadatacenter.submission.ncbi.BioSampleValidator;
+import org.metadatacenter.submission.ncbi.validation.BioSampleValidator;
 import org.metadatacenter.submission.ncbi.NcbiConstants;
 import org.metadatacenter.submission.ncbi.NcbiSubmission;
 import org.metadatacenter.submission.ncbi.NcbiSubmissionUtil;
@@ -34,6 +35,7 @@ import javax.ws.rs.core.Response;
 import javax.xml.bind.JAXBException;
 import javax.xml.datatype.DatatypeConfigurationException;
 import java.io.IOException;
+import java.text.ParseException;
 
 import static org.metadatacenter.rest.assertion.GenericAssertions.LoggedIn;
 
@@ -73,32 +75,27 @@ import static org.metadatacenter.rest.assertion.GenericAssertions.LoggedIn;
    */
   @POST @Timed @Path("/validate-ncbi") public Response validate() throws CedarException
   {
-
     CedarRequestContext c = buildRequestContext();
     c.must(c.user()).be(LoggedIn);
 
-    JsonNode input = c.request().getRequestBody().asJson();
-    ObjectMapper mapper = new ObjectMapper();
+    JsonNode instance = c.request().getRequestBody().asJson();
 
-//    try {
-//
-//      return Response.ok().build();
-//
-//      CEDARValidationResponse validationResponse = this.cairrValidator.validate(cairrInstance);
-//
-//      if (validationResponse.getIsValid())
-//        return Response.ok(validationResponse).build();
-//
-//      else {
-//        String submissionXML = this.cairrTemplate2SRAXMLConverter.convertTemplateInstanceToXML(cairrInstance);
-//
-//        return Response.ok(this.bioSampleValidator.validateBioSampleSubmission(submissionXML)).build();
-//      }
-//    } catch (JAXBException | DatatypeConfigurationException | ParseException e) {
-//      return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
-//    }
+    try {
 
-    return Response.ok().build();
+      CEDARValidationResponse cedarValidationResponse = this.ncbiGenericValidator.validate(instance);
+
+      // If the CEDAR validation is OK, run the NCBI validation
+      if (cedarValidationResponse.getIsValid()) {
+        String submissionXML = this.ncbiGenericTemplateInstance2XMLConverter.convertTemplateInstanceToXML(instance);
+        return Response.ok(this.bioSampleValidator.validateBioSampleSubmission(submissionXML)).build();
+      }
+      // If the CEDAR validation fails, return validation messages
+      else {
+        return Response.ok(cedarValidationResponse).build();
+      }
+    } catch (JAXBException | DatatypeConfigurationException | ParseException e) {
+      return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
+    }
   }
 
   /**

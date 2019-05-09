@@ -11,7 +11,7 @@ import org.metadatacenter.rest.context.CedarRequestContext;
 import org.metadatacenter.submission.CAIRRTemplate;
 import org.metadatacenter.submission.CEDARValidationResponse;
 import org.metadatacenter.submission.exception.SubmissionInstanceNotFoundException;
-import org.metadatacenter.submission.ncbi.BioSampleValidator;
+import org.metadatacenter.submission.ncbi.validation.BioSampleValidator;
 import org.metadatacenter.submission.ncbi.NcbiConstants;
 import org.metadatacenter.submission.ncbi.NcbiSubmission;
 import org.metadatacenter.submission.ncbi.NcbiSubmissionUtil;

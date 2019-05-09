@@ -57,20 +57,19 @@ public class NcbiGenericTemplateInstance2XMLConverter {
 
     /*** BioProject ***/
 
-    JsonNode bioProject = getTemplateElementNode(instance, BIOPROJECT_ELEMENT);
+    JsonNode bioProject = NcbiGenericUtil.getTemplateElementNode(instance, BIOPROJECT_ELEMENT);
 
     // BioProject ID
     String bioProjectID = null;
-    Optional<String> studyId = getTemplateFieldValue(bioProject, STUDY_ID_FIELD);
+    Optional<String> studyId = NcbiGenericUtil.getTemplateFieldValue(bioProject, BIOPROJECT_STUDY_ID_FIELD, true, true);
     if (studyId.isPresent()) {
       bioProjectID = studyId.get();
     }
-    else {
-      throw new IllegalArgumentException("Missing required value: " + STUDY_ID_FIELD);
-    }
 
     /*** BioSample ***/
-    JsonNode biosamples = getTemplateElementNode(instance, BIOSAMPLE_ELEMENT);
+    JsonNode biosamples = NcbiGenericUtil.getTemplateElementNode(instance, BIOSAMPLE_ELEMENT);
+
+    int customSampleId = 0;
 
     for (JsonNode bioSample : biosamples) {
 
@@ -78,13 +77,15 @@ public class NcbiGenericTemplateInstance2XMLConverter {
       TypeBioSample ncbiBioSample = bioSampleObjectFactory.createTypeBioSample();
       ncbiBioSample.setSchemaVersion(BIOSAMPLE_SCHEMA_VERSION);
 
-      // TODO Sample Name (which is actually the sample ID )
-//      if (bioSample.getSampleID() != null) {
-//        String bioSampleID = bioSample.getSampleID().getValue();
-//        if (bioSampleID != null && !bioProjectID.isEmpty()) {
-//          ncbiBioSample.setSampleId(createBioSampleIdentifier(bioSampleID));
-//        }
-//      }
+      // Sample ID
+      Optional<String> sampleId = NcbiGenericUtil.getTemplateFieldValue(bioSample, BIOSAMPLE_SAMPLE_ID, false, false);
+      if (sampleId.isPresent()) {
+        ncbiBioSample.setSampleId(createBioSampleIdentifier(sampleId.get()));
+      }
+      // TODO: Delete this 'else'. Sample ID will be required. It should be part of the template and have a value
+      else {
+        ncbiBioSample.setSampleId(createBioSampleIdentifier(Integer.toString(customSampleId++)));
+      }
 
       // Descriptor
       ncbiBioSample.setDescriptor(createDescriptor(BIOSAMPLE_SUBMISSION_DESCRIPTOR, BIOSAMPLE_SUBMISSION_DESCRIPTOR));
@@ -130,7 +131,7 @@ public class NcbiGenericTemplateInstance2XMLConverter {
     }
 
     /*** SRA ***/
-    JsonNode sras = getTemplateElementNode(instance, SRA_ELEMENT);
+    JsonNode sras = NcbiGenericUtil.getTemplateElementNode(instance, SRA_ELEMENT);
 
     // Retrieve the SRAs from the instance
     for (JsonNode sra : sras) {
@@ -141,7 +142,7 @@ public class NcbiGenericTemplateInstance2XMLConverter {
 
       // TODO
       // File type and file names
-//      Optional<String> fileType = getTemplateFieldValue(sra, SRA_FILE_TYPE_FIELD);
+//      Optional<String> fileType = NcbiGenericUtil.getTemplateFieldValue(sra, SRA_FILE_TYPE_FIELD);
 //
 //      if (fileType.isPresent()) {
 //
@@ -153,7 +154,7 @@ public class NcbiGenericTemplateInstance2XMLConverter {
 //
 //            String fileNameField = fileNameFieldsIt.next().toString();
 //
-//            Optional<String> fileName = getTemplateFieldValue(sra, fileNameField);
+//            Optional<String> fileName = NcbiGenericUtil.getTemplateFieldValue(sra, fileNameField);
 //
 //            if (fileName.isPresent()) {
 //
@@ -204,79 +205,61 @@ public class NcbiGenericTemplateInstance2XMLConverter {
       }
 
       // Library ID
-      Optional<String> libraryId = getTemplateFieldValue(sra, SRA_LIBRARY_ID_FIELD);
+      Optional<String> libraryId = NcbiGenericUtil.getTemplateFieldValue(sra, SRA_LIBRARY_ID_FIELD, true, true);
       if (libraryId.isPresent()) {
         TypeFileAttribute fileAttribute = submissionObjectFactory.createTypeFileAttribute();
         fileAttribute.setName("library_ID");
         fileAttribute.setValue(libraryId.get());
         sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(fileAttribute);
       }
-      else {
-        throw new IllegalArgumentException("Missing required value: " + SRA_LIBRARY_ID_FIELD);
-      }
 
       // Library Name
-      Optional<String> libraryName = getTemplateFieldValue(sra, SRA_LIBRARY_NAME_FIELD);
+      Optional<String> libraryName = NcbiGenericUtil.getTemplateFieldValue(sra, SRA_LIBRARY_NAME_FIELD, true, true);
       if (libraryName.isPresent()) {
         TypeFileAttribute fileAttribute = submissionObjectFactory.createTypeFileAttribute();
         fileAttribute.setName("library_name");
         fileAttribute.setValue(libraryName.get());
         sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(fileAttribute);
       }
-      else {
-        throw new IllegalArgumentException("Missing required value: " + SRA_LIBRARY_NAME_FIELD);
-      }
 
       // Library Instrument
-      Optional<String> libraryInstrument = getTemplateFieldValue(sra, SRA_LIBRARY_INSTRUMENT_FIELD);
+      Optional<String> libraryInstrument = NcbiGenericUtil.getTemplateFieldValue(sra, SRA_LIBRARY_INSTRUMENT_FIELD, true, true);
       if (libraryInstrument.isPresent()) {
         TypeFileAttribute fileAttribute = submissionObjectFactory.createTypeFileAttribute();
         fileAttribute.setName("library_instrument");
         fileAttribute.setValue(libraryInstrument.get());
         sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(fileAttribute);
       }
-      else {
-        throw new IllegalArgumentException("Missing required value: " + SRA_LIBRARY_INSTRUMENT_FIELD);
-      }
 
       // Library Strategy
-      Optional<String> libraryStrategy = getTemplateFieldValue(sra, SRA_LIBRARY_STRATEGY_FIELD);
+      Optional<String> libraryStrategy = NcbiGenericUtil.getTemplateFieldValue(sra, SRA_LIBRARY_STRATEGY_FIELD, true, true);
       if (libraryStrategy.isPresent()) {
         TypeFileAttribute fileAttribute = submissionObjectFactory.createTypeFileAttribute();
         fileAttribute.setName("library_strategy");
         fileAttribute.setValue(libraryStrategy.get());
         sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(fileAttribute);
       }
-      else {
-        throw new IllegalArgumentException("Missing required value: " + SRA_LIBRARY_STRATEGY_FIELD);
-      }
 
       // Library Source
-      Optional<String> librarySource = getTemplateFieldValue(sra, SRA_LIBRARY_SOURCE_FIELD);
+      Optional<String> librarySource = NcbiGenericUtil.getTemplateFieldValue(sra, SRA_LIBRARY_SOURCE_FIELD, true, true);
       if (librarySource.isPresent()) {
         TypeFileAttribute fileAttribute = submissionObjectFactory.createTypeFileAttribute();
         fileAttribute.setName("library_source");
         fileAttribute.setValue(librarySource.get());
         sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(fileAttribute);
       }
-      else {
-        throw new IllegalArgumentException("Missing required value: " + SRA_LIBRARY_SOURCE_FIELD);
-      }
 
       // Library Selection
-      Optional<String> librarySelection = getTemplateFieldValue(sra, SRA_LIBRARY_SELECTION_FIELD);
+      Optional<String> librarySelection = NcbiGenericUtil.getTemplateFieldValue(sra, SRA_LIBRARY_SELECTION_FIELD, true, true);
       if (librarySelection.isPresent()) {
         TypeFileAttribute fileAttribute = submissionObjectFactory.createTypeFileAttribute();
         fileAttribute.setName("library_selection");
         fileAttribute.setValue(librarySelection.get());
         sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(fileAttribute);
       }
-      else {
-        throw new IllegalArgumentException("Missing required value: " + SRA_LIBRARY_SELECTION_FIELD);
-      }
 
       // Library Layout
-      Optional<String> libraryLayout = getTemplateFieldValue(sra, SRA_LIBRARY_LAYOUT_FIELD);
+      Optional<String> libraryLayout = NcbiGenericUtil.getTemplateFieldValue(sra, SRA_LIBRARY_LAYOUT_FIELD);
       if (libraryLayout.isPresent()) {
         TypeFileAttribute fileAttribute = submissionObjectFactory.createTypeFileAttribute();
         fileAttribute.setName("library_layout");
@@ -285,7 +268,7 @@ public class NcbiGenericTemplateInstance2XMLConverter {
       }
 
       // Library Construction Protocol
-      Optional<String> libraryConstructionProtocol = getTemplateFieldValue(sra, SRA_LIBRARY_CONSTRUCTION_PROTOCOL_FIELD);
+      Optional<String> libraryConstructionProtocol = NcbiGenericUtil.getTemplateFieldValue(sra, SRA_LIBRARY_CONSTRUCTION_PROTOCOL_FIELD);
       if (libraryConstructionProtocol.isPresent()) {
         TypeFileAttribute fileAttribute = submissionObjectFactory.createTypeFileAttribute();
         fileAttribute.setName("library_construction_protocol");
@@ -294,7 +277,7 @@ public class NcbiGenericTemplateInstance2XMLConverter {
       }
 
       // Design Description
-      Optional<String> designDescription = getTemplateFieldValue(sra, SRA_DESIGN_DESCRIPTION_FIELD);
+      Optional<String> designDescription = NcbiGenericUtil.getTemplateFieldValue(sra, SRA_DESIGN_DESCRIPTION_FIELD);
       if (designDescription.isPresent()) {
         TypeFileAttribute fileAttribute = submissionObjectFactory.createTypeFileAttribute();
         fileAttribute.setName("design_description");
@@ -303,7 +286,7 @@ public class NcbiGenericTemplateInstance2XMLConverter {
       }
 
       // Target Substrate
-      Optional<String> targetSubstrate = getTemplateFieldValue(sra, SRA_TARGET_SUBSTRATE_FIELD);
+      Optional<String> targetSubstrate = NcbiGenericUtil.getTemplateFieldValue(sra, SRA_TARGET_SUBSTRATE_FIELD);
       if (targetSubstrate.isPresent()) {
         TypeFileAttribute fileAttribute = submissionObjectFactory.createTypeFileAttribute();
         fileAttribute.setName("target_substrate");
@@ -312,7 +295,7 @@ public class NcbiGenericTemplateInstance2XMLConverter {
       }
 
       // Target Substrate Quality
-      Optional<String> targetSubstrateQuality = getTemplateFieldValue(sra, SRA_TARGET_SUBSTRATE_QUALITY_FIELD);
+      Optional<String> targetSubstrateQuality = NcbiGenericUtil.getTemplateFieldValue(sra, SRA_TARGET_SUBSTRATE_QUALITY_FIELD);
       if (targetSubstrateQuality.isPresent()) {
         TypeFileAttribute fileAttribute = submissionObjectFactory.createTypeFileAttribute();
         fileAttribute.setName("target_substrate_quality");
@@ -321,7 +304,7 @@ public class NcbiGenericTemplateInstance2XMLConverter {
       }
 
       // Library Generation Method
-      Optional<String> libraryGenerationMethod = getTemplateFieldValue(sra, SRA_LIBRARY_GENERATION_METHOD_FIELD);
+      Optional<String> libraryGenerationMethod = NcbiGenericUtil.getTemplateFieldValue(sra, SRA_LIBRARY_GENERATION_METHOD_FIELD);
       if (libraryGenerationMethod.isPresent()) {
         TypeFileAttribute fileAttribute = submissionObjectFactory.createTypeFileAttribute();
         fileAttribute.setName("library_generation_method");
@@ -330,7 +313,7 @@ public class NcbiGenericTemplateInstance2XMLConverter {
       }
 
       // Library Generation Protocol
-      Optional<String> libraryGenerationProtocol = getTemplateFieldValue(sra, SRA_LIBRARY_GENERATION_PROTOCOL_FIELD);
+      Optional<String> libraryGenerationProtocol = NcbiGenericUtil.getTemplateFieldValue(sra, SRA_LIBRARY_GENERATION_PROTOCOL_FIELD);
       if (libraryGenerationProtocol.isPresent()) {
         TypeFileAttribute fileAttribute = submissionObjectFactory.createTypeFileAttribute();
         fileAttribute.setName("library_generation_protocol");
@@ -339,7 +322,7 @@ public class NcbiGenericTemplateInstance2XMLConverter {
       }
 
       // Target Locus PCR
-      Optional<String> targetLocusPcr = getTemplateFieldValue(sra, SRA_TARGET_LOCUS_PCR_FIELD);
+      Optional<String> targetLocusPcr = NcbiGenericUtil.getTemplateFieldValue(sra, SRA_TARGET_LOCUS_PCR_FIELD);
       if (targetLocusPcr.isPresent()) {
         TypeFileAttribute fileAttribute = submissionObjectFactory.createTypeFileAttribute();
         fileAttribute.setName("target_locus_pcr");
@@ -348,7 +331,7 @@ public class NcbiGenericTemplateInstance2XMLConverter {
       }
 
       // Forward PCR Primer Target Location
-      Optional<String> forwardPcrPrimerTargetLocation = getTemplateFieldValue(sra, SRA_FORWARD_PCR_PRIMER_TARGET_LOCATION_FIELD);
+      Optional<String> forwardPcrPrimerTargetLocation = NcbiGenericUtil.getTemplateFieldValue(sra, SRA_FORWARD_PCR_PRIMER_TARGET_LOCATION_FIELD);
       if (forwardPcrPrimerTargetLocation.isPresent()) {
         TypeFileAttribute fileAttribute = submissionObjectFactory.createTypeFileAttribute();
         fileAttribute.setName("forward_pcr_primer_target_location");
@@ -357,7 +340,7 @@ public class NcbiGenericTemplateInstance2XMLConverter {
       }
 
       // Reverse PCR Primer Target Location
-      Optional<String> reversePcrPrimerTargetLocation = getTemplateFieldValue(sra, SRA_REVERSE_PCR_PRIMER_TARGET_LOCATION_FIELD);
+      Optional<String> reversePcrPrimerTargetLocation = NcbiGenericUtil.getTemplateFieldValue(sra, SRA_REVERSE_PCR_PRIMER_TARGET_LOCATION_FIELD);
       if (reversePcrPrimerTargetLocation.isPresent()) {
         TypeFileAttribute fileAttribute = submissionObjectFactory.createTypeFileAttribute();
         fileAttribute.setName("reverse_pcr_primer_target_location");
@@ -366,7 +349,7 @@ public class NcbiGenericTemplateInstance2XMLConverter {
       }
 
       // Whole vs Partial Sequences
-      Optional<String> wholeVsPartialSequences = getTemplateFieldValue(sra, SRA_WHOLE_VS_PARTIAL_SEQUENCES_FIELD);
+      Optional<String> wholeVsPartialSequences = NcbiGenericUtil.getTemplateFieldValue(sra, SRA_WHOLE_VS_PARTIAL_SEQUENCES_FIELD);
       if (wholeVsPartialSequences.isPresent()) {
         TypeFileAttribute fileAttribute = submissionObjectFactory.createTypeFileAttribute();
         fileAttribute.setName("whole_vs_partial_sequences");
@@ -374,7 +357,7 @@ public class NcbiGenericTemplateInstance2XMLConverter {
         sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(fileAttribute);
       }
       // Comparison Heavy Light Paired Chains
-      Optional<String> comparisonHeavyLightPairedChains = getTemplateFieldValue(sra, SRA_COMPARISON_HEAVY_LIGHT_PAIRED_CHAINS_FIELD);
+      Optional<String> comparisonHeavyLightPairedChains = NcbiGenericUtil.getTemplateFieldValue(sra, SRA_COMPARISON_HEAVY_LIGHT_PAIRED_CHAINS_FIELD);
       if (comparisonHeavyLightPairedChains.isPresent()) {
         TypeFileAttribute fileAttribute = submissionObjectFactory.createTypeFileAttribute();
         fileAttribute.setName("comparison_heavy_light_paired_chains");
@@ -382,7 +365,7 @@ public class NcbiGenericTemplateInstance2XMLConverter {
         sraAddFiles.getAttributeOrMetaOrAttributeRefId().add(fileAttribute);
       }
       // NG Template
-      Optional<String> ngTemplate = getTemplateFieldValue(sra, SRA_NG_TEMPLATE_FIELD);
+      Optional<String> ngTemplate = NcbiGenericUtil.getTemplateFieldValue(sra, SRA_NG_TEMPLATE_FIELD);
       if (ngTemplate.isPresent()) {
         TypeFileAttribute fileAttribute = submissionObjectFactory.createTypeFileAttribute();
         fileAttribute.setName("ng_template");
@@ -391,7 +374,7 @@ public class NcbiGenericTemplateInstance2XMLConverter {
       }
 
       // Total Reads Passing QC Filter
-      Optional<String> totalReadsPassingQcFilter = getTemplateFieldValue(sra, SRA_TOTAL_READS_PASSING_QC_FILTER_FIELD);
+      Optional<String> totalReadsPassingQcFilter = NcbiGenericUtil.getTemplateFieldValue(sra, SRA_TOTAL_READS_PASSING_QC_FILTER_FIELD);
       if (totalReadsPassingQcFilter.isPresent()) {
         TypeFileAttribute fileAttribute = submissionObjectFactory.createTypeFileAttribute();
         fileAttribute.setName("total_reads_passing_qc_filter");
@@ -400,7 +383,7 @@ public class NcbiGenericTemplateInstance2XMLConverter {
       }
 
       // Protocol ID
-      Optional<String> protocolId = getTemplateFieldValue(sra, SRA_PROTOCOL_ID_FIELD);
+      Optional<String> protocolId = NcbiGenericUtil.getTemplateFieldValue(sra, SRA_PROTOCOL_ID_FIELD);
       if (protocolId.isPresent()) {
         TypeFileAttribute fileAttribute = submissionObjectFactory.createTypeFileAttribute();
         fileAttribute.setName("protocol_ID");
@@ -409,7 +392,7 @@ public class NcbiGenericTemplateInstance2XMLConverter {
       }
 
       // Read Length
-      Optional<String> readLength = getTemplateFieldValue(sra, SRA_READ_LENGTH_FIELD);
+      Optional<String> readLength = NcbiGenericUtil.getTemplateFieldValue(sra, SRA_READ_LENGTH_FIELD);
       if (readLength.isPresent()) {
         TypeFileAttribute fileAttribute = submissionObjectFactory.createTypeFileAttribute();
         fileAttribute.setName("read_length");
@@ -418,7 +401,7 @@ public class NcbiGenericTemplateInstance2XMLConverter {
       }
 
       // Sequencing Platform
-      Optional<String> sequencingPlatform = getTemplateFieldValue(sra, SRA_SEQUENCING_PLATFORM_FIELD);
+      Optional<String> sequencingPlatform = NcbiGenericUtil.getTemplateFieldValue(sra, SRA_SEQUENCING_PLATFORM_FIELD);
       if (sequencingPlatform.isPresent()) {
         TypeFileAttribute fileAttribute = submissionObjectFactory.createTypeFileAttribute();
         fileAttribute.setName("sequencing_platform");
@@ -427,7 +410,7 @@ public class NcbiGenericTemplateInstance2XMLConverter {
       }
 
       // Date of Sequencing Run
-      Optional<String> dateOfSequencingRun = getTemplateFieldValue(sra, SRA_DATE_OF_SEQUENCING_RUN_FIELD);
+      Optional<String> dateOfSequencingRun = NcbiGenericUtil.getTemplateFieldValue(sra, SRA_DATE_OF_SEQUENCING_RUN_FIELD);
       if (dateOfSequencingRun.isPresent()) {
         TypeFileAttribute fileAttribute = submissionObjectFactory.createTypeFileAttribute();
         fileAttribute.setName("date_of_sequencing_run");
@@ -436,7 +419,7 @@ public class NcbiGenericTemplateInstance2XMLConverter {
       }
 
       // Sequencing Facility
-      Optional<String> sequencingFacility = getTemplateFieldValue(sra, SRA_SEQUENCING_FACILITY_FIELD);
+      Optional<String> sequencingFacility = NcbiGenericUtil.getTemplateFieldValue(sra, SRA_SEQUENCING_FACILITY_FIELD);
       if (sequencingFacility.isPresent()) {
         TypeFileAttribute fileAttribute = submissionObjectFactory.createTypeFileAttribute();
         fileAttribute.setName("sequencing_facility");
@@ -445,7 +428,7 @@ public class NcbiGenericTemplateInstance2XMLConverter {
       }
 
       // Batch Number
-      Optional<String> batchNumber = getTemplateFieldValue(sra, SRA_BATCH_NUMBER_FIELD);
+      Optional<String> batchNumber = NcbiGenericUtil.getTemplateFieldValue(sra, SRA_BATCH_NUMBER_FIELD);
       if (batchNumber.isPresent()) {
         TypeFileAttribute fileAttribute = submissionObjectFactory.createTypeFileAttribute();
         fileAttribute.setName("batch_number");
@@ -454,7 +437,7 @@ public class NcbiGenericTemplateInstance2XMLConverter {
       }
 
       // Sequencing Kit
-      Optional<String> sequencingKit = getTemplateFieldValue(sra, SRA_SEQUENCING_KIT_FIELD);
+      Optional<String> sequencingKit = NcbiGenericUtil.getTemplateFieldValue(sra, SRA_SEQUENCING_KIT_FIELD);
       if (sequencingKit.isPresent()) {
         TypeFileAttribute fileAttribute = submissionObjectFactory.createTypeFileAttribute();
         fileAttribute.setName("sequencing_kit");
@@ -532,32 +515,32 @@ public class NcbiGenericTemplateInstance2XMLConverter {
   private Submission.Description createSubmissionDescription(JsonNode instance) throws
       DatatypeConfigurationException, ParseException {
 
-    final JsonNode bioProjectNode = getTemplateElementNode(instance, BIOPROJECT_ELEMENT);
+    final JsonNode bioProjectNode = NcbiGenericUtil.getTemplateElementNode(instance, BIOPROJECT_ELEMENT);
 
     Submission.Description submissionDescription = submissionObjectFactory.createSubmissionDescription();
 
     TypeContactInfo contactInfo = ncbiCommonObjectFactory.createTypeContactInfo();
-    if (getTemplateFieldValue(bioProjectNode, CONTACT_INFO_FIELD).isPresent()) {
-      contactInfo.setEmail(getTemplateFieldValue(bioProjectNode, CONTACT_INFO_FIELD).get());
+    if (NcbiGenericUtil.getTemplateFieldValue(bioProjectNode, BIOPROJECT_CONTACT_INFO_FIELD).isPresent()) {
+      contactInfo.setEmail(NcbiGenericUtil.getTemplateFieldValue(bioProjectNode, BIOPROJECT_CONTACT_INFO_FIELD).get());
     }
     else {
-      throw new IllegalArgumentException("Missing required value: " + CONTACT_INFO_FIELD);
+      throw new IllegalArgumentException("Missing required value: " + BIOPROJECT_CONTACT_INFO_FIELD);
     }
 
     TypeOrganization.Name organizationName = submissionObjectFactory.createTypeOrganizationName();
-    if (getTemplateFieldValue(bioProjectNode, LAB_NAME_FIELD).isPresent()) {
-      organizationName.setValue(getTemplateFieldValue(bioProjectNode, LAB_NAME_FIELD).get());
+    if (NcbiGenericUtil.getTemplateFieldValue(bioProjectNode, BIOPROJECT_LAB_NAME_FIELD).isPresent()) {
+      organizationName.setValue(NcbiGenericUtil.getTemplateFieldValue(bioProjectNode, BIOPROJECT_LAB_NAME_FIELD).get());
     }
     else {
-      throw new IllegalArgumentException("Missing required value: " + LAB_NAME_FIELD);
+      throw new IllegalArgumentException("Missing required value: " + BIOPROJECT_LAB_NAME_FIELD);
     }
 
     TypeAccount contactSubmitter = submissionObjectFactory.createTypeAccount();
-    if (getTemplateFieldValue(bioProjectNode, CONTACT_INFO_FIELD).isPresent()) {
-      contactSubmitter.setUserName(getTemplateFieldValue(bioProjectNode, CONTACT_INFO_FIELD).get());
+    if (NcbiGenericUtil.getTemplateFieldValue(bioProjectNode, BIOPROJECT_CONTACT_INFO_FIELD).isPresent()) {
+      contactSubmitter.setUserName(NcbiGenericUtil.getTemplateFieldValue(bioProjectNode, BIOPROJECT_CONTACT_INFO_FIELD).get());
     }
     else {
-      throw new IllegalArgumentException("Missing required value: " + CONTACT_INFO_FIELD);
+      throw new IllegalArgumentException("Missing required value: " + BIOPROJECT_CONTACT_INFO_FIELD);
     }
 
     TypeOrganization contactOrganization = submissionObjectFactory.createTypeOrganization();
@@ -587,140 +570,140 @@ public class NcbiGenericTemplateInstance2XMLConverter {
     TypeBioSample.Attributes bioSampleAttributes = bioSampleObjectFactory.createTypeBioSampleAttributes();
 
     // Organism
-    Optional<String> organism = getTemplateFieldValue(bioSample, BIOSAMPLE_ORGANISM_FIELD);
+    Optional<String> organism = NcbiGenericUtil.getTemplateFieldValue(bioSample, BIOSAMPLE_ORGANISM_FIELD);
     if (organism.isPresent()) {
-      bioSampleAttributes.getAttribute().add(createAttribute("Organism", organism.get()));
+      bioSampleAttributes.getAttribute().add(createAttribute("organism", organism.get()));
     }
 
     // Isolate
-    Optional<String> isolate = getTemplateFieldValue(bioSample, BIOSAMPLE_ISOLATE_FIELD);
+    Optional<String> isolate = NcbiGenericUtil.getTemplateFieldValue(bioSample, BIOSAMPLE_ISOLATE_FIELD);
     if (isolate.isPresent()) {
-      bioSampleAttributes.getAttribute().add(createAttribute("Isolate", isolate.get()));
+      bioSampleAttributes.getAttribute().add(createAttribute("isolate", isolate.get()));
     }
 
     // Age
-    Optional<String> age = getTemplateFieldValue(bioSample, BIOSAMPLE_AGE_FIELD);
+    Optional<String> age = NcbiGenericUtil.getTemplateFieldValue(bioSample, BIOSAMPLE_AGE_FIELD);
     if (age.isPresent()) {
-      bioSampleAttributes.getAttribute().add(createAttribute("Age", age.get()));
+      bioSampleAttributes.getAttribute().add(createAttribute("age", age.get()));
     }
 
     // Biomaterial Provider
-    Optional<String> biomaterialProvider = getTemplateFieldValue(bioSample, BIOSAMPLE_BIOMATERIAL_PROVIDER_FIELD);
+    Optional<String> biomaterialProvider = NcbiGenericUtil.getTemplateFieldValue(bioSample, BIOSAMPLE_BIOMATERIAL_PROVIDER_FIELD);
     if (biomaterialProvider.isPresent()) {
-      bioSampleAttributes.getAttribute().add(createAttribute("BiomaterialProvider", biomaterialProvider.get()));
+      bioSampleAttributes.getAttribute().add(createAttribute("biomaterial_provider", biomaterialProvider.get()));
     }
 
     // Sex
-    Optional<String> sex = getTemplateFieldValue(bioSample, BIOSAMPLE_SEX_FIELD);
+    Optional<String> sex = NcbiGenericUtil.getTemplateFieldValue(bioSample, BIOSAMPLE_SEX_FIELD);
     if (sex.isPresent()) {
-      bioSampleAttributes.getAttribute().add(createAttribute("Sex", sex.get()));
+      bioSampleAttributes.getAttribute().add(createAttribute("sex", sex.get()));
     }
 
     // Tissue
-    Optional<String> tissue = getTemplateFieldValue(bioSample, BIOSAMPLE_TISSUE_FIELD);
+    Optional<String> tissue = NcbiGenericUtil.getTemplateFieldValue(bioSample, BIOSAMPLE_TISSUE_FIELD);
     if (tissue.isPresent()) {
-      bioSampleAttributes.getAttribute().add(createAttribute("Tissue", tissue.get()));
+      bioSampleAttributes.getAttribute().add(createAttribute("tissue", tissue.get()));
     }
 
     // Cell line
-    Optional<String> cellLine = getTemplateFieldValue(bioSample, BIOSAMPLE_CELL_LINE_FIELD);
+    Optional<String> cellLine = NcbiGenericUtil.getTemplateFieldValue(bioSample, BIOSAMPLE_CELL_LINE_FIELD);
     if (cellLine.isPresent()) {
-      bioSampleAttributes.getAttribute().add(createAttribute("CellLine", cellLine.get()));
+      bioSampleAttributes.getAttribute().add(createAttribute("cell_line", cellLine.get()));
     }
 
     // Cell type
-    Optional<String> cellType = getTemplateFieldValue(bioSample, BIOSAMPLE_CELL_TYPE_FIELD);
+    Optional<String> cellType = NcbiGenericUtil.getTemplateFieldValue(bioSample, BIOSAMPLE_CELL_TYPE_FIELD);
     if (cellType.isPresent()) {
-      bioSampleAttributes.getAttribute().add(createAttribute("CellType", cellType.get()));
+      bioSampleAttributes.getAttribute().add(createAttribute("cell_type", cellType.get()));
     }
 
     // Cell subtype
-    Optional<String> cellSubtype = getTemplateFieldValue(bioSample, BIOSAMPLE_CELL_SUBTYPE_FIELD);
+    Optional<String> cellSubtype = NcbiGenericUtil.getTemplateFieldValue(bioSample, BIOSAMPLE_CELL_SUBTYPE_FIELD);
     if (cellSubtype.isPresent()) {
-      bioSampleAttributes.getAttribute().add(createAttribute("CellSubtype", cellSubtype.get()));
+      bioSampleAttributes.getAttribute().add(createAttribute("cell_subtype", cellSubtype.get()));
     }
 
     // Culture collection
-    Optional<String> cultureCollection = getTemplateFieldValue(bioSample, BIOSAMPLE_CULTURE_COLLECTION_FIELD);
+    Optional<String> cultureCollection = NcbiGenericUtil.getTemplateFieldValue(bioSample, BIOSAMPLE_CULTURE_COLLECTION_FIELD);
     if (cultureCollection.isPresent()) {
-      bioSampleAttributes.getAttribute().add(createAttribute("CultureCollection", cultureCollection.get()));
+      bioSampleAttributes.getAttribute().add(createAttribute("culture_collection", cultureCollection.get()));
     }
 
     // Development stage
-    Optional<String> developmentStage = getTemplateFieldValue(bioSample, BIOSAMPLE_DEVELOPMENT_STAGE_FIELD);
+    Optional<String> developmentStage = NcbiGenericUtil.getTemplateFieldValue(bioSample, BIOSAMPLE_DEVELOPMENT_STAGE_FIELD);
     if (developmentStage.isPresent()) {
-      bioSampleAttributes.getAttribute().add(createAttribute("DevelopmentStage", developmentStage.get()));
+      bioSampleAttributes.getAttribute().add(createAttribute("development_stage", developmentStage.get()));
     }
 
     // Disease
-    Optional<String> disease = getTemplateFieldValue(bioSample, BIOSAMPLE_DISEASE_FIELD);
+    Optional<String> disease = NcbiGenericUtil.getTemplateFieldValue(bioSample, BIOSAMPLE_DISEASE_FIELD);
     if (disease.isPresent()) {
-      bioSampleAttributes.getAttribute().add(createAttribute("Disease", disease.get()));
+      bioSampleAttributes.getAttribute().add(createAttribute("disease", disease.get()));
     }
 
     // Disease stage
-    Optional<String> diseaseStage = getTemplateFieldValue(bioSample, BIOSAMPLE_DISEASE_STAGE_FIELD);
+    Optional<String> diseaseStage = NcbiGenericUtil.getTemplateFieldValue(bioSample, BIOSAMPLE_DISEASE_STAGE_FIELD);
     if (diseaseStage.isPresent()) {
-      bioSampleAttributes.getAttribute().add(createAttribute("DiseaseStage", diseaseStage.get()));
+      bioSampleAttributes.getAttribute().add(createAttribute("disease_stage", diseaseStage.get()));
     }
 
     // Ethnicity
-    Optional<String> ethnicity = getTemplateFieldValue(bioSample, BIOSAMPLE_ETHNICITY_FIELD);
+    Optional<String> ethnicity = NcbiGenericUtil.getTemplateFieldValue(bioSample, BIOSAMPLE_ETHNICITY_FIELD);
     if (ethnicity.isPresent()) {
-      bioSampleAttributes.getAttribute().add(createAttribute("Ethnicity", ethnicity.get()));
+      bioSampleAttributes.getAttribute().add(createAttribute("ethnicity", ethnicity.get()));
     }
 
     // Health state
-    Optional<String> healthState = getTemplateFieldValue(bioSample, BIOSAMPLE_HEALTH_STATE_FIELD);
+    Optional<String> healthState = NcbiGenericUtil.getTemplateFieldValue(bioSample, BIOSAMPLE_HEALTH_STATE_FIELD);
     if (healthState.isPresent()) {
-      bioSampleAttributes.getAttribute().add(createAttribute("HealthState", healthState.get()));
+      bioSampleAttributes.getAttribute().add(createAttribute("health_state", healthState.get()));
     }
 
     // Karyotype
-    Optional<String> karyotype = getTemplateFieldValue(bioSample, BIOSAMPLE_KARYOTYPE_FIELD);
+    Optional<String> karyotype = NcbiGenericUtil.getTemplateFieldValue(bioSample, BIOSAMPLE_KARYOTYPE_FIELD);
     if (karyotype.isPresent()) {
-      bioSampleAttributes.getAttribute().add(createAttribute("Karyotype", karyotype.get()));
+      bioSampleAttributes.getAttribute().add(createAttribute("karyotype", karyotype.get()));
     }
 
     // Phenotype
-    Optional<String> phenotype = getTemplateFieldValue(bioSample, BIOSAMPLE_PHENOTYPE_FIELD);
+    Optional<String> phenotype = NcbiGenericUtil.getTemplateFieldValue(bioSample, BIOSAMPLE_PHENOTYPE_FIELD);
     if (phenotype.isPresent()) {
-      bioSampleAttributes.getAttribute().add(createAttribute("Phenotype", phenotype.get()));
+      bioSampleAttributes.getAttribute().add(createAttribute("phenotype", phenotype.get()));
     }
 
     // Population
-    Optional<String> population = getTemplateFieldValue(bioSample, BIOSAMPLE_POPULATION_FIELD);
+    Optional<String> population = NcbiGenericUtil.getTemplateFieldValue(bioSample, BIOSAMPLE_POPULATION_FIELD);
     if (population.isPresent()) {
-      bioSampleAttributes.getAttribute().add(createAttribute("Population", population.get()));
+      bioSampleAttributes.getAttribute().add(createAttribute("population", population.get()));
     }
 
     // Race
-    Optional<String> race = getTemplateFieldValue(bioSample, BIOSAMPLE_RACE_FIELD);
+    Optional<String> race = NcbiGenericUtil.getTemplateFieldValue(bioSample, BIOSAMPLE_RACE_FIELD);
     if (race.isPresent()) {
-      bioSampleAttributes.getAttribute().add(createAttribute("Race", race.get()));
+      bioSampleAttributes.getAttribute().add(createAttribute("race", race.get()));
     }
 
     // Sample type
-    Optional<String> sampleType = getTemplateFieldValue(bioSample, BIOSAMPLE_SAMPLE_TYPE_FIELD);
+    Optional<String> sampleType = NcbiGenericUtil.getTemplateFieldValue(bioSample, BIOSAMPLE_SAMPLE_TYPE_FIELD);
     if (sampleType.isPresent()) {
-      bioSampleAttributes.getAttribute().add(createAttribute("SampleType", sampleType.get()));
+      bioSampleAttributes.getAttribute().add(createAttribute("sample_type", sampleType.get()));
     }
 
     // Treatment
-    Optional<String> treatment = getTemplateFieldValue(bioSample, BIOSAMPLE_TREATMENT_FIELD);
+    Optional<String> treatment = NcbiGenericUtil.getTemplateFieldValue(bioSample, BIOSAMPLE_TREATMENT_FIELD);
     if (treatment.isPresent()) {
-      bioSampleAttributes.getAttribute().add(createAttribute("Treatment", treatment.get()));
+      bioSampleAttributes.getAttribute().add(createAttribute("treatment", treatment.get()));
     }
 
     // TODO: check if needed
     // Release Date
     if (releaseDate != null && !releaseDate.isEmpty()) {  // Use the top-level release date
       String xmlReleaseDate = convertDateFormat(releaseDate, instanceDateFormat, xmlDateFormat);
-      bioSampleAttributes.getAttribute().add(createAttribute("ProjectedReleaseDate", xmlReleaseDate));
+      bioSampleAttributes.getAttribute().add(createAttribute("projected_release_date", xmlReleaseDate));
     }
 
     // Custom attribute to specify that the submission was done using CEDAR
-    bioSampleAttributes.getAttribute().add(createAttribute("SubmissionTool", "CEDAR"));
+    bioSampleAttributes.getAttribute().add(createAttribute("submission_tool", "CEDAR"));
 
     return bioSampleAttributes;
   }
@@ -757,38 +740,5 @@ public class NcbiGenericTemplateInstance2XMLConverter {
 
     return attribute;
   }
-
-  private Optional<String> getTemplateFieldValue(JsonNode node, String fieldName) {
-    if (node.has(fieldName)) {
-      JsonNode fieldNode = node.get(fieldName);
-      if (fieldNode.hasNonNull(VALUE_FIELD) && !fieldNode.get(VALUE_FIELD).asText().isEmpty()) {
-        return Optional.of(fieldNode.get(VALUE_FIELD).asText());
-      }
-      else if (fieldNode.hasNonNull(ID_FIELD) && !fieldNode.get(ID_FIELD).asText().isEmpty()) {
-        return Optional.of(fieldNode.get(ID_FIELD).asText());
-      }
-      else {
-        return Optional.empty();
-      }
-    }
-    else {
-      throw new IllegalArgumentException("Missing field: " + fieldName);
-    }
-  }
-
-  private JsonNode getTemplateElementNode(JsonNode node, String elementName) {
-    if (node.has(elementName)) {
-      if (node.hasNonNull(elementName) && node.get(elementName).size() > 0) {
-        return node.get(elementName);
-      }
-      else {
-        throw new IllegalArgumentException("Template element is null or empty : " + elementName);
-      }
-    }
-    else {
-      throw new IllegalArgumentException("Missing template element: " + elementName);
-    }
-  }
-
 
 }
