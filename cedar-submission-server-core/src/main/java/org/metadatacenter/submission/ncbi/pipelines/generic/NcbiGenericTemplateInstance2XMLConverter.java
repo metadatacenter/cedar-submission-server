@@ -49,10 +49,11 @@ public class NcbiGenericTemplateInstance2XMLConverter {
     Submission ncbiSubmission = submissionObjectFactory.createSubmission();
 
     // TODO: Release date
-    String releaseDate = null;
+    Optional<String> submissionsReleaseDate =
+        NcbiGenericUtil.getTemplateFieldValue(null, SUBMISSIONS_RELEASE_DATE_FIELD);
 
     // Submission description
-    Submission.Description submissionDescription = createSubmissionDescription(instance);
+    Submission.Description submissionDescription = createSubmissionDescription(instance, submissionsReleaseDate);
     ncbiSubmission.setDescription(submissionDescription);
 
     /*** BioProject ***/
@@ -97,7 +98,9 @@ public class NcbiGenericTemplateInstance2XMLConverter {
       ncbiBioSample.setPackage(BIOSAMPLE_PACKAGE);
 
       // Attributes
-      ncbiBioSample.setAttributes(createBioSampleAttributes(bioSample, releaseDate));
+      if (submissionsReleaseDate.isPresent()) {
+        ncbiBioSample.setAttributes(createBioSampleAttributes(bioSample, submissionsReleaseDate.get()));
+      }
 
       // XmlContent
       // Development Note: The original NCBI submission doesn't include the BioSample element, so it
@@ -512,7 +515,7 @@ public class NcbiGenericTemplateInstance2XMLConverter {
   /*
    * Object construction for the submission <Description> section
    */
-  private Submission.Description createSubmissionDescription(JsonNode instance) throws
+  private Submission.Description createSubmissionDescription(JsonNode instance, Optional<String> releaseDate) throws
       DatatypeConfigurationException, ParseException {
 
     final JsonNode bioProjectNode = NcbiGenericUtil.getTemplateElementNode(instance, BIOPROJECT_ELEMENT);
@@ -554,13 +557,11 @@ public class NcbiGenericTemplateInstance2XMLConverter {
     submissionDescription.getOrganization().add(contactOrganization);
 
     // TODO: Release date
-//    Submission.Description.Hold submissionDescriptionHold = submissionObjectFactory.createSubmissionDescriptionHold();
-//    //String releaseDate = cairrInstance.getSubmissionsReleaseDate().getValue();
-//    String releaseDate = DEFAULT_RELEASE_DATE;
-//    if (releaseDate != null && !releaseDate.isEmpty()) {
-//      submissionDescriptionHold.setReleaseDate(createXMLGregorianCalendar(releaseDate, instanceDateFormat));
-//      submissionDescription.setHold(submissionDescriptionHold);
-//    }
+    Submission.Description.Hold submissionDescriptionHold = submissionObjectFactory.createSubmissionDescriptionHold();
+    if (releaseDate.isPresent()) {
+      submissionDescriptionHold.setReleaseDate(createXMLGregorianCalendar(releaseDate.get(), instanceDateFormat));
+      submissionDescription.setHold(submissionDescriptionHold);
+    }
 
     return submissionDescription;
   }
@@ -695,7 +696,6 @@ public class NcbiGenericTemplateInstance2XMLConverter {
       bioSampleAttributes.getAttribute().add(createAttribute("treatment", treatment.get()));
     }
 
-    // TODO: check if needed
     // Release Date
     if (releaseDate != null && !releaseDate.isEmpty()) {  // Use the top-level release date
       String xmlReleaseDate = convertDateFormat(releaseDate, instanceDateFormat, xmlDateFormat);

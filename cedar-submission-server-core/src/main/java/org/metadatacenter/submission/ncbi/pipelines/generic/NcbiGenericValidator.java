@@ -56,9 +56,9 @@ public class NcbiGenericValidator
       messages.add("Study Type field must be supplied for BioProject");
     }
 
-    if (!NcbiGenericUtil.getTemplateFieldValue(bioProject, BIOPROJECT_FUNDING_AGENCY_FIELD).isPresent()) {
-      messages.add("Funding Agency field must be supplied for BioProject");
-    }
+//    if (!NcbiGenericUtil.getTemplateFieldValue(bioProject, BIOPROJECT_FUNDING_AGENCY_FIELD).isPresent()) {
+//      messages.add("Funding Agency field must be supplied for BioProject");
+//    }
 
     if (!NcbiGenericUtil.getTemplateFieldValue(bioProject, BIOPROJECT_LAB_NAME_FIELD).isPresent()) {
       messages.add("Lab Name field must be supplied for BioProject");
