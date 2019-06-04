@@ -48,24 +48,16 @@ public class NcbiGenericValidator
   {
     List<String> messages = new ArrayList<>();
 
-    if (!NcbiGenericUtil.getTemplateFieldValue(bioProject, BIOPROJECT_STUDY_TITLE_FIELD).isPresent()) {
-      messages.add("Study Title field must be supplied for BioProject");
-    }
-
-    if (!NcbiGenericUtil.getTemplateFieldValue(bioProject, BIOPROJECT_STUDY_TYPE_FIELD).isPresent()) {
-      messages.add("Study Type field must be supplied for BioProject");
-    }
-
-//    if (!NcbiGenericUtil.getTemplateFieldValue(bioProject, BIOPROJECT_FUNDING_AGENCY_FIELD).isPresent()) {
-//      messages.add("Funding Agency field must be supplied for BioProject");
-//    }
-
-    if (!NcbiGenericUtil.getTemplateFieldValue(bioProject, BIOPROJECT_LAB_NAME_FIELD).isPresent()) {
-      messages.add("Lab Name field must be supplied for BioProject");
+    if (!NcbiGenericUtil.getTemplateFieldValue(bioProject, BIOPROJECT_STUDY_ID_FIELD).isPresent()) {
+      messages.add("Study ID field must be supplied for BioProject");
     }
 
     if (!NcbiGenericUtil.getTemplateFieldValue(bioProject, BIOPROJECT_CONTACT_INFO_FIELD).isPresent()) {
       messages.add("Contact Information field must be supplied for BioProject");
+    }
+
+    if (!NcbiGenericUtil.getTemplateFieldValue(bioProject, BIOPROJECT_CONTACT_EMAIL_FIELD).isPresent()) {
+      messages.add("Contact Email field must be supplied for BioProject");
     }
 
     return messages;
