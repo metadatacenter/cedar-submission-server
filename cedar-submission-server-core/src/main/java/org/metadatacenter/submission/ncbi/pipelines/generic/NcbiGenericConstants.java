@@ -10,12 +10,7 @@ public class NcbiGenericConstants {
   public static final String CEDAR_NAMESPACE = "CEDAR";
 
   /*** Submission general information ***/
-//  public static final String SUBMISSION_DESCRIPTION_FIELD = "Description";
-//  public static final String SUBMISSION_EMAIL_FIELD = "Contact Email";
-//  public static final String SUBMISSION_ORGANIZATION_NAME_FIELD = "Organization Name";
-//  public static final String SUBMISSION_ORGANIZATION_TYPE_FIELD = "Organization Type";
   public static final String SUBMISSION_RELEASE_DATE_FIELD = "Release Date";
-  //  public static final String SUBMISSION_BIOPROJECT_ACCESSION_FIELD = "BioProject Accession";
   public static final String SUBMISSION_DESCRIPTOR = "CEDAR-NCBI Submission";
 
   /*** BioProject section ***/
@@ -29,6 +24,8 @@ public class NcbiGenericConstants {
   public static final String BIOPROJECT_LAB_NAME_FIELD = "Lab Name";
   public static final String BIOPROJECT_LAB_ADDRESS_FIELD = "Lab Address";
   public static final String BIOPROJECT_RELEVANT_PUBLICATIONS_FIELD = "Relevant Publications";
+  public static final String[] BIOPROJECT_REQUIRED = {BIOPROJECT_STUDY_ID_FIELD, BIOPROJECT_CONTACT_INFO_FIELD,
+      BIOPROJECT_CONTACT_EMAIL_FIELD, BIOPROJECT_LAB_NAME_FIELD};
 
   /*** BioSample section ***/
   // Instance fields
@@ -57,6 +54,9 @@ public class NcbiGenericConstants {
   public static final String BIOSAMPLE_SAMPLE_TYPE_FIELD = "Sample Type";
   public static final String BIOSAMPLE_TREATMENT_FIELD = "Treatment";
   public static final String BIOSAMPLE_DESCRIPTION_FIELD = "Sample Description";
+  public static final String[] BIOSAMPLE_REQUIRED = {BIOSAMPLE_SAMPLE_NAME_FIELD, BIOSAMPLE_ORGANISM_FIELD,
+      BIOSAMPLE_ISOLATE_FIELD, BIOSAMPLE_AGE_FIELD, BIOSAMPLE_BIOMATERIAL_PROVIDER_FIELD, BIOSAMPLE_SEX_FIELD,
+      BIOSAMPLE_TISSUE_FIELD};
 
   // Other BioSample fields
   public static final String BIOSAMPLE_SCHEMA_VERSION = "2.0";
@@ -79,6 +79,10 @@ public class NcbiGenericConstants {
   public static final String SRA_DESIGN_DESCRIPTION_FIELD = "Design Description";
   public static final String SRA_FILE_TYPE_FIELD = "File Type";
   public static final String SRA_FILE_NAME_FIELD = "File Name";
+  public static final String[] SRA_REQUIRED = {SRA_BIOSAMPLE_NAME_FIELD, SRA_LIBRARY_ID_FIELD,
+      SRA_TITLE_FIELD, SRA_LIBRARY_STRATEGY_FIELD, SRA_LIBRARY_SOURCE_FIELD, SRA_LIBRARY_SELECTION_FIELD,
+      SRA_LIBRARY_LAYOUT_FIELD, SRA_PLATFORM_FIELD, SRA_INSTRUMENT_MODEL_FIELD, SRA_DESIGN_DESCRIPTION_FIELD,
+      SRA_FILE_TYPE_FIELD};
 
   /*** Other ***/
   public static final String NOT_COLLECTED_VALUE = "not collected";
