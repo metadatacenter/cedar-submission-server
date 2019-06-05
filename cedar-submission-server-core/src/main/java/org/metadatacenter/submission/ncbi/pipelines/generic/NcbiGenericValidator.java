@@ -1,87 +1,128 @@
 package org.metadatacenter.submission.ncbi.pipelines.generic;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import org.metadatacenter.exception.CedarException;
-import org.metadatacenter.submission.BioProjectForAIRRNCBI;
-import org.metadatacenter.submission.BioSampleForAIRRNCBI;
-import org.metadatacenter.submission.CAIRRTemplate;
+import generated.Submission;
 import org.metadatacenter.submission.CEDARValidationResponse;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.stream.Collectors;
+import java.util.*;
 
 import static org.metadatacenter.submission.ncbi.pipelines.generic.NcbiGenericConstants.*;
 
-// TODO: do validation
-public class NcbiGenericValidator
-{
-  public CEDARValidationResponse validate(JsonNode instance) throws CedarException
-  {
+public class NcbiGenericValidator {
+
+  public CEDARValidationResponse validate(JsonNode instance) {
+
     CEDARValidationResponse validationResponse = new CEDARValidationResponse();
     List<String> messages = new ArrayList<>();
 
-    // Validate BioProject
-    JsonNode bioProjectNode = NcbiGenericUtil.getTemplateElementNode(instance, BIOPROJECT_ELEMENT);
-    messages.addAll(validateBioProject(bioProjectNode));
+    /** Validate top level fields **/
+    NcbiGenericUtil.isValidField(instance, SUBMISSION_RELEASE_DATE_FIELD, true, false);
 
-    // Validate BioSample
-    JsonNode bioSampleNode = NcbiGenericUtil.getTemplateElementNode(instance, BIOSAMPLE_ELEMENT);
-    messages.addAll(validateBioSample(bioProjectNode));
+    /** Validate BioProject **/
+    JsonNode bioproject = NcbiGenericUtil.getTemplateElementNode(instance, BIOPROJECT_ELEMENT);
+    messages.addAll(validateBioproject(bioproject));
 
-    // Validate SRA
-    JsonNode sraNode = NcbiGenericUtil.getTemplateElementNode(instance, SRA_ELEMENT);
-    messages.addAll(validateSra(sraNode));
+    /** Validate BioSample **/
+    JsonNode biosamples = NcbiGenericUtil.getTemplateElementNode(instance, BIOSAMPLE_ELEMENT);
+    messages.addAll(validateBiosample(biosamples));
 
+
+    /** Validate SRA **/
+    JsonNode sras = NcbiGenericUtil.getTemplateElementNode(instance, SRA_ELEMENT);
+    messages.addAll(validateSra(sras));
+
+    /** Check the BioSample-SRA references **/
+    messages.addAll(validateBiosampleSraRefs(biosamples, sras));
+
+    /** Return validation messages **/
     validationResponse.setMessages(messages);
 
     if (messages.size() == 0) {
       validationResponse.setIsValid(true);
-    }
-    else {
+    } else {
       validationResponse.setIsValid(false);
     }
 
     return validationResponse;
   }
 
-  private List<String> validateBioProject(JsonNode bioProject)
-  {
+  private List<String> validateBioproject(JsonNode bioproject) {
+    List<String> messages = new ArrayList<>();
+    for (String fieldName : Arrays.asList(BIOPROJECT_FIELDS)) {
+      if (!NcbiGenericUtil.isValidBioprojectField(bioproject, fieldName)) {
+        messages.add(fieldName + " value must be supplied for BioProject");
+      }
+    }
+    return messages;
+  }
+
+  private List<String> validateBiosample(JsonNode biosamples) {
+    List<String> messages = new ArrayList<>();
+    for (JsonNode biosample : biosamples) {
+      for (String fieldName : Arrays.asList(BIOSAMPLE_FIELDS)) {
+        if (!NcbiGenericUtil.isValidBiosampleField(biosample, fieldName)) {
+          messages.add(fieldName + " value must be supplied for BioSample");
+        }
+      }
+    }
+    return messages;
+  }
+
+  private List<String> validateSra(JsonNode sras) {
+    List<String> messages = new ArrayList<>();
+    for (JsonNode sra : sras) {
+      for (String fieldName : Arrays.asList(SRA_FIELDS)) {
+        if (!NcbiGenericUtil.isValidSraField(sra, fieldName)) {
+          messages.add(fieldName + " value must be supplied for SRA");
+        }
+      }
+      // File type and file names
+      Iterator<JsonNode> fileNamesIt = sra.get(SRA_FILE_NAME_FIELD).iterator();
+      while (fileNamesIt.hasNext()) {
+        String fileNameField = fileNamesIt.next().asText();
+        Optional<String> fileName = NcbiGenericUtil.getTemplateFieldValue(sra, fileNameField);
+        if (!fileName.isPresent()) {
+          messages.add("File name field not present: " + fileNameField);
+        }
+      }
+    }
+    return messages;
+  }
+
+  private List<String> validateBiosampleSraRefs(JsonNode biosamples, JsonNode sras) {
     List<String> messages = new ArrayList<>();
 
-    for (String requiredField : Arrays.asList(BIOPROJECT_REQUIRED)) {
-      if (!NcbiGenericUtil.getTemplateFieldValue(bioProject, requiredField).isPresent()) {
-        messages.add(requiredField + " field must be supplied for BioProject");
+    List<String> biosampleSampleNames = new ArrayList<>();
+    for (JsonNode biosample : biosamples) {
+      Optional<String> biosampleSampleName = NcbiGenericUtil.getTemplateFieldValue(biosample, BIOSAMPLE_SAMPLE_NAME_FIELD);
+      if (biosampleSampleName.isPresent()) {
+        biosampleSampleNames.add(biosampleSampleName.get());
+      }
+    }
+
+    List<String> sraSampleNames = new ArrayList<>();
+    for (JsonNode sra : sras) {
+      Optional<String> sraSampleName = NcbiGenericUtil.getTemplateFieldValue(sra, SRA_SAMPLE_NAME_FIELD);
+      if (sraSampleName.isPresent()) {
+        sraSampleNames.add(sraSampleName.get());
+      }
+    }
+
+    for (String biosampleSampleName : biosampleSampleNames) {
+      if (!sraSampleNames.contains(biosampleSampleName)) {
+        messages.add("Sample name in the BioSample section is not present in the SRA section: " + biosampleSampleName);
+      }
+    }
+
+    for (String sraSampleName : sraSampleNames) {
+      if (!biosampleSampleNames.contains(sraSampleName)) {
+        messages.add("Sample name in the SRA section is not present in the BioSample section: " + sraSampleName);
       }
     }
 
     return messages;
   }
 
-  private List<String> validateBioSample(JsonNode bioSample)
-  {
-    List<String> messages = new ArrayList<>();
 
-    for (String requiredField : Arrays.asList(BIOSAMPLE_REQUIRED)) {
-      if (!NcbiGenericUtil.getTemplateFieldValue(bioSample, requiredField).isPresent()) {
-        messages.add(requiredField + " field must be supplied for BioProject");
-      }
-    }
 
-    return messages;
-  }
-
-  private List<String> validateSra(JsonNode sra)
-  {
-    List<String> messages = new ArrayList<>();
-
-    for (String requiredField : Arrays.asList(SRA_REQUIRED)) {
-      if (!NcbiGenericUtil.getTemplateFieldValue(sra, requiredField).isPresent()) {
-        messages.add(requiredField + " field must be supplied for BioProject");
-      }
-    }
-
-    return messages;
-  }
 }

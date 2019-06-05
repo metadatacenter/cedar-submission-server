@@ -9,53 +9,21 @@ import static org.metadatacenter.submission.ncbi.pipelines.generic.NcbiGenericCo
 
 public class NcbiGenericUtil {
 
-  public static Optional<String> getBioSampleTemplateFieldValue(JsonNode node, String fieldName) {
-    return getTemplateFieldValue(node, fieldName, true, BIOSAMPLE_REQUIRED);
-  }
-
-  public static Optional<String> getBioProjectTemplateFieldValue(JsonNode node, String fieldName) {
-    return getTemplateFieldValue(node, fieldName, true, BIOPROJECT_REQUIRED);
-  }
-
-  public static Optional<String> getSraTemplateFieldValue(JsonNode node, String fieldName) {
-    return getTemplateFieldValue(node, fieldName, true, SRA_REQUIRED);
-  }
-
-  private static Optional<String> getTemplateFieldValue(JsonNode node, String fieldName,
-                                                        boolean requiredField, String[] requiredFieldValues) {
-
-    boolean requiredFieldValue = Arrays.asList(requiredFieldValues).contains(fieldName);
-    return getTemplateFieldValue(node, fieldName, requiredField, requiredFieldValue);
-
-  }
-
-  public static Optional<String> getTemplateFieldValue(JsonNode node, String fieldName,
-                                                       boolean requiredField, boolean requiredFieldValue) {
+  public static Optional<String> getTemplateFieldValue(JsonNode node, String fieldName) {
 
     if (node.has(fieldName)) {
       JsonNode fieldNode = node.get(fieldName);
       if (fieldNode.hasNonNull(VALUE_FIELD) && !fieldNode.get(VALUE_FIELD).asText().isEmpty()) {
         return Optional.of(fieldNode.get(VALUE_FIELD).asText());
-      }
-      else if (fieldNode.hasNonNull(ID_FIELD) && !fieldNode.get(ID_FIELD).asText().isEmpty()) {
+      } else if (fieldNode.hasNonNull(ID_FIELD) && !fieldNode.get(ID_FIELD).asText().isEmpty()) {
         return Optional.of(fieldNode.get(ID_FIELD).asText());
-      }
-      else {
-        if (requiredFieldValue) {
-          throw new IllegalArgumentException("Missing required field value: " + fieldName);
-        }
-        else {
-          return Optional.empty();
-        }
-      }
-    }
-    else {
-      if (requiredField) {
-        throw new IllegalArgumentException("Missing required field: " + fieldName);
-      }
-      else {
+      } else {
         return Optional.empty();
       }
+    } else {
+
+      return Optional.empty();
+
     }
   }
 
@@ -63,14 +31,70 @@ public class NcbiGenericUtil {
     if (node.has(elementName)) {
       if (node.hasNonNull(elementName) && node.get(elementName).size() > 0) {
         return node.get(elementName);
-      }
-      else {
+      } else {
         throw new IllegalArgumentException("Template element is null or empty : " + elementName);
       }
-    }
-    else {
+    } else {
       throw new IllegalArgumentException("Missing required template element: " + elementName);
     }
+  }
+
+  public static boolean isValidField(JsonNode node, String fieldName, boolean requiredField, boolean requiredFieldValue) {
+    if (node.has(fieldName)) {
+      JsonNode fieldNode = node.get(fieldName);
+      if (!fieldNode.isArray()) { // it is not an array node
+        if (fieldNode.hasNonNull(VALUE_FIELD) && !fieldNode.get(VALUE_FIELD).asText().isEmpty()) {
+          return true;
+        } else if (fieldNode.hasNonNull(ID_FIELD) && !fieldNode.get(ID_FIELD).asText().isEmpty()) {
+          return true;
+        } else {
+          if (requiredFieldValue) {
+            return false;
+          } else {
+            return true;
+          }
+        }
+      }
+      else { // it is an array node
+        if (fieldNode.size() > 0) {
+          return true;
+        }
+        else {
+          return false;
+        }
+      }
+    } // if the field is not there
+    else {
+      if (requiredField) {
+        return false;
+      } else {
+        return true;
+      }
+    }
+  }
+
+  public static boolean isValidBioprojectField(JsonNode bioproject, String fieldName) {
+    boolean requiredFieldValue = false;
+    if (Arrays.asList(BIOPROJECT_REQUIRED_FIELD_VALUES).contains(fieldName)) {
+      requiredFieldValue = true;
+    }
+    return isValidField(bioproject, fieldName, true, requiredFieldValue);
+  }
+
+  public static boolean isValidBiosampleField(JsonNode biosample, String fieldName) {
+    boolean requiredFieldValue = false;
+    if (Arrays.asList(BIOSAMPLE_REQUIRED_FIELD_VALUES).contains(fieldName)) {
+      requiredFieldValue = true;
+    }
+    return isValidField(biosample, fieldName, true, requiredFieldValue);
+  }
+
+  public static boolean isValidSraField(JsonNode sra, String fieldName) {
+    boolean requiredFieldValue = false;
+    if (Arrays.asList(SRA_REQUIRED_FIELD_VALUES).contains(fieldName)) {
+      requiredFieldValue = true;
+    }
+    return isValidField(sra, fieldName, true, requiredFieldValue);
   }
 
 }

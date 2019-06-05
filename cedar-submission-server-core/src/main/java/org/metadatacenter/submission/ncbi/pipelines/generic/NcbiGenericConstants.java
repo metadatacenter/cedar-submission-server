@@ -6,12 +6,19 @@ public class NcbiGenericConstants {
   public static final String VALUE_FIELD = "@value";
   public static final String ID_FIELD = "@id";
 
-  /*** General NCBI template fields ***/
+  /*** Information directly inserted into the submission.xml file ***/
+  // Submission
   public static final String CEDAR_NAMESPACE = "CEDAR";
+  public static final String SUBMISSION_DESCRIPTOR = "CEDAR-NCBI Submission";
+  // Biosample section
+  public static final String BIOSAMPLE_SCHEMA_VERSION = "2.0";
+  public static final String BIOSAMPLE_SUBMISSION_DESCRIPTOR = SUBMISSION_DESCRIPTOR;
+  public static final String BIOSAMPLE_SUBMISSION_TOOL = "CEDAR";
+  public static final String BIOSAMPLE_ORGANISM = "Homo sapiens";
+  public static final String BIOSAMPLE_PACKAGE = "Human.1.0";
 
   /*** Submission general information ***/
   public static final String SUBMISSION_RELEASE_DATE_FIELD = "Release Date";
-  public static final String SUBMISSION_DESCRIPTOR = "CEDAR-NCBI Submission";
 
   /*** BioProject section ***/
   public static final String BIOPROJECT_ELEMENT = "NCBI BioProject for Human Tissue";
@@ -24,8 +31,12 @@ public class NcbiGenericConstants {
   public static final String BIOPROJECT_LAB_NAME_FIELD = "Lab Name";
   public static final String BIOPROJECT_LAB_ADDRESS_FIELD = "Lab Address";
   public static final String BIOPROJECT_RELEVANT_PUBLICATIONS_FIELD = "Relevant Publications";
-  public static final String[] BIOPROJECT_REQUIRED = {BIOPROJECT_STUDY_ID_FIELD, BIOPROJECT_CONTACT_INFO_FIELD,
-      BIOPROJECT_CONTACT_EMAIL_FIELD, BIOPROJECT_LAB_NAME_FIELD};
+
+  public static final String[] BIOPROJECT_FIELDS = {BIOPROJECT_STUDY_ID_FIELD,
+      BIOPROJECT_CONTACT_INFO_FIELD, BIOPROJECT_CONTACT_EMAIL_FIELD, BIOPROJECT_LAB_NAME_FIELD};
+
+  public static final String[] BIOPROJECT_REQUIRED_FIELD_VALUES = {BIOPROJECT_STUDY_ID_FIELD,
+      BIOPROJECT_CONTACT_INFO_FIELD, BIOPROJECT_CONTACT_EMAIL_FIELD, BIOPROJECT_LAB_NAME_FIELD};
 
   /*** BioSample section ***/
   // Instance fields
@@ -54,20 +65,22 @@ public class NcbiGenericConstants {
   public static final String BIOSAMPLE_SAMPLE_TYPE_FIELD = "Sample Type";
   public static final String BIOSAMPLE_TREATMENT_FIELD = "Treatment";
   public static final String BIOSAMPLE_DESCRIPTION_FIELD = "Sample Description";
-  public static final String[] BIOSAMPLE_REQUIRED = {BIOSAMPLE_SAMPLE_NAME_FIELD, BIOSAMPLE_ORGANISM_FIELD,
+
+  public static final String[] BIOSAMPLE_FIELDS = {BIOSAMPLE_SAMPLE_NAME_FIELD, BIOSAMPLE_SAMPLE_TITLE_FIELD,
+      BIOSAMPLE_ORGANISM_FIELD, BIOSAMPLE_ISOLATE_FIELD, BIOSAMPLE_AGE_FIELD, BIOSAMPLE_BIOMATERIAL_PROVIDER_FIELD,
+      BIOSAMPLE_SEX_FIELD, BIOSAMPLE_TISSUE_FIELD, BIOSAMPLE_CELL_LINE_FIELD, BIOSAMPLE_CELL_TYPE_FIELD,
+      BIOSAMPLE_CELL_SUBTYPE_FIELD, BIOSAMPLE_CULTURE_COLLECTION_FIELD, BIOSAMPLE_DEVELOPMENT_STAGE_FIELD,
+      BIOSAMPLE_DISEASE_FIELD, BIOSAMPLE_DISEASE_STAGE_FIELD, BIOSAMPLE_ETHNICITY_FIELD, BIOSAMPLE_HEALTH_STATE_FIELD,
+      BIOSAMPLE_KARYOTYPE_FIELD, BIOSAMPLE_PHENOTYPE_FIELD, BIOSAMPLE_POPULATION_FIELD,
+      BIOSAMPLE_RACE_FIELD, BIOSAMPLE_SAMPLE_TYPE_FIELD, BIOSAMPLE_TREATMENT_FIELD, BIOSAMPLE_DESCRIPTION_FIELD};
+
+  public static final String[] BIOSAMPLE_REQUIRED_FIELD_VALUES = {BIOSAMPLE_SAMPLE_NAME_FIELD, BIOSAMPLE_ORGANISM_FIELD,
       BIOSAMPLE_ISOLATE_FIELD, BIOSAMPLE_AGE_FIELD, BIOSAMPLE_BIOMATERIAL_PROVIDER_FIELD, BIOSAMPLE_SEX_FIELD,
       BIOSAMPLE_TISSUE_FIELD};
 
-  // Other BioSample fields
-  public static final String BIOSAMPLE_SCHEMA_VERSION = "2.0";
-  public static final String BIOSAMPLE_SUBMISSION_DESCRIPTOR = SUBMISSION_DESCRIPTOR;
-  public static final String BIOSAMPLE_SUBMISSION_TOOL = "CEDAR";
-  public static final String BIOSAMPLE_ORGANISM = "Homo sapiens";
-  public static final String BIOSAMPLE_PACKAGE = "Human.1.0";
-
   /*** SRA section ***/
   public static final String SRA_ELEMENT = "NCBI SRA for Human Tissue";
-  public static final String SRA_BIOSAMPLE_NAME_FIELD = "Sample Name";
+  public static final String SRA_SAMPLE_NAME_FIELD = "Sample Name";
   public static final String SRA_LIBRARY_ID_FIELD = "Library ID";
   public static final String SRA_TITLE_FIELD = "Title";
   public static final String SRA_LIBRARY_STRATEGY_FIELD = "Library Strategy";
@@ -79,10 +92,16 @@ public class NcbiGenericConstants {
   public static final String SRA_DESIGN_DESCRIPTION_FIELD = "Design Description";
   public static final String SRA_FILE_TYPE_FIELD = "File Type";
   public static final String SRA_FILE_NAME_FIELD = "File Name";
-  public static final String[] SRA_REQUIRED = {SRA_BIOSAMPLE_NAME_FIELD, SRA_LIBRARY_ID_FIELD,
+
+  public static final String[] SRA_FIELDS = {SRA_SAMPLE_NAME_FIELD, SRA_LIBRARY_ID_FIELD,
       SRA_TITLE_FIELD, SRA_LIBRARY_STRATEGY_FIELD, SRA_LIBRARY_SOURCE_FIELD, SRA_LIBRARY_SELECTION_FIELD,
       SRA_LIBRARY_LAYOUT_FIELD, SRA_PLATFORM_FIELD, SRA_INSTRUMENT_MODEL_FIELD, SRA_DESIGN_DESCRIPTION_FIELD,
-      SRA_FILE_TYPE_FIELD};
+      SRA_FILE_TYPE_FIELD, SRA_FILE_NAME_FIELD};
+
+  public static final String[] SRA_REQUIRED_FIELD_VALUES = {SRA_SAMPLE_NAME_FIELD, SRA_LIBRARY_ID_FIELD,
+      SRA_TITLE_FIELD, SRA_LIBRARY_STRATEGY_FIELD, SRA_LIBRARY_SOURCE_FIELD, SRA_LIBRARY_SELECTION_FIELD,
+      SRA_LIBRARY_LAYOUT_FIELD, SRA_PLATFORM_FIELD, SRA_INSTRUMENT_MODEL_FIELD, SRA_DESIGN_DESCRIPTION_FIELD,
+      SRA_FILE_TYPE_FIELD, SRA_FILE_NAME_FIELD};
 
   /*** Other ***/
   public static final String NOT_COLLECTED_VALUE = "not collected";
