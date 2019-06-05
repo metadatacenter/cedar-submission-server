@@ -1,4 +1,4 @@
-package org.metadatacenter.submission.ncbi.pipelines.generic;
+package org.metadatacenter.submission.ncbi.pipelines.cairr_old;
 
 import generated.Submission;
 import org.metadatacenter.submission.BioProjectForAIRRNCBI;
@@ -10,12 +10,12 @@ import javax.xml.datatype.DatatypeConfigurationException;
 import java.io.StringWriter;
 
 /**
- * Convert a BioProject element instance into a BioProject XML-based submission.
+ * Convert a CAIRR BioProject element instance into a BioProject XML-based submission.
  *
  * An example BioProject submission can be found here:
  * https://www.ncbi.nlm.nih.gov/viewvc/v1/trunk/submit/public-docs/bioproject/samples/bp.submission.xml?view=markup
  */
-public class NcbiGenericBioProjectElementInstance2BioProjectXMLConverter
+public class CAIRRBioProjectElementInstance2BioProjectXMLConverter
 {
   public String generateNCBIBioProjectSubmissionXML(BioProjectForAIRRNCBI cairrBioProjectElementInstance)
     throws DatatypeConfigurationException, JAXBException

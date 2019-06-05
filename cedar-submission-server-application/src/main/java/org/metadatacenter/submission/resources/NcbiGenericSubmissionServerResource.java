@@ -66,13 +66,6 @@ import static org.metadatacenter.rest.assertion.GenericAssertions.LoggedIn;
     NcbiGenericSubmissionServerResource.ncbiSubmissionQueueService = ncbiSubmissionQueueService;
   }
 
-  /**
-   * AIRRTemplate.json JSON Schema file in the resources directory. This file
-   * contains the CEDAR template that defines the example SRA submission generated from an AIRR template.
-   * An SRA submission incorporates BioSample metadata and a BioProject data.
-   *
-   * @return A validation response
-   */
   @POST @Timed @Path("/validate-ncbi") public Response validate() throws CedarException
   {
     CedarRequestContext c = buildRequestContext();

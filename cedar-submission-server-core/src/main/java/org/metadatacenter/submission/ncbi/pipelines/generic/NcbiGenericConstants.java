@@ -3,70 +3,70 @@ package org.metadatacenter.submission.ncbi.pipelines.generic;
 public class NcbiGenericConstants {
 
   /*** General CEDAR fields ***/
-  public static final String VALUE_FIELD = "@value";
-  public static final String ID_FIELD = "@id";
+  protected static final String VALUE_FIELD = "@value";
+  protected static final String ID_FIELD = "@id";
 
   /*** Information directly inserted into the submission.xml file ***/
   // Submission
-  public static final String CEDAR_NAMESPACE = "CEDAR";
-  public static final String SUBMISSION_DESCRIPTOR = "CEDAR-NCBI Submission";
+  protected static final String CEDAR_NAMESPACE = "CEDAR";
+  protected static final String SUBMISSION_DESCRIPTOR = "CEDAR-NCBI Submission";
   // Biosample section
-  public static final String BIOSAMPLE_SCHEMA_VERSION = "2.0";
-  public static final String BIOSAMPLE_SUBMISSION_DESCRIPTOR = SUBMISSION_DESCRIPTOR;
-  public static final String BIOSAMPLE_SUBMISSION_TOOL = "CEDAR";
-  public static final String BIOSAMPLE_ORGANISM = "Homo sapiens";
-  public static final String BIOSAMPLE_PACKAGE = "Human.1.0";
+  protected static final String BIOSAMPLE_SCHEMA_VERSION = "2.0";
+  protected static final String BIOSAMPLE_SUBMISSION_DESCRIPTOR = SUBMISSION_DESCRIPTOR;
+  protected static final String BIOSAMPLE_SUBMISSION_TOOL = "CEDAR";
+  protected static final String BIOSAMPLE_ORGANISM = "Homo sapiens";
+  protected static final String BIOSAMPLE_PACKAGE = "Human.1.0";
 
   /*** Submission general information ***/
-  public static final String SUBMISSION_RELEASE_DATE_FIELD = "Release Date";
+  protected static final String SUBMISSION_RELEASE_DATE_FIELD = "Release Date";
 
   /*** BioProject section ***/
-  public static final String BIOPROJECT_ELEMENT = "NCBI BioProject for Human Tissue";
-  public static final String BIOPROJECT_STUDY_ID_FIELD = "Study ID";
-  public static final String BIOPROJECT_STUDY_TITLE_FIELD = "Study Title";
-  public static final String BIOPROJECT_STUDY_TYPE_FIELD = "Study Type";
-  public static final String BIOPROJECT_STUDY_CRITERIA_FIELD = "Study Criteria";
-  public static final String BIOPROJECT_CONTACT_INFO_FIELD = "Contact Information";
-  public static final String BIOPROJECT_CONTACT_EMAIL_FIELD = "Contact Email";
-  public static final String BIOPROJECT_LAB_NAME_FIELD = "Lab Name";
-  public static final String BIOPROJECT_LAB_ADDRESS_FIELD = "Lab Address";
-  public static final String BIOPROJECT_RELEVANT_PUBLICATIONS_FIELD = "Relevant Publications";
+  protected static final String BIOPROJECT_ELEMENT = "NCBI BioProject for Human Tissue";
+  protected static final String BIOPROJECT_STUDY_ID_FIELD = "Study ID";
+  protected static final String BIOPROJECT_STUDY_TITLE_FIELD = "Study Title";
+  protected static final String BIOPROJECT_STUDY_TYPE_FIELD = "Study Type";
+  protected static final String BIOPROJECT_STUDY_CRITERIA_FIELD = "Study Criteria";
+  protected static final String BIOPROJECT_CONTACT_INFO_FIELD = "Contact Information";
+  protected static final String BIOPROJECT_CONTACT_EMAIL_FIELD = "Contact Email";
+  protected static final String BIOPROJECT_LAB_NAME_FIELD = "Lab Name";
+  protected static final String BIOPROJECT_LAB_ADDRESS_FIELD = "Lab Address";
+  protected static final String BIOPROJECT_RELEVANT_PUBLICATIONS_FIELD = "Relevant Publications";
 
-  public static final String[] BIOPROJECT_FIELDS = {BIOPROJECT_STUDY_ID_FIELD,
+  protected static final String[] BIOPROJECT_FIELDS = {BIOPROJECT_STUDY_ID_FIELD,
       BIOPROJECT_CONTACT_INFO_FIELD, BIOPROJECT_CONTACT_EMAIL_FIELD, BIOPROJECT_LAB_NAME_FIELD};
 
-  public static final String[] BIOPROJECT_REQUIRED_FIELD_VALUES = {BIOPROJECT_STUDY_ID_FIELD,
+  protected static final String[] BIOPROJECT_REQUIRED_FIELD_VALUES = {BIOPROJECT_STUDY_ID_FIELD,
       BIOPROJECT_CONTACT_INFO_FIELD, BIOPROJECT_CONTACT_EMAIL_FIELD, BIOPROJECT_LAB_NAME_FIELD};
 
   /*** BioSample section ***/
   // Instance fields
-  public static final String BIOSAMPLE_ELEMENT = "NCBI BioSample for Human Tissue";
-  public static final String BIOSAMPLE_SAMPLE_NAME_FIELD = "Sample Name";
-  public static final String BIOSAMPLE_SAMPLE_TITLE_FIELD = "Sample Title";
-  public static final String BIOSAMPLE_ORGANISM_FIELD = "Organism";
-  public static final String BIOSAMPLE_ISOLATE_FIELD = "Isolate";
-  public static final String BIOSAMPLE_AGE_FIELD = "Age";
-  public static final String BIOSAMPLE_BIOMATERIAL_PROVIDER_FIELD = "Biomaterial Provider";
-  public static final String BIOSAMPLE_SEX_FIELD = "Sex";
-  public static final String BIOSAMPLE_TISSUE_FIELD = "Tissue";
-  public static final String BIOSAMPLE_CELL_LINE_FIELD = "Cell Line";
-  public static final String BIOSAMPLE_CELL_TYPE_FIELD = "Cell Type";
-  public static final String BIOSAMPLE_CELL_SUBTYPE_FIELD = "Cell Subtype";
-  public static final String BIOSAMPLE_CULTURE_COLLECTION_FIELD = "Culture Collection";
-  public static final String BIOSAMPLE_DEVELOPMENT_STAGE_FIELD = "Development Stage";
-  public static final String BIOSAMPLE_DISEASE_FIELD = "Disease";
-  public static final String BIOSAMPLE_DISEASE_STAGE_FIELD = "Disease Stage";
-  public static final String BIOSAMPLE_ETHNICITY_FIELD = "Ethnicity";
-  public static final String BIOSAMPLE_HEALTH_STATE_FIELD = "Health State";
-  public static final String BIOSAMPLE_KARYOTYPE_FIELD = "Karyotype";
-  public static final String BIOSAMPLE_PHENOTYPE_FIELD = "Phenotype";
-  public static final String BIOSAMPLE_POPULATION_FIELD = "Population";
-  public static final String BIOSAMPLE_RACE_FIELD = "Race";
-  public static final String BIOSAMPLE_SAMPLE_TYPE_FIELD = "Sample Type";
-  public static final String BIOSAMPLE_TREATMENT_FIELD = "Treatment";
-  public static final String BIOSAMPLE_DESCRIPTION_FIELD = "Sample Description";
+  protected static final String BIOSAMPLE_ELEMENT = "NCBI BioSample for Human Tissue";
+  protected static final String BIOSAMPLE_SAMPLE_NAME_FIELD = "Sample Name";
+  protected static final String BIOSAMPLE_SAMPLE_TITLE_FIELD = "Sample Title";
+  protected static final String BIOSAMPLE_ORGANISM_FIELD = "Organism";
+  protected static final String BIOSAMPLE_ISOLATE_FIELD = "Isolate";
+  protected static final String BIOSAMPLE_AGE_FIELD = "Age";
+  protected static final String BIOSAMPLE_BIOMATERIAL_PROVIDER_FIELD = "Biomaterial Provider";
+  protected static final String BIOSAMPLE_SEX_FIELD = "Sex";
+  protected static final String BIOSAMPLE_TISSUE_FIELD = "Tissue";
+  protected static final String BIOSAMPLE_CELL_LINE_FIELD = "Cell Line";
+  protected static final String BIOSAMPLE_CELL_TYPE_FIELD = "Cell Type";
+  protected static final String BIOSAMPLE_CELL_SUBTYPE_FIELD = "Cell Subtype";
+  protected static final String BIOSAMPLE_CULTURE_COLLECTION_FIELD = "Culture Collection";
+  protected static final String BIOSAMPLE_DEVELOPMENT_STAGE_FIELD = "Development Stage";
+  protected static final String BIOSAMPLE_DISEASE_FIELD = "Disease";
+  protected static final String BIOSAMPLE_DISEASE_STAGE_FIELD = "Disease Stage";
+  protected static final String BIOSAMPLE_ETHNICITY_FIELD = "Ethnicity";
+  protected static final String BIOSAMPLE_HEALTH_STATE_FIELD = "Health State";
+  protected static final String BIOSAMPLE_KARYOTYPE_FIELD = "Karyotype";
+  protected static final String BIOSAMPLE_PHENOTYPE_FIELD = "Phenotype";
+  protected static final String BIOSAMPLE_POPULATION_FIELD = "Population";
+  protected static final String BIOSAMPLE_RACE_FIELD = "Race";
+  protected static final String BIOSAMPLE_SAMPLE_TYPE_FIELD = "Sample Type";
+  protected static final String BIOSAMPLE_TREATMENT_FIELD = "Treatment";
+  protected static final String BIOSAMPLE_DESCRIPTION_FIELD = "Sample Description";
 
-  public static final String[] BIOSAMPLE_FIELDS = {BIOSAMPLE_SAMPLE_NAME_FIELD, BIOSAMPLE_SAMPLE_TITLE_FIELD,
+  protected static final String[] BIOSAMPLE_FIELDS = {BIOSAMPLE_SAMPLE_NAME_FIELD, BIOSAMPLE_SAMPLE_TITLE_FIELD,
       BIOSAMPLE_ORGANISM_FIELD, BIOSAMPLE_ISOLATE_FIELD, BIOSAMPLE_AGE_FIELD, BIOSAMPLE_BIOMATERIAL_PROVIDER_FIELD,
       BIOSAMPLE_SEX_FIELD, BIOSAMPLE_TISSUE_FIELD, BIOSAMPLE_CELL_LINE_FIELD, BIOSAMPLE_CELL_TYPE_FIELD,
       BIOSAMPLE_CELL_SUBTYPE_FIELD, BIOSAMPLE_CULTURE_COLLECTION_FIELD, BIOSAMPLE_DEVELOPMENT_STAGE_FIELD,
@@ -74,38 +74,38 @@ public class NcbiGenericConstants {
       BIOSAMPLE_KARYOTYPE_FIELD, BIOSAMPLE_PHENOTYPE_FIELD, BIOSAMPLE_POPULATION_FIELD,
       BIOSAMPLE_RACE_FIELD, BIOSAMPLE_SAMPLE_TYPE_FIELD, BIOSAMPLE_TREATMENT_FIELD, BIOSAMPLE_DESCRIPTION_FIELD};
 
-  public static final String[] BIOSAMPLE_REQUIRED_FIELD_VALUES = {BIOSAMPLE_SAMPLE_NAME_FIELD, BIOSAMPLE_ORGANISM_FIELD,
+  protected static final String[] BIOSAMPLE_REQUIRED_FIELD_VALUES = {BIOSAMPLE_SAMPLE_NAME_FIELD, BIOSAMPLE_ORGANISM_FIELD,
       BIOSAMPLE_ISOLATE_FIELD, BIOSAMPLE_AGE_FIELD, BIOSAMPLE_BIOMATERIAL_PROVIDER_FIELD, BIOSAMPLE_SEX_FIELD,
       BIOSAMPLE_TISSUE_FIELD};
 
   /*** SRA section ***/
-  public static final String SRA_ELEMENT = "NCBI SRA for Human Tissue";
-  public static final String SRA_SAMPLE_NAME_FIELD = "Sample Name";
-  public static final String SRA_LIBRARY_ID_FIELD = "Library ID";
-  public static final String SRA_TITLE_FIELD = "Title";
-  public static final String SRA_LIBRARY_STRATEGY_FIELD = "Library Strategy";
-  public static final String SRA_LIBRARY_SOURCE_FIELD = "Library Source";
-  public static final String SRA_LIBRARY_SELECTION_FIELD = "Library Selection";
-  public static final String SRA_LIBRARY_LAYOUT_FIELD = "Library Layout";
-  public static final String SRA_PLATFORM_FIELD = "Platform";
-  public static final String SRA_INSTRUMENT_MODEL_FIELD = "Instrument Model";
-  public static final String SRA_DESIGN_DESCRIPTION_FIELD = "Design Description";
-  public static final String SRA_FILE_TYPE_FIELD = "File Type";
-  public static final String SRA_FILE_NAME_FIELD = "File Name";
+  protected static final String SRA_ELEMENT = "NCBI SRA for Human Tissue";
+  protected static final String SRA_SAMPLE_NAME_FIELD = "Sample Name";
+  protected static final String SRA_LIBRARY_ID_FIELD = "Library ID";
+  protected static final String SRA_TITLE_FIELD = "Title";
+  protected static final String SRA_LIBRARY_STRATEGY_FIELD = "Library Strategy";
+  protected static final String SRA_LIBRARY_SOURCE_FIELD = "Library Source";
+  protected static final String SRA_LIBRARY_SELECTION_FIELD = "Library Selection";
+  protected static final String SRA_LIBRARY_LAYOUT_FIELD = "Library Layout";
+  protected static final String SRA_PLATFORM_FIELD = "Platform";
+  protected static final String SRA_INSTRUMENT_MODEL_FIELD = "Instrument Model";
+  protected static final String SRA_DESIGN_DESCRIPTION_FIELD = "Design Description";
+  protected static final String SRA_FILE_TYPE_FIELD = "File Type";
+  protected static final String SRA_FILE_NAME_FIELD = "File Name";
 
-  public static final String[] SRA_FIELDS = {SRA_SAMPLE_NAME_FIELD, SRA_LIBRARY_ID_FIELD,
+  protected static final String[] SRA_FIELDS = {SRA_SAMPLE_NAME_FIELD, SRA_LIBRARY_ID_FIELD,
       SRA_TITLE_FIELD, SRA_LIBRARY_STRATEGY_FIELD, SRA_LIBRARY_SOURCE_FIELD, SRA_LIBRARY_SELECTION_FIELD,
       SRA_LIBRARY_LAYOUT_FIELD, SRA_PLATFORM_FIELD, SRA_INSTRUMENT_MODEL_FIELD, SRA_DESIGN_DESCRIPTION_FIELD,
       SRA_FILE_TYPE_FIELD, SRA_FILE_NAME_FIELD};
 
-  public static final String[] SRA_REQUIRED_FIELD_VALUES = {SRA_SAMPLE_NAME_FIELD, SRA_LIBRARY_ID_FIELD,
+  protected static final String[] SRA_REQUIRED_FIELD_VALUES = {SRA_SAMPLE_NAME_FIELD, SRA_LIBRARY_ID_FIELD,
       SRA_TITLE_FIELD, SRA_LIBRARY_STRATEGY_FIELD, SRA_LIBRARY_SOURCE_FIELD, SRA_LIBRARY_SELECTION_FIELD,
       SRA_LIBRARY_LAYOUT_FIELD, SRA_PLATFORM_FIELD, SRA_INSTRUMENT_MODEL_FIELD, SRA_DESIGN_DESCRIPTION_FIELD,
       SRA_FILE_TYPE_FIELD, SRA_FILE_NAME_FIELD};
 
   /*** Other ***/
-  public static final String NOT_COLLECTED_VALUE = "not collected";
-  public static final String MISSING_VALUE = "missing";
+  protected static final String NOT_COLLECTED_VALUE = "not collected";
+  protected static final String MISSING_VALUE = "missing";
 
   // PRIVATE //
 

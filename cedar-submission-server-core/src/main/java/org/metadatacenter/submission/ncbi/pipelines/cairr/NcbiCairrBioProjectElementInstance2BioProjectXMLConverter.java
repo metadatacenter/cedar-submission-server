@@ -15,7 +15,7 @@ import java.io.StringWriter;
  * An example BioProject submission can be found here:
  * https://www.ncbi.nlm.nih.gov/viewvc/v1/trunk/submit/public-docs/bioproject/samples/bp.submission.xml?view=markup
  */
-public class CAIRRBioProjectElementInstance2BioProjectXMLConverter
+public class NcbiCairrBioProjectElementInstance2BioProjectXMLConverter
 {
   public String generateNCBIBioProjectSubmissionXML(BioProjectForAIRRNCBI cairrBioProjectElementInstance)
     throws DatatypeConfigurationException, JAXBException

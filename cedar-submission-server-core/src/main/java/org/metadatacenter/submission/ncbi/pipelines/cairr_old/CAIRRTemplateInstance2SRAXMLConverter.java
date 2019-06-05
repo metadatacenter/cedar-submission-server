@@ -1,4 +1,4 @@
-package org.metadatacenter.submission.ncbi.pipelines.cairr;
+package org.metadatacenter.submission.ncbi.pipelines.cairr_old;
 
 import biosample.TypeAttribute;
 import biosample.TypeBioSample;
