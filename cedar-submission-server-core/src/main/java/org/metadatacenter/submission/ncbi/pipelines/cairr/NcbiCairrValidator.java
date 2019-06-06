@@ -2,6 +2,7 @@ package org.metadatacenter.submission.ncbi.pipelines.cairr;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import org.metadatacenter.submission.CEDARValidationResponse;
+import org.metadatacenter.submission.ncbi.pipelines.NcbiPipelinesCommonUtil;
 
 import java.util.*;
 
@@ -18,20 +19,34 @@ public class NcbiCairrValidator {
     NcbiCairrUtil.isValidField(instance, SUBMISSION_RELEASE_DATE_FIELD, true, false);
 
     /** Validate BioProject **/
-    JsonNode bioproject = NcbiCairrUtil.getTemplateElementNode(instance, BIOPROJECT_ELEMENT);
-    messages.addAll(validateBioproject(bioproject));
+    Optional<JsonNode> bioproject = NcbiPipelinesCommonUtil.getTemplateElementNode(instance, BIOPROJECT_ELEMENT);
+    if (bioproject.isEmpty()) {
+      messages.add("Missing element: " + BIOPROJECT_ELEMENT);
+    }
+    else {
+      messages.addAll(validateBioproject(bioproject.get()));
+    }
 
     /** Validate BioSample **/
-    JsonNode biosamples = NcbiCairrUtil.getTemplateElementNode(instance, BIOSAMPLE_ELEMENT);
-    messages.addAll(validateBiosample(biosamples));
-
+    Optional<JsonNode> biosamples = NcbiPipelinesCommonUtil.getTemplateElementNode(instance, BIOSAMPLE_ELEMENT);
+    if (biosamples.isEmpty()) {
+      messages.add("Missing element: " + BIOSAMPLE_ELEMENT);
+    }
+    else {
+      messages.addAll(validateBiosample(biosamples.get()));
+    }
 
     /** Validate SRA **/
-    JsonNode sras = NcbiCairrUtil.getTemplateElementNode(instance, SRA_ELEMENT);
-    messages.addAll(validateSra(sras));
+    Optional<JsonNode> sras = NcbiPipelinesCommonUtil.getTemplateElementNode(instance, SRA_ELEMENT);
+    if (sras.isEmpty()) {
+      messages.add("Missing element: " + SRA_ELEMENT);
+    }
+    else {
+      messages.addAll(validateSra(sras.get()));
+    }
 
     /** Check the BioSample-SRA references **/
-    messages.addAll(validateBiosampleSraRefs(biosamples, sras));
+    messages.addAll(validateBiosampleSraRefs(biosamples.get(), sras.get()));
 
     /** Return validation messages **/
     validationResponse.setMessages(messages);
@@ -121,7 +136,5 @@ public class NcbiCairrValidator {
 
     return messages;
   }
-
-
 
 }

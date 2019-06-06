@@ -3,6 +3,7 @@ package org.metadatacenter.submission.ncbi.pipelines.generic;
 import com.fasterxml.jackson.databind.JsonNode;
 import generated.Submission;
 import org.metadatacenter.submission.CEDARValidationResponse;
+import org.metadatacenter.submission.ncbi.pipelines.NcbiPipelinesCommonUtil;
 
 import java.util.*;
 
@@ -19,20 +20,34 @@ public class NcbiGenericValidator {
     NcbiGenericUtil.isValidField(instance, SUBMISSION_RELEASE_DATE_FIELD, true, false);
 
     /** Validate BioProject **/
-    JsonNode bioproject = NcbiGenericUtil.getTemplateElementNode(instance, BIOPROJECT_ELEMENT);
-    messages.addAll(validateBioproject(bioproject));
+    Optional<JsonNode> bioproject = NcbiPipelinesCommonUtil.getTemplateElementNode(instance, BIOPROJECT_ELEMENT);
+    if (bioproject.isEmpty()) {
+      messages.add("Missing element: " + BIOPROJECT_ELEMENT);
+    }
+    else {
+      messages.addAll(validateBioproject(bioproject.get()));
+    }
 
     /** Validate BioSample **/
-    JsonNode biosamples = NcbiGenericUtil.getTemplateElementNode(instance, BIOSAMPLE_ELEMENT);
-    messages.addAll(validateBiosample(biosamples));
-
+    Optional<JsonNode> biosamples = NcbiPipelinesCommonUtil.getTemplateElementNode(instance, BIOSAMPLE_ELEMENT);
+    if (biosamples.isEmpty()) {
+      messages.add("Missing element: " + BIOSAMPLE_ELEMENT);
+    }
+    else {
+      messages.addAll(validateBiosample(biosamples.get()));
+    }
 
     /** Validate SRA **/
-    JsonNode sras = NcbiGenericUtil.getTemplateElementNode(instance, SRA_ELEMENT);
-    messages.addAll(validateSra(sras));
+    Optional<JsonNode> sras = NcbiPipelinesCommonUtil.getTemplateElementNode(instance, SRA_ELEMENT);
+    if (sras.isEmpty()) {
+      messages.add("Missing element: " + SRA_ELEMENT);
+    }
+    else {
+      messages.addAll(validateSra(sras.get()));
+    }
 
     /** Check the BioSample-SRA references **/
-    messages.addAll(validateBiosampleSraRefs(biosamples, sras));
+    messages.addAll(validateBiosampleSraRefs(biosamples.get(), sras.get()));
 
     /** Return validation messages **/
     validationResponse.setMessages(messages);
@@ -121,6 +136,65 @@ public class NcbiGenericValidator {
     }
 
     return messages;
+  }
+
+  /**
+   * Checks the consistency between the file names selected to be uploaded and the file names included in the instance (SRA section)
+   * @return
+   */
+  public CEDARValidationResponse validateFilenames(JsonNode instance, List<String> userFileNames) {
+
+    CEDARValidationResponse validationResponse = new CEDARValidationResponse();
+    List<String> messages = new ArrayList<>();
+
+    // Extract file names from the sra section
+    List<String> sraFilenames = extractSraFileNames(instance);
+
+    for (String sraFilename : sraFilenames) {
+      if (!userFileNames.contains(sraFilename)) {
+        messages.add("File name in the SRA section is not present in the files selected by the user: '" + sraFilename + "'");
+      }
+    }
+
+    for (String userFileName : userFileNames) {
+      if (!sraFilenames.contains(userFileName)) {
+        messages.add("File name selected by the user is not present in the SRA section: '" + userFileName + "'");
+      }
+    }
+
+    /** Return validation messages **/
+    validationResponse.setMessages(messages);
+
+    if (messages.size() == 0) {
+      validationResponse.setIsValid(true);
+    } else {
+      validationResponse.setIsValid(false);
+    }
+
+    return validationResponse;
+  }
+
+  public List<String> extractSraFileNames(JsonNode instance) {
+
+    JsonNode sras = NcbiPipelinesCommonUtil.getTemplateElementNode(instance, SRA_ELEMENT).get();
+    List<String> sraFileNames = new ArrayList();
+
+    for (JsonNode sra : sras) {
+
+      if (sra.hasNonNull(SRA_FILE_NAME_FIELD) && sra.get(SRA_FILE_NAME_FIELD).size() > 0) {
+        Iterator<JsonNode> fileNameFieldsIt = sra.get(SRA_FILE_NAME_FIELD).iterator();
+
+        while (fileNameFieldsIt.hasNext()) {
+          String fileNameField = fileNameFieldsIt.next().asText();
+          Optional<String> fileName = NcbiGenericUtil.getTemplateFieldValue(sra, fileNameField);
+          sraFileNames.add(fileName.get());
+        }
+
+      } else {
+        return new ArrayList<>();
+      }
+    }
+    return sraFileNames;
   }
 
 

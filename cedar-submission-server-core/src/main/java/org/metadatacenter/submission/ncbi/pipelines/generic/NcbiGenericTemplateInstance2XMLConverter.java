@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import common.sp.*;
 import generated.ObjectFactory;
 import generated.*;
+import org.metadatacenter.submission.ncbi.pipelines.NcbiPipelinesCommonUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -55,19 +56,19 @@ public class NcbiGenericTemplateInstance2XMLConverter {
     Submission.Description submissionDescription = createSubmissionDescription(instance, submissionsReleaseDate);
     ncbiSubmission.setDescription(submissionDescription);
 
-    JsonNode bioProject = NcbiGenericUtil.getTemplateElementNode(instance, BIOPROJECT_ELEMENT);
+    Optional<JsonNode> bioProject = NcbiPipelinesCommonUtil.getTemplateElementNode(instance, BIOPROJECT_ELEMENT);
 
     // BioProject Accession
     String bioprojectAccession = null;
-    Optional<String> bpAccession = NcbiGenericUtil.getTemplateFieldValue(bioProject, BIOPROJECT_STUDY_ID_FIELD);
+    Optional<String> bpAccession = NcbiGenericUtil.getTemplateFieldValue(bioProject.get(), BIOPROJECT_STUDY_ID_FIELD);
     if (bpAccession.isPresent()) {
       bioprojectAccession = bpAccession.get();
     }
 
     /*** BioSample ***/
-    JsonNode biosamples = NcbiGenericUtil.getTemplateElementNode(instance, BIOSAMPLE_ELEMENT);
+    Optional<JsonNode> biosamples = NcbiPipelinesCommonUtil.getTemplateElementNode(instance, BIOSAMPLE_ELEMENT);
 
-    for (JsonNode bioSample : biosamples) {
+    for (JsonNode bioSample : biosamples.get()) {
 
       // Start <BioSample> section
       TypeBioSample ncbiBioSample = bioSampleObjectFactory.createTypeBioSample();
@@ -123,10 +124,10 @@ public class NcbiGenericTemplateInstance2XMLConverter {
     }
 
     /*** SRA ***/
-    JsonNode sras = NcbiGenericUtil.getTemplateElementNode(instance, SRA_ELEMENT);
+    Optional<JsonNode> sras = NcbiPipelinesCommonUtil.getTemplateElementNode(instance, SRA_ELEMENT);
 
     // Retrieve the SRAs from the instance
-    for (JsonNode sra : sras) {
+    for (JsonNode sra : sras.get()) {
 
       Submission.Action.AddFiles sraAddFiles = submissionObjectFactory.createSubmissionActionAddFiles();
       sraAddFiles.setTargetDb(TypeTargetDb.SRA);
@@ -334,7 +335,7 @@ public class NcbiGenericTemplateInstance2XMLConverter {
   private Submission.Description createSubmissionDescription(JsonNode instance, Optional<String> releaseDate) throws
       DatatypeConfigurationException, ParseException {
 
-    JsonNode bioProject = NcbiGenericUtil.getTemplateElementNode(instance, BIOPROJECT_ELEMENT);
+    JsonNode bioProject = NcbiPipelinesCommonUtil.getTemplateElementNode(instance, BIOPROJECT_ELEMENT).get();
     Submission.Description submissionDescription = submissionObjectFactory.createSubmissionDescription();
 
     // Description

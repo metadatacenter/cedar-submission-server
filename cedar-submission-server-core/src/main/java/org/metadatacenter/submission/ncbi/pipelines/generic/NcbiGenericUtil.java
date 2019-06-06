@@ -10,7 +10,6 @@ import static org.metadatacenter.submission.ncbi.pipelines.generic.NcbiGenericCo
 public class NcbiGenericUtil {
 
   public static Optional<String> getTemplateFieldValue(JsonNode node, String fieldName) {
-
     if (node.has(fieldName)) {
       JsonNode fieldNode = node.get(fieldName);
       if (fieldNode.hasNonNull(VALUE_FIELD) && !fieldNode.get(VALUE_FIELD).asText().isEmpty()) {
@@ -21,21 +20,7 @@ public class NcbiGenericUtil {
         return Optional.empty();
       }
     } else {
-
       return Optional.empty();
-
-    }
-  }
-
-  public static JsonNode getTemplateElementNode(JsonNode node, String elementName) {
-    if (node.has(elementName)) {
-      if (node.hasNonNull(elementName) && node.get(elementName).size() > 0) {
-        return node.get(elementName);
-      } else {
-        throw new IllegalArgumentException("Template element is null or empty : " + elementName);
-      }
-    } else {
-      throw new IllegalArgumentException("Missing required template element: " + elementName);
     }
   }
 

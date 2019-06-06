@@ -29,18 +29,6 @@ public class NcbiCairrUtil {
     }
   }
 
-  public static JsonNode getTemplateElementNode(JsonNode node, String elementName) {
-    if (node.has(elementName)) {
-      if (node.hasNonNull(elementName) && node.get(elementName).size() > 0) {
-        return node.get(elementName);
-      } else {
-        throw new IllegalArgumentException("Template element is null or empty : " + elementName);
-      }
-    } else {
-      throw new IllegalArgumentException("Missing required template element: " + elementName);
-    }
-  }
-
   public static boolean isValidField(JsonNode node, String fieldName, boolean requiredField, boolean requiredFieldValue) {
     if (node.has(fieldName)) {
       JsonNode fieldNode = node.get(fieldName);
