@@ -14,6 +14,7 @@ import org.metadatacenter.submission.CEDARValidationResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.ws.rs.core.Response;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
@@ -22,6 +23,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -31,9 +33,7 @@ public class BioSampleValidator
 
   private static final String BIOSAMPLE_VALIDATION_URL = "https://www.ncbi.nlm.nih.gov/projects/biosample/validate/";
 
-  public BioSampleValidator()
-  {
-  }
+  public BioSampleValidator() { }
 
   /**
    * Take XML containing a BioSample XML submission and send it to NCBI's BioSample validation REST endpoint.

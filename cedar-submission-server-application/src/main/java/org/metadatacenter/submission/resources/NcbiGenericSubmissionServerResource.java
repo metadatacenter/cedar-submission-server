@@ -39,6 +39,7 @@ import java.io.IOException;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import static org.metadatacenter.rest.assertion.GenericAssertions.LoggedIn;
 
@@ -96,61 +97,67 @@ public class NcbiGenericSubmissionServerResource
 
       JsonNode instance = requestBody.get(instanceField);
 
-      // Validate instance
-      CEDARValidationResponse cedarValidationResponse = this.ncbiGenericValidator.validate(instance);
+      // Define validation response objects
+      CEDARValidationResponse cedarInstanceValidationResponse;
+      CEDARValidationResponse cedarFileNamesValidationResponse = null;
+      CEDARValidationResponse fileNamesValidationResponse = null;
 
-      // If the CEDAR validation is OK, run the NCBI validation
-      if (cedarValidationResponse.getIsValid()) {
+      // 1. CEDAR instance validation
+      cedarInstanceValidationResponse = this.ncbiGenericValidator.validateInstance(instance);
+
+      // 2. CEDAR file names validation
+      if (requestBody.hasNonNull(userFileNamesField)) {
+        JsonNode userFileNames = requestBody.get(userFileNamesField);
+        if (userFileNames.isArray()) {
+          List fileNames = null;
+          try {
+            fileNames = new ObjectMapper().readValue(userFileNames.traverse(),
+                new TypeReference<ArrayList<String>>() {
+                });
+          } catch (IOException e) {
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
+          }
+          fileNamesValidationResponse =
+              this.ncbiGenericValidator.validateFilenames(instance, fileNames);
+        }
+      }
+
+      // If 1 and 2 went well, we invoke NCBI's external validation
+      if (cedarInstanceValidationResponse.getIsValid() && (fileNamesValidationResponse == null || fileNamesValidationResponse.getIsValid())) {
         String submissionXML = null;
         try {
           submissionXML = this.ncbiGenericTemplateInstance2XMLConverter.convertTemplateInstanceToXML(instance);
         } catch (JAXBException | DatatypeConfigurationException | ParseException e) {
-          return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
+          Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
         }
-
-        CEDARValidationResponse ncbiValidationResponse =
-            this.bioSampleValidator.validateBioSampleSubmission(submissionXML);
-
-        if (ncbiValidationResponse.getIsValid()) {
-
-          // Additionally, if the names of the data files to be uploaded are provided, check their consistency
-          // against the instance
-          if (requestBody.hasNonNull(userFileNamesField)) {
-            JsonNode userFileNames = requestBody.get(userFileNamesField);
-            if (userFileNames.isArray()) {
-              List fileNames = null;
-              try {
-                fileNames = new ObjectMapper().readValue(userFileNames.traverse(),
-                    new TypeReference<ArrayList<String>>() {
-                    });
-              } catch (IOException e) {
-                return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
-              }
-              CEDARValidationResponse fileNamesValidationResponse =
-                  this.ncbiGenericValidator.validateFilenames(instance, fileNames);
-
-              // Return validation response
-              return Response.ok(fileNamesValidationResponse).build();
-            } else {
-              return Response.status(Response.Status.BAD_REQUEST).build();
-            }
-          } else { // Instance validation
-            // Return validation response
-            return Response.ok(ncbiValidationResponse).build();
-          }
-        } else {
-          // Return validation response
-          return Response.ok(ncbiValidationResponse).build();
-        }
+        cedarFileNamesValidationResponse = this.bioSampleValidator.validateBioSampleSubmission(submissionXML);
       }
-      // If the CEDAR validation fails, return validation messages
-      else {
-        return Response.ok(cedarValidationResponse).build();
+
+      // If any of the above validation failed, return the corresponding validation messages
+      CEDARValidationResponse validationResponse = new CEDARValidationResponse();
+      List<String> validationMessages = new ArrayList<>();
+      if (cedarInstanceValidationResponse != null && cedarInstanceValidationResponse.getMessages() != null) {
+        validationMessages.addAll(cedarInstanceValidationResponse.getMessages());
       }
+      if (fileNamesValidationResponse != null && fileNamesValidationResponse.getMessages() != null) {
+        validationMessages.addAll(fileNamesValidationResponse.getMessages());
+      }
+      if (cedarFileNamesValidationResponse != null && cedarFileNamesValidationResponse.getMessages() != null) {
+        validationMessages.addAll(cedarFileNamesValidationResponse.getMessages());
+      }
+      validationResponse.setMessages(validationMessages);
+
+      if (validationResponse.getMessages().size() == 0) {
+        validationResponse.setIsValid(true);
+      } else {
+        validationResponse.setIsValid(false);
+      }
+      return Response.ok(validationResponse).build();
     } else {
       return Response.status(Response.Status.BAD_REQUEST).build();
     }
   }
+
 
   /**
    * This endpoint receives multiple chunks of a submission package and assembles them. The submission may be
@@ -223,5 +230,7 @@ public class NcbiGenericSubmissionServerResource
       return Response.status(Response.Status.BAD_REQUEST).build();
     }
   }
+
+
 }
 

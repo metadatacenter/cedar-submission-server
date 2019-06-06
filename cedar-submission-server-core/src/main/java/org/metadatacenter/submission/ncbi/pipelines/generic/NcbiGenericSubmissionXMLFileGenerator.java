@@ -25,10 +25,8 @@ public class NcbiGenericSubmissionXMLFileGenerator implements org.metadatacenter
 
     NcbiGenericTemplateInstance2XMLConverter converter = new NcbiGenericTemplateInstance2XMLConverter();
 
-    //CAIRRTemplate cairrInstance;
     String submissionXml = null;
     try {
-      //cairrInstance = JsonMapper.MAPPER.readValue(instanceFile, CAIRRTemplate.class);
       JsonNode instanceJson = (new ObjectMapper()).readTree(instanceFile);
       submissionXml = converter.convertTemplateInstanceToXML(instanceJson);
     } catch (JsonMappingException e) {

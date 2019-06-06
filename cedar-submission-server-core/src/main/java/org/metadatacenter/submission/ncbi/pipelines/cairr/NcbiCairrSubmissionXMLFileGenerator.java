@@ -26,7 +26,6 @@ public class NcbiCairrSubmissionXMLFileGenerator implements org.metadatacenter.s
     //CAIRRTemplate cairrInstance;
     String submissionXml = null;
     try {
-      //cairrInstance = JsonMapper.MAPPER.readValue(instanceFile, CAIRRTemplate.class);
       JsonNode instanceJson = (new ObjectMapper()).readTree(instanceFile);
       submissionXml = converter.convertTemplateInstanceToXML(instanceJson);
     } catch (JsonMappingException e) {

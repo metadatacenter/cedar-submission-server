@@ -48,7 +48,7 @@ public class NcbiCairrTemplateInstance2XMLConverter {
     Submission ncbiSubmission = submissionObjectFactory.createSubmission();
 
     Optional<String> submissionsReleaseDate =
-        NcbiCairrUtil.getTemplateFieldValue(instance, SUBMISSION_RELEASE_DATE_FIELD);
+        NcbiPipelinesCommonUtil.getTemplateFieldValue(instance, SUBMISSION_RELEASE_DATE_FIELD);
 
     /*** BioProject ***/
 
@@ -60,7 +60,7 @@ public class NcbiCairrTemplateInstance2XMLConverter {
 
     // BioProject Accession
     String bioprojectAccession = null;
-    Optional<String> bpAccession = NcbiCairrUtil.getTemplateFieldValue(bioProject.get(), BIOPROJECT_STUDY_ID_FIELD);
+    Optional<String> bpAccession = NcbiPipelinesCommonUtil.getTemplateFieldValue(bioProject.get(), BIOPROJECT_STUDY_ID_FIELD);
     if (bpAccession.isPresent()) {
       bioprojectAccession = bpAccession.get();
     }
@@ -75,7 +75,7 @@ public class NcbiCairrTemplateInstance2XMLConverter {
       ncbiBioSample.setSchemaVersion(BIOSAMPLE_SCHEMA_VERSION);
 
       // Sample Name
-      Optional<String> sampleName = NcbiCairrUtil.getTemplateFieldValue(bioSample, BIOSAMPLE_SAMPLE_ID_FIELD);
+      Optional<String> sampleName = NcbiPipelinesCommonUtil.getTemplateFieldValue(bioSample, BIOSAMPLE_SAMPLE_ID_FIELD);
       if (sampleName.isPresent()) {
         ncbiBioSample.setSampleId(createBioSampleIdentifier(sampleName.get()));
       }
@@ -133,7 +133,7 @@ public class NcbiCairrTemplateInstance2XMLConverter {
       sraAddFiles.setTargetDb(TypeTargetDb.SRA);
 
       // File type and file names
-      Optional<String> fileType = NcbiCairrUtil.getTemplateFieldValue(sra, SRA_FILE_TYPE_FIELD);
+      Optional<String> fileType = NcbiPipelinesCommonUtil.getTemplateFieldValue(sra, SRA_FILE_TYPE_FIELD);
 
       if (fileType.isPresent()) {
 
@@ -145,7 +145,7 @@ public class NcbiCairrTemplateInstance2XMLConverter {
 
             String fileNameField = fileNameFieldsIt.next().asText();
 
-            Optional<String> fileName = NcbiCairrUtil.getTemplateFieldValue(sra, fileNameField);
+            Optional<String> fileName = NcbiPipelinesCommonUtil.getTemplateFieldValue(sra, fileNameField);
 
             if (fileName.isPresent()) {
 
@@ -167,7 +167,7 @@ public class NcbiCairrTemplateInstance2XMLConverter {
       }
 
       // Reference to BioSample ID (Sample Name)
-      Optional<String> sraSampleName = NcbiCairrUtil.getTemplateFieldValue(sra, SRA_SAMPLE_ID_FIELD);
+      Optional<String> sraSampleName = NcbiPipelinesCommonUtil.getTemplateFieldValue(sra, SRA_SAMPLE_ID_FIELD);
       if (sraSampleName.isPresent()) {
         TypeFileAttributeRefId bioSampleAttributeRefId = submissionObjectFactory.createTypeFileAttributeRefId();
         bioSampleAttributeRefId.setName("BioSample");
@@ -321,7 +321,7 @@ public class NcbiCairrTemplateInstance2XMLConverter {
     // Email
     TypeContactInfo contactInfo = ncbiCommonObjectFactory.createTypeContactInfo();
     TypeAccount contactSubmitter = submissionObjectFactory.createTypeAccount();
-    Optional<String> contactEmail = NcbiCairrUtil.getTemplateFieldValue(bioProject, BIOPROJECT_CONTACT_INFO_FIELD);
+    Optional<String> contactEmail = NcbiPipelinesCommonUtil.getTemplateFieldValue(bioProject, BIOPROJECT_CONTACT_INFO_FIELD);
     if (contactEmail.isPresent()) {
       contactInfo.setEmail(contactEmail.get());
       contactSubmitter.setUserName(contactEmail.get());
@@ -334,7 +334,7 @@ public class NcbiCairrTemplateInstance2XMLConverter {
 
     // Organization Name
     TypeOrganization.Name organizationName = submissionObjectFactory.createTypeOrganizationName();
-    Optional<String> orgName = NcbiCairrUtil.getTemplateFieldValue(bioProject, BIOPROJECT_LAB_NAME_FIELD);
+    Optional<String> orgName = NcbiPipelinesCommonUtil.getTemplateFieldValue(bioProject, BIOPROJECT_LAB_NAME_FIELD);
     if (orgName.isPresent()) {
       organizationName.setValue(orgName.get());
     }
@@ -362,7 +362,7 @@ public class NcbiCairrTemplateInstance2XMLConverter {
       bioSampleAttributes.getAttribute().add(createAttribute("ProjectedReleaseDate", xmlReleaseDate));
     }
     else {
-      Optional<String> estimatedReleaseDate = NcbiCairrUtil.getTemplateFieldValue(bioSample, BIOSAMPLE_ESTIMATED_RELEASE_DATE_FIELD);
+      Optional<String> estimatedReleaseDate = NcbiPipelinesCommonUtil.getTemplateFieldValue(bioSample, BIOSAMPLE_ESTIMATED_RELEASE_DATE_FIELD);
       if (estimatedReleaseDate.isPresent() && !estimatedReleaseDate.isEmpty()) {
         bioSampleAttributes.getAttribute().add(createAttribute("ProjectedReleaseDate", estimatedReleaseDate.get()));
       }
@@ -448,7 +448,7 @@ public class NcbiCairrTemplateInstance2XMLConverter {
 
   private TypeBioSample.Attributes setBiosampleAttribute(TypeBioSample.Attributes attributes, JsonNode biosample,
                                                                String fieldName, String attributeName) {
-    Optional<String> fieldValue = NcbiCairrUtil.getTemplateFieldValue(biosample, fieldName);
+    Optional<String> fieldValue = NcbiPipelinesCommonUtil.getTemplateFieldValue(biosample, fieldName);
     if (fieldValue.isPresent()) {
       attributes.getAttribute().add(createAttribute(attributeName, fieldValue.get()));
     }
@@ -457,7 +457,7 @@ public class NcbiCairrTemplateInstance2XMLConverter {
 
   private Submission.Action.AddFiles setSraFileAttribute(Submission.Action.AddFiles addFiles, JsonNode sra, String fieldName,
                                                      String attributeName) {
-    Optional<String> fieldValue = NcbiCairrUtil.getTemplateFieldValue(sra, fieldName);
+    Optional<String> fieldValue = NcbiPipelinesCommonUtil.getTemplateFieldValue(sra, fieldName);
     if (fieldValue.isPresent()) {
       TypeFileAttribute fileAttribute = submissionObjectFactory.createTypeFileAttribute();
       fileAttribute.setName(attributeName);

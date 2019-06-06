@@ -1,10 +1,10 @@
 package org.metadatacenter.submission.ncbi.pipelines.generic;
 
-public class NcbiGenericConstants {
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
-  /*** General CEDAR fields ***/
-  protected static final String VALUE_FIELD = "@value";
-  protected static final String ID_FIELD = "@id";
+public class NcbiGenericConstants {
 
   /*** Information directly inserted into the submission.xml file ***/
   // Submission
@@ -32,11 +32,22 @@ public class NcbiGenericConstants {
   protected static final String BIOPROJECT_LAB_ADDRESS_FIELD = "Lab Address";
   protected static final String BIOPROJECT_RELEVANT_PUBLICATIONS_FIELD = "Relevant Publications";
 
-  protected static final String[] BIOPROJECT_FIELDS = {BIOPROJECT_STUDY_ID_FIELD,
-      BIOPROJECT_CONTACT_INFO_FIELD, BIOPROJECT_CONTACT_EMAIL_FIELD, BIOPROJECT_LAB_NAME_FIELD};
+  protected static final List<String> BIOPROJECT_FIELDS =
+      Collections.unmodifiableList(Arrays.asList(
+          BIOPROJECT_STUDY_ID_FIELD,
+          BIOPROJECT_CONTACT_INFO_FIELD,
+          BIOPROJECT_CONTACT_EMAIL_FIELD,
+          BIOPROJECT_LAB_NAME_FIELD
+      ));
 
-  protected static final String[] BIOPROJECT_REQUIRED_FIELD_VALUES = {BIOPROJECT_STUDY_ID_FIELD,
-      BIOPROJECT_CONTACT_INFO_FIELD, BIOPROJECT_CONTACT_EMAIL_FIELD, BIOPROJECT_LAB_NAME_FIELD};
+  protected static final List<String> BIOPROJECT_REQUIRED_FIELD_VALUES =
+      Collections.unmodifiableList(Arrays.asList(
+          BIOPROJECT_STUDY_ID_FIELD,
+          BIOPROJECT_CONTACT_INFO_FIELD,
+          BIOPROJECT_CONTACT_EMAIL_FIELD,
+          BIOPROJECT_LAB_NAME_FIELD
+      ));
+
 
   /*** BioSample section ***/
   // Instance fields
@@ -66,17 +77,44 @@ public class NcbiGenericConstants {
   protected static final String BIOSAMPLE_TREATMENT_FIELD = "Treatment";
   protected static final String BIOSAMPLE_DESCRIPTION_FIELD = "Sample Description";
 
-  protected static final String[] BIOSAMPLE_FIELDS = {BIOSAMPLE_SAMPLE_NAME_FIELD, BIOSAMPLE_SAMPLE_TITLE_FIELD,
-      BIOSAMPLE_ORGANISM_FIELD, BIOSAMPLE_ISOLATE_FIELD, BIOSAMPLE_AGE_FIELD, BIOSAMPLE_BIOMATERIAL_PROVIDER_FIELD,
-      BIOSAMPLE_SEX_FIELD, BIOSAMPLE_TISSUE_FIELD, BIOSAMPLE_CELL_LINE_FIELD, BIOSAMPLE_CELL_TYPE_FIELD,
-      BIOSAMPLE_CELL_SUBTYPE_FIELD, BIOSAMPLE_CULTURE_COLLECTION_FIELD, BIOSAMPLE_DEVELOPMENT_STAGE_FIELD,
-      BIOSAMPLE_DISEASE_FIELD, BIOSAMPLE_DISEASE_STAGE_FIELD, BIOSAMPLE_ETHNICITY_FIELD, BIOSAMPLE_HEALTH_STATE_FIELD,
-      BIOSAMPLE_KARYOTYPE_FIELD, BIOSAMPLE_PHENOTYPE_FIELD, BIOSAMPLE_POPULATION_FIELD,
-      BIOSAMPLE_RACE_FIELD, BIOSAMPLE_SAMPLE_TYPE_FIELD, BIOSAMPLE_TREATMENT_FIELD, BIOSAMPLE_DESCRIPTION_FIELD};
+  protected static final List<String> BIOSAMPLE_FIELDS =
+      Collections.unmodifiableList(Arrays.asList(
+          BIOSAMPLE_SAMPLE_NAME_FIELD,
+          BIOSAMPLE_SAMPLE_TITLE_FIELD,
+          BIOSAMPLE_ORGANISM_FIELD,
+          BIOSAMPLE_ISOLATE_FIELD,
+          BIOSAMPLE_AGE_FIELD,
+          BIOSAMPLE_BIOMATERIAL_PROVIDER_FIELD,
+          BIOSAMPLE_SEX_FIELD,
+          BIOSAMPLE_TISSUE_FIELD,
+          BIOSAMPLE_CELL_LINE_FIELD,
+          BIOSAMPLE_CELL_TYPE_FIELD,
+          BIOSAMPLE_CELL_SUBTYPE_FIELD,
+          BIOSAMPLE_CULTURE_COLLECTION_FIELD,
+          BIOSAMPLE_DEVELOPMENT_STAGE_FIELD,
+          BIOSAMPLE_DISEASE_FIELD,
+          BIOSAMPLE_DISEASE_STAGE_FIELD,
+          BIOSAMPLE_ETHNICITY_FIELD,
+          BIOSAMPLE_HEALTH_STATE_FIELD,
+          BIOSAMPLE_KARYOTYPE_FIELD,
+          BIOSAMPLE_PHENOTYPE_FIELD,
+          BIOSAMPLE_POPULATION_FIELD,
+          BIOSAMPLE_RACE_FIELD,
+          BIOSAMPLE_SAMPLE_TYPE_FIELD,
+          BIOSAMPLE_TREATMENT_FIELD,
+          BIOSAMPLE_DESCRIPTION_FIELD
+      ));
 
-  protected static final String[] BIOSAMPLE_REQUIRED_FIELD_VALUES = {BIOSAMPLE_SAMPLE_NAME_FIELD, BIOSAMPLE_ORGANISM_FIELD,
-      BIOSAMPLE_ISOLATE_FIELD, BIOSAMPLE_AGE_FIELD, BIOSAMPLE_BIOMATERIAL_PROVIDER_FIELD, BIOSAMPLE_SEX_FIELD,
-      BIOSAMPLE_TISSUE_FIELD};
+  protected static final List<String> BIOSAMPLE_REQUIRED_FIELD_VALUES =
+      Collections.unmodifiableList(Arrays.asList(
+          BIOSAMPLE_SAMPLE_NAME_FIELD,
+          BIOSAMPLE_ORGANISM_FIELD,
+          BIOSAMPLE_ISOLATE_FIELD,
+          BIOSAMPLE_AGE_FIELD,
+          BIOSAMPLE_BIOMATERIAL_PROVIDER_FIELD,
+          BIOSAMPLE_SEX_FIELD,
+          BIOSAMPLE_TISSUE_FIELD
+      ));
 
   /*** SRA section ***/
   protected static final String SRA_ELEMENT = "NCBI SRA for Human Tissue";
@@ -93,19 +131,37 @@ public class NcbiGenericConstants {
   protected static final String SRA_FILE_TYPE_FIELD = "File Type";
   protected static final String SRA_FILE_NAME_FIELD = "File Name";
 
-  protected static final String[] SRA_FIELDS = {SRA_SAMPLE_NAME_FIELD, SRA_LIBRARY_ID_FIELD,
-      SRA_TITLE_FIELD, SRA_LIBRARY_STRATEGY_FIELD, SRA_LIBRARY_SOURCE_FIELD, SRA_LIBRARY_SELECTION_FIELD,
-      SRA_LIBRARY_LAYOUT_FIELD, SRA_PLATFORM_FIELD, SRA_INSTRUMENT_MODEL_FIELD, SRA_DESIGN_DESCRIPTION_FIELD,
-      SRA_FILE_TYPE_FIELD, SRA_FILE_NAME_FIELD};
+  protected static final List<String> SRA_FIELDS =
+      Collections.unmodifiableList(Arrays.asList(
+          SRA_SAMPLE_NAME_FIELD,
+          SRA_LIBRARY_ID_FIELD,
+          SRA_TITLE_FIELD,
+          SRA_LIBRARY_STRATEGY_FIELD,
+          SRA_LIBRARY_SOURCE_FIELD,
+          SRA_LIBRARY_SELECTION_FIELD,
+          SRA_LIBRARY_LAYOUT_FIELD,
+          SRA_PLATFORM_FIELD,
+          SRA_INSTRUMENT_MODEL_FIELD,
+          SRA_DESIGN_DESCRIPTION_FIELD,
+          SRA_FILE_TYPE_FIELD,
+          SRA_FILE_NAME_FIELD
+      ));
 
-  protected static final String[] SRA_REQUIRED_FIELD_VALUES = {SRA_SAMPLE_NAME_FIELD, SRA_LIBRARY_ID_FIELD,
-      SRA_TITLE_FIELD, SRA_LIBRARY_STRATEGY_FIELD, SRA_LIBRARY_SOURCE_FIELD, SRA_LIBRARY_SELECTION_FIELD,
-      SRA_LIBRARY_LAYOUT_FIELD, SRA_PLATFORM_FIELD, SRA_INSTRUMENT_MODEL_FIELD, SRA_DESIGN_DESCRIPTION_FIELD,
-      SRA_FILE_TYPE_FIELD, SRA_FILE_NAME_FIELD};
-
-  /*** Other ***/
-  protected static final String NOT_COLLECTED_VALUE = "not collected";
-  protected static final String MISSING_VALUE = "missing";
+  protected static final List<String> SRA_REQUIRED_FIELD_VALUES =
+      Collections.unmodifiableList(Arrays.asList(
+          SRA_SAMPLE_NAME_FIELD,
+          SRA_LIBRARY_ID_FIELD,
+          SRA_TITLE_FIELD,
+          SRA_LIBRARY_STRATEGY_FIELD,
+          SRA_LIBRARY_SOURCE_FIELD,
+          SRA_LIBRARY_SELECTION_FIELD,
+          SRA_LIBRARY_LAYOUT_FIELD,
+          SRA_PLATFORM_FIELD,
+          SRA_INSTRUMENT_MODEL_FIELD,
+          SRA_DESIGN_DESCRIPTION_FIELD,
+          SRA_FILE_TYPE_FIELD,
+          SRA_FILE_NAME_FIELD
+      ));
 
   // PRIVATE //
 

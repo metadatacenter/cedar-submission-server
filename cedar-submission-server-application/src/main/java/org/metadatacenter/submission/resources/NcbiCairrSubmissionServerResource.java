@@ -1,7 +1,9 @@
 package org.metadatacenter.submission.resources;
 
 import com.codahale.metrics.annotation.Timed;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.joda.time.DateTimeZone;
@@ -35,6 +37,8 @@ import javax.xml.bind.JAXBException;
 import javax.xml.datatype.DatatypeConfigurationException;
 import java.io.IOException;
 import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.metadatacenter.rest.assertion.GenericAssertions.LoggedIn;
 
@@ -52,17 +56,17 @@ import static org.metadatacenter.rest.assertion.GenericAssertions.LoggedIn;
   private static NcbiSubmissionQueueService ncbiSubmissionQueueService;
 
   private final BioSampleValidator bioSampleValidator;
-  private final NcbiCairrTemplateInstance2XMLConverter cairrTemplate2SRAXMLConverter;
+  private final NcbiCairrTemplateInstance2XMLConverter ncbiCairrTemplate2SRAXMLConverter;
   private final NcbiCairrSubmissionXMLFileGenerator ncbiCairrSubmissionXMLFileGenerator;
-  private final NcbiCairrValidator cairrValidator;
+  private final NcbiCairrValidator ncbiCairrValidator;
 
   public NcbiCairrSubmissionServerResource(CedarConfig cedarConfig)
   {
     super(cedarConfig);
     this.bioSampleValidator = new BioSampleValidator();
-    this.cairrTemplate2SRAXMLConverter = new NcbiCairrTemplateInstance2XMLConverter();
+    this.ncbiCairrTemplate2SRAXMLConverter = new NcbiCairrTemplateInstance2XMLConverter();
     this.ncbiCairrSubmissionXMLFileGenerator = new NcbiCairrSubmissionXMLFileGenerator();
-    this.cairrValidator = new NcbiCairrValidator();
+    this.ncbiCairrValidator = new NcbiCairrValidator();
   }
 
   public static void injectServices(NcbiSubmissionQueueService ncbiSubmissionQueueService)
@@ -70,28 +74,80 @@ import static org.metadatacenter.rest.assertion.GenericAssertions.LoggedIn;
     NcbiCairrSubmissionServerResource.ncbiSubmissionQueueService = ncbiSubmissionQueueService;
   }
 
-  @POST @Timed @Path("/validate-cairr") public Response validate() throws CedarException
-  {
+  @POST @Timed @Path("/validate-cairr")
+  public Response validate() throws CedarException {
+
+    final String instanceField = "instance";
+    final String userFileNamesField = "userFileNames";
+
     CedarRequestContext c = buildRequestContext();
     c.must(c.user()).be(LoggedIn);
 
-    JsonNode instance = c.request().getRequestBody().asJson();
+    JsonNode requestBody = c.request().getRequestBody().asJson();
 
-    try {
+    if ((requestBody.hasNonNull(instanceField) && requestBody.size() == 1) ||
+        (requestBody.hasNonNull(instanceField) && requestBody.hasNonNull(userFileNamesField) && requestBody.size() == 2)) {
 
-      CEDARValidationResponse cedarValidationResponse = this.cairrValidator.validate(instance);
+      JsonNode instance = requestBody.get(instanceField);
 
-      // If the CEDAR validation is OK, run the NCBI validation
-      if (cedarValidationResponse.getIsValid()) {
-        String submissionXML = this.cairrTemplate2SRAXMLConverter.convertTemplateInstanceToXML(instance);
-        return Response.ok(this.bioSampleValidator.validateBioSampleSubmission(submissionXML)).build();
+      // Define responses
+      CEDARValidationResponse cedarInstanceValidationResponse = null;
+      CEDARValidationResponse cedarFileNamesValidationResponse = null;
+      CEDARValidationResponse fileNamesValidationResponse = null;
+
+      // 1. CEDAR instance validation
+      cedarInstanceValidationResponse = this.ncbiCairrValidator.validateInstance(instance);
+
+      // 2. CEDAR file names validation
+      if (requestBody.hasNonNull(userFileNamesField)) {
+        JsonNode userFileNames = requestBody.get(userFileNamesField);
+        if (userFileNames.isArray()) {
+          List fileNames = null;
+          try {
+            fileNames = new ObjectMapper().readValue(userFileNames.traverse(),
+                new TypeReference<ArrayList<String>>() {
+                });
+          } catch (IOException e) {
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
+          }
+          fileNamesValidationResponse =
+              this.ncbiCairrValidator.validateFilenames(instance, fileNames);
+        }
       }
-      // If the CEDAR validation fails, return validation messages
-      else {
-        return Response.ok(cedarValidationResponse).build();
+
+      // If 1 and 2 went well, we invoke NCBI's external validation
+      if (cedarInstanceValidationResponse.getIsValid() && (fileNamesValidationResponse == null || fileNamesValidationResponse.getIsValid())) {
+        String submissionXML = null;
+        try {
+          submissionXML = this.ncbiCairrTemplate2SRAXMLConverter.convertTemplateInstanceToXML(instance);
+        } catch (JAXBException | DatatypeConfigurationException | ParseException e) {
+          Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
+        }
+        cedarFileNamesValidationResponse = this.bioSampleValidator.validateBioSampleSubmission(submissionXML);
       }
-    } catch (JAXBException | DatatypeConfigurationException | ParseException e) {
-      return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
+
+      // If any of the above validation failed, return the corresponding validation messages
+      CEDARValidationResponse validationResponse = new CEDARValidationResponse();
+      List<String> validationMessages = new ArrayList<>();
+      if (cedarInstanceValidationResponse != null && cedarInstanceValidationResponse.getMessages() != null) {
+        validationMessages.addAll(cedarInstanceValidationResponse.getMessages());
+      }
+      if (fileNamesValidationResponse != null && fileNamesValidationResponse.getMessages() != null) {
+        validationMessages.addAll(fileNamesValidationResponse.getMessages());
+      }
+      if (cedarFileNamesValidationResponse != null && cedarFileNamesValidationResponse.getMessages() != null) {
+        validationMessages.addAll(cedarFileNamesValidationResponse.getMessages());
+      }
+      validationResponse.setMessages(validationMessages);
+
+      if (validationResponse.getMessages().size() == 0) {
+        validationResponse.setIsValid(true);
+      } else {
+        validationResponse.setIsValid(false);
+      }
+      return Response.ok(validationResponse).build();
+    } else {
+      return Response.status(Response.Status.BAD_REQUEST).build();
     }
   }
 

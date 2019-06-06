@@ -2,6 +2,10 @@ package org.metadatacenter.submission.ncbi;
 
 public class NcbiConstants {
 
+  /*** General CEDAR fields ***/
+  public static final String VALUE_FIELD = "@value";
+  public static final String ID_FIELD = "@id";
+
   /* Execution settings */
   public static boolean NCBI_SUBMIT = false; // if false, the FTP submission is ignored
   public static boolean NCBI_UPLOAD_SUBMIT_READY_FILE = true;
