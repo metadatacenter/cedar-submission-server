@@ -23,7 +23,6 @@ public class NcbiCairrSubmissionXMLFileGenerator implements org.metadatacenter.s
 
     NcbiCairrTemplateInstance2XMLConverter converter = new NcbiCairrTemplateInstance2XMLConverter();
 
-    //CAIRRTemplate cairrInstance;
     String submissionXml = null;
     try {
       JsonNode instanceJson = (new ObjectMapper()).readTree(instanceFile);
