@@ -1,5 +1,6 @@
 package org.metadatacenter.submission.ncbi.queue;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.metadatacenter.constant.CedarConstants;
 import org.metadatacenter.submission.ncbi.NcbiSubmission;
 

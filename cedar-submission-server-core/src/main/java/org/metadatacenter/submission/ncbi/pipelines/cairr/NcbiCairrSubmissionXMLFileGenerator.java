@@ -1,11 +1,10 @@
-package org.metadatacenter.submission.ncbi.cairr;
+package org.metadatacenter.submission.ncbi.pipelines.cairr;
 
 import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.io.FileUtils;
-import org.metadatacenter.submission.CAIRRTemplate;
 import org.metadatacenter.submission.ncbi.NcbiConstants;
-import org.metadatacenter.submission.ncbi.NcbiSubmissionXMLFileGenerator;
-import org.metadatacenter.util.json.JsonMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -15,19 +14,19 @@ import java.io.File;
 import java.io.IOException;
 import java.text.ParseException;
 
-public class NcbiCairrSubmissionXMLFileGenerator implements NcbiSubmissionXMLFileGenerator {
+public class NcbiCairrSubmissionXMLFileGenerator implements org.metadatacenter.submission.ncbi.NcbiSubmissionXMLFileGenerator {
 
   final static Logger logger = LoggerFactory.getLogger(NcbiCairrSubmissionXMLFileGenerator.class);
 
   public File generateSubmissionXmlFile(File instanceFile, String submissionLocalFolderPath) throws
       IOException, JAXBException, DatatypeConfigurationException {
-    CAIRRTemplateInstance2SRAXMLConverter converter = new CAIRRTemplateInstance2SRAXMLConverter();
 
-    CAIRRTemplate cairrInstance;
+    NcbiCairrTemplateInstance2XMLConverter converter = new NcbiCairrTemplateInstance2XMLConverter();
+
     String submissionXml = null;
     try {
-      cairrInstance = JsonMapper.MAPPER.readValue(instanceFile, CAIRRTemplate.class);
-      submissionXml = converter.convertTemplateInstanceToXML(cairrInstance);
+      JsonNode instanceJson = (new ObjectMapper()).readTree(instanceFile);
+      submissionXml = converter.convertTemplateInstanceToXML(instanceJson);
     } catch (JsonMappingException e) {
       throw new IOException("The instance uploaded is not compatible with the CAIRR template", e);
     } catch (ParseException e) {

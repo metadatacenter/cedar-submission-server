@@ -1,6 +1,7 @@
 package org.metadatacenter.submission.ncbi.queue;
 
 import io.dropwizard.lifecycle.Managed;
+import org.metadatacenter.submission.ncbi.NcbiSubmission;
 import org.metadatacenter.util.json.JsonMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,14 +38,16 @@ public class NcbiSubmissionQueueProcessor implements Managed {
         log.info("Got submission message.");
         String value = submissionMessages.get(1);
         try {
-          event = JsonMapper.MAPPER.readValue(value, NcbiSubmissionQueueEvent.class);
+          event = new NcbiSubmissionQueueEvent(JsonMapper.MAPPER.readValue(value, NcbiSubmission.class));
         } catch (IOException e) {
           log.error("There was an error while deserializing submission", e);
         }
       }
       if (event != null) {
         try {
-          log.info("  no. files: " + event.getSubmission().getLocalFilePaths().size());
+          if (event.getSubmission()!=null) {
+            log.info(" no. files: " + event.getSubmission().getLocalFilePaths().size());
+          }
           log.info(" created at: " + event.getCreatedAt());
           ncbiSubmissionExecutorService.handleEvent(event);
         } catch (Exception e) {
