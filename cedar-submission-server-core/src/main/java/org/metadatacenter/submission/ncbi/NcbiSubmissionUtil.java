@@ -16,7 +16,7 @@ import java.util.Map;
 
 public class NcbiSubmissionUtil {
 
-  final static Logger logger = LoggerFactory.getLogger(NcbiSubmissionUtil.class);
+  final static Logger log = LoggerFactory.getLogger(NcbiSubmissionUtil.class);
 
   public static NcbiSubmission generateSubmission(String submissionId, String userId, String ncbiFolderName,
                                                   NcbiSubmissionXMLFileGenerator submissionXMLFileGenerator)

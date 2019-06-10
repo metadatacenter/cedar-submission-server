@@ -69,7 +69,7 @@ public class StatusNotifier {
       processId = "submission.IMMPORT";
     } else if (submissionStatusDescriptor.getSubmissionStatusTask().getSubmissionType().equals(SubmissionType
         .NCBI)) {
-      processId = "submission.AIRR"; // TODO Temporary to align with name in messaging server
+      processId = "submission.NCBI"; // It aligns with name in messaging server
     }
 
     from.put("processId", processId);

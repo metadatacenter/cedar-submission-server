@@ -6,6 +6,10 @@ public class NcbiConstants {
   public static boolean NCBI_SUBMIT = true; // if false, the FTP submission is ignored
   public static boolean NCBI_UPLOAD_SUBMIT_READY_FILE = true;
 
+  /* General CEDAR fields */
+  public static final String VALUE_FIELD = "@value";
+  public static final String ID_FIELD = "@id";
+
   /* NCBI-AIRR */
   public static String NCBI_LOCAL_FOLDER_NAME = "ncbi-upload";
   public static int NCBI_SIMULATION_MODE_TIMEOUT = 30000;
