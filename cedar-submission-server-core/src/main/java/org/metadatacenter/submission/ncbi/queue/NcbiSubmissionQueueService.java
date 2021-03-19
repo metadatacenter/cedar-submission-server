@@ -26,7 +26,6 @@ public class NcbiSubmissionQueueService extends QueueServiceWithBlockingQueue {
         log.error("Error while enqueueing submission", e);
       }
       jedis.rpush(queueName, json);
-      int a = 2;
     }
   }
 }
