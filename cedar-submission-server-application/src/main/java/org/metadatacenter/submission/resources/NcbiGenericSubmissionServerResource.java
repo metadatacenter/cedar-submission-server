@@ -10,6 +10,7 @@ import org.joda.time.DateTimeZone;
 import org.metadatacenter.cedar.util.dw.CedarMicroserviceResource;
 import org.metadatacenter.config.CedarConfig;
 import org.metadatacenter.exception.CedarException;
+import org.metadatacenter.http.CedarResponseStatus;
 import org.metadatacenter.rest.context.CedarRequestContext;
 import org.metadatacenter.submission.CEDARValidationResponse;
 import org.metadatacenter.submission.exception.SubmissionInstanceNotFoundException;
@@ -24,6 +25,7 @@ import org.metadatacenter.submission.ncbi.validation.BioSampleValidator;
 import org.metadatacenter.submission.upload.flow.FlowData;
 import org.metadatacenter.submission.upload.flow.FlowUploadUtil;
 import org.metadatacenter.submission.upload.flow.SubmissionUploadManager;
+import org.metadatacenter.util.http.CedarResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,7 +41,6 @@ import java.io.IOException;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 import static org.metadatacenter.rest.assertion.GenericAssertions.LoggedIn;
 
@@ -115,7 +116,7 @@ public class NcbiGenericSubmissionServerResource
                 new TypeReference<ArrayList<String>>() {
                 });
           } catch (IOException e) {
-            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
+            return CedarResponse.status(CedarResponseStatus.INTERNAL_SERVER_ERROR).build();
           }
           fileNamesValidationResponse =
               this.ncbiGenericValidator.validateFilenames(instance, fileNames);
@@ -128,7 +129,7 @@ public class NcbiGenericSubmissionServerResource
         try {
           submissionXML = this.ncbiGenericTemplateInstance2XMLConverter.convertTemplateInstanceToXML(instance);
         } catch (JAXBException | DatatypeConfigurationException | ParseException e) {
-          Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
+          CedarResponse.status(CedarResponseStatus.INTERNAL_SERVER_ERROR).build();
         }
         cedarFileNamesValidationResponse = this.bioSampleValidator.validateBioSampleSubmission(submissionXML);
       }
@@ -154,7 +155,7 @@ public class NcbiGenericSubmissionServerResource
       }
       return Response.ok(validationResponse).build();
     } else {
-      return Response.status(Response.Status.BAD_REQUEST).build();
+      return CedarResponse.status(CedarResponseStatus.BAD_REQUEST).build();
     }
   }
 
@@ -187,7 +188,7 @@ public class NcbiGenericSubmissionServerResource
               "Incorrect number of metadata files (submissionId = " + data.getSubmissionId() + "; metadataFiles = " + data
                   .getMetadataFiles().size();
           logger.info(message);
-          return Response.status(Response.Status.BAD_REQUEST).build();
+          return CedarResponse.status(CedarResponseStatus.BAD_REQUEST).build();
         }
         // Every request contains a file chunk that we will save in the appropriate position of a local file
         String submissionLocalFolderPath = FlowUploadUtil
@@ -219,15 +220,16 @@ public class NcbiGenericSubmissionServerResource
           SubmissionUploadManager.getInstance().removeSubmissionStatus(data.getSubmissionId());
         }
 
-      } catch (IOException | FileUploadException | SubmissionInstanceNotFoundException | JAXBException | DatatypeConfigurationException e) {
+      } catch (IOException | FileUploadException | SubmissionInstanceNotFoundException | JAXBException |
+               DatatypeConfigurationException e) {
         logger.error(e.getMessage(), e);
-        return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
+        return CedarResponse.status(CedarResponseStatus.INTERNAL_SERVER_ERROR).build();
       } catch (IllegalAccessException e) {
         e.printStackTrace();
       }
       return Response.ok().build();
     } else {
-      return Response.status(Response.Status.BAD_REQUEST).build();
+      return CedarResponse.status(CedarResponseStatus.BAD_REQUEST).build();
     }
   }
 

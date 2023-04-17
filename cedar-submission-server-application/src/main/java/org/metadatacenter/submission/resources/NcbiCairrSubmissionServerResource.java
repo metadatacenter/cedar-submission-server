@@ -10,6 +10,7 @@ import org.joda.time.DateTimeZone;
 import org.metadatacenter.cedar.util.dw.CedarMicroserviceResource;
 import org.metadatacenter.config.CedarConfig;
 import org.metadatacenter.exception.CedarException;
+import org.metadatacenter.http.CedarResponseStatus;
 import org.metadatacenter.rest.context.CedarRequestContext;
 import org.metadatacenter.submission.CEDARValidationResponse;
 import org.metadatacenter.submission.exception.SubmissionInstanceNotFoundException;
@@ -24,6 +25,7 @@ import org.metadatacenter.submission.ncbi.validation.BioSampleValidator;
 import org.metadatacenter.submission.upload.flow.FlowData;
 import org.metadatacenter.submission.upload.flow.FlowUploadUtil;
 import org.metadatacenter.submission.upload.flow.SubmissionUploadManager;
+import org.metadatacenter.util.http.CedarResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -47,9 +49,10 @@ import static org.metadatacenter.rest.assertion.GenericAssertions.LoggedIn;
  * <p>
  * https://docs.google.com/document/d/1tmPinCgaTwBkTsOwjitquFc0ZUN65w5xZs30q5phRkY/edit
  */
-@Path("/command") @Produces(MediaType.APPLICATION_JSON) public class NcbiCairrSubmissionServerResource
-  extends CedarMicroserviceResource
-{
+@Path("/command")
+@Produces(MediaType.APPLICATION_JSON)
+public class NcbiCairrSubmissionServerResource
+    extends CedarMicroserviceResource {
 
   final static Logger logger = LoggerFactory.getLogger(NcbiCairrSubmissionServerResource.class);
 
@@ -60,8 +63,7 @@ import static org.metadatacenter.rest.assertion.GenericAssertions.LoggedIn;
   private final NcbiCairrSubmissionXMLFileGenerator ncbiCairrSubmissionXMLFileGenerator;
   private final NcbiCairrValidator ncbiCairrValidator;
 
-  public NcbiCairrSubmissionServerResource(CedarConfig cedarConfig)
-  {
+  public NcbiCairrSubmissionServerResource(CedarConfig cedarConfig) {
     super(cedarConfig);
     this.bioSampleValidator = new BioSampleValidator();
     this.ncbiCairrTemplate2SRAXMLConverter = new NcbiCairrTemplateInstance2XMLConverter();
@@ -69,12 +71,13 @@ import static org.metadatacenter.rest.assertion.GenericAssertions.LoggedIn;
     this.ncbiCairrValidator = new NcbiCairrValidator();
   }
 
-  public static void injectServices(NcbiSubmissionQueueService ncbiSubmissionQueueService)
-  {
+  public static void injectServices(NcbiSubmissionQueueService ncbiSubmissionQueueService) {
     NcbiCairrSubmissionServerResource.ncbiSubmissionQueueService = ncbiSubmissionQueueService;
   }
 
-  @POST @Timed @Path("/validate-cairr")
+  @POST
+  @Timed
+  @Path("/validate-cairr")
   public Response validate() throws CedarException {
 
     final String instanceField = "instance";
@@ -108,7 +111,7 @@ import static org.metadatacenter.rest.assertion.GenericAssertions.LoggedIn;
                 new TypeReference<ArrayList<String>>() {
                 });
           } catch (IOException e) {
-            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
+            return Response.status(CedarResponseStatus.INTERNAL_SERVER_ERROR.getStatusCode()).build();
           }
           fileNamesValidationResponse =
               this.ncbiCairrValidator.validateFilenames(instance, fileNames);
@@ -121,7 +124,7 @@ import static org.metadatacenter.rest.assertion.GenericAssertions.LoggedIn;
         try {
           submissionXML = this.ncbiCairrTemplate2SRAXMLConverter.convertTemplateInstanceToXML(instance);
         } catch (JAXBException | DatatypeConfigurationException | ParseException e) {
-          Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
+          CedarResponse.status(CedarResponseStatus.INTERNAL_SERVER_ERROR).build();
         }
         cedarFileNamesValidationResponse = this.bioSampleValidator.validateBioSampleSubmission(submissionXML);
       }
@@ -147,7 +150,7 @@ import static org.metadatacenter.rest.assertion.GenericAssertions.LoggedIn;
       }
       return Response.ok(validationResponse).build();
     } else {
-      return Response.status(Response.Status.BAD_REQUEST).build();
+      return CedarResponse.status(CedarResponseStatus.BAD_REQUEST).build();
     }
   }
 
@@ -156,9 +159,12 @@ import static org.metadatacenter.rest.assertion.GenericAssertions.LoggedIn;
    * composed by one or multiple files. When the upload is complete, this method triggers the upload of all files that
    * are part of the submission to the NCBI via FTP. Submissions are processed sequentially using a queue.
    */
-  @POST @Timed @Path("/upload-cairr-to-cedar") @Consumes(MediaType.MULTIPART_FORM_DATA) public Response uploadCAIRRToCEDAR()
-    throws CedarException
-  {
+  @POST
+  @Timed
+  @Path("/upload-cairr-to-cedar")
+  @Consumes(MediaType.MULTIPART_FORM_DATA)
+  public Response uploadCAIRRToCEDAR()
+      throws CedarException {
 
     CedarRequestContext c = buildRequestContext();
     c.must(c.user()).be(LoggedIn);
@@ -173,16 +179,16 @@ import static org.metadatacenter.rest.assertion.GenericAssertions.LoggedIn;
         // The submission to the NCBI must contain one (and only one) metadata file (instance)
         if (data.getMetadataFiles().size() != 1) {
           String message =
-            "Incorrect number of metadata files (submissionId = " + data.getSubmissionId() + "; metadataFiles = " + data
-              .getMetadataFiles().size();
+              "Incorrect number of metadata files (submissionId = " + data.getSubmissionId() + "; metadataFiles = " + data
+                  .getMetadataFiles().size();
           logger.info(message);
-          return Response.status(Response.Status.BAD_REQUEST).build();
+          return CedarResponse.status(CedarResponseStatus.BAD_REQUEST).build();
         }
         // Every request contains a file chunk that we will save in the appropriate position of a local file
         String submissionLocalFolderPath = FlowUploadUtil
-          .getSubmissionLocalFolderPath(NcbiConstants.NCBI_LOCAL_FOLDER_NAME, userId, data.getSubmissionId());
+            .getSubmissionLocalFolderPath(NcbiConstants.NCBI_LOCAL_FOLDER_NAME, userId, data.getSubmissionId());
         String filePath = FlowUploadUtil
-          .saveToLocalFile(data, userId, request.getContentLength(), submissionLocalFolderPath);
+            .saveToLocalFile(data, userId, request.getContentLength(), submissionLocalFolderPath);
         logger.info("File created. Path: " + filePath);
         // Update the submission upload status
         SubmissionUploadManager.getInstance().updateStatus(data, submissionLocalFolderPath);
@@ -199,8 +205,8 @@ import static org.metadatacenter.rest.assertion.GenericAssertions.LoggedIn;
 
           // Generate the submission object. The submission.xml file is generated by this method
           NcbiSubmission ncbiSubmission = NcbiSubmissionUtil
-            .generateSubmission(data.getSubmissionId(), userId, ncbiFolderName,
-              this.ncbiCairrSubmissionXMLFileGenerator);
+              .generateSubmission(data.getSubmissionId(), userId, ncbiFolderName,
+                  this.ncbiCairrSubmissionXMLFileGenerator);
 
           // Enqueue submission
           logger.info("Enqueuing submission");
@@ -209,15 +215,16 @@ import static org.metadatacenter.rest.assertion.GenericAssertions.LoggedIn;
           SubmissionUploadManager.getInstance().removeSubmissionStatus(data.getSubmissionId());
         }
 
-      } catch (IOException | FileUploadException | SubmissionInstanceNotFoundException | JAXBException | DatatypeConfigurationException e) {
+      } catch (IOException | FileUploadException | SubmissionInstanceNotFoundException | JAXBException |
+               DatatypeConfigurationException e) {
         logger.error(e.getMessage(), e);
-        return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
+        return CedarResponse.status(CedarResponseStatus.INTERNAL_SERVER_ERROR).build();
       } catch (IllegalAccessException e) {
         e.printStackTrace();
       }
       return Response.ok().build();
     } else {
-      return Response.status(Response.Status.BAD_REQUEST).build();
+      return CedarResponse.status(CedarResponseStatus.BAD_REQUEST).build();
     }
   }
 }

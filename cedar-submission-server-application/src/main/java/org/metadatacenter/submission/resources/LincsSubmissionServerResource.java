@@ -12,6 +12,7 @@ import org.metadatacenter.constant.HttpConnectionConstants;
 import org.metadatacenter.error.CedarErrorKey;
 import org.metadatacenter.exception.CedarException;
 import org.metadatacenter.exception.CedarProcessingException;
+import org.metadatacenter.http.CedarResponseStatus;
 import org.metadatacenter.rest.context.CedarRequestContext;
 import org.metadatacenter.util.http.CedarResponse;
 import org.slf4j.Logger;
@@ -23,7 +24,6 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
 import java.io.IOException;
 
 import static javax.ws.rs.core.Response.Status.*;
@@ -141,7 +141,7 @@ public class LincsSubmissionServerResource extends CedarMicroserviceResource {
         statusCode);
     String detailedMessage = IOUtils.toString(responseEntity.getContent());
     loggingError(errorMessage, detailedMessage);
-    return CedarResponse.status(Status.fromStatusCode(statusCode))
+    return CedarResponse.status(CedarResponseStatus.fromStatusCode(statusCode))
         .errorKey(CedarErrorKey.UPSTREAM_SERVER_ERROR)
         .errorMessage(errorMessage)
         .parameter("upstreamErrorMessage", detailedMessage)

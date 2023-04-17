@@ -22,6 +22,7 @@ import org.apache.http.util.EntityUtils;
 import org.metadatacenter.cedar.util.dw.CedarMicroserviceResource;
 import org.metadatacenter.config.CedarConfig;
 import org.metadatacenter.exception.CedarException;
+import org.metadatacenter.http.CedarResponseStatus;
 import org.metadatacenter.model.trimmer.JsonLdDocument;
 import org.metadatacenter.rest.context.CedarRequestContext;
 import org.metadatacenter.submission.CEDARSubmitResponse;
@@ -37,6 +38,7 @@ import org.metadatacenter.submission.upload.flow.FileUploadStatus;
 import org.metadatacenter.submission.upload.flow.FlowData;
 import org.metadatacenter.submission.upload.flow.FlowUploadUtil;
 import org.metadatacenter.submission.upload.flow.SubmissionUploadManager;
+import org.metadatacenter.util.http.CedarResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -146,7 +148,7 @@ public class ImmPortSubmissionServerResource extends CedarMicroserviceResource {
     Optional<String> immPortBearerToken = immPortUtil.getImmPortBearerToken();
     if (!immPortBearerToken.isPresent()) {
       logger.warn("Could not get an ImmPort token");
-      return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();  // TODO CEDAR error response
+      return CedarResponse.status(CedarResponseStatus.INTERNAL_SERVER_ERROR).build();  // TODO CEDAR error response
     }
 
     CloseableHttpResponse response = null;
@@ -167,11 +169,11 @@ public class ImmPortSubmissionServerResource extends CedarMicroserviceResource {
       } else {
         logger.warn("Unexpected status code calling " + workspaceUrl + "; status=" + response
             .getStatusLine().getStatusCode());
-        return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build(); // TODO CEDAR error response
+        return CedarResponse.status(CedarResponseStatus.INTERNAL_SERVER_ERROR).build(); // TODO CEDAR error response
       }
     } catch (IOException e) {
       logger.warn("IO exception connecting to host " + workspaceUrl + ": " + e.getMessage());
-      return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build(); // TODO CEDAR error response
+      return CedarResponse.status(CedarResponseStatus.INTERNAL_SERVER_ERROR).build(); // TODO CEDAR error response
     } finally {
       HttpClientUtils.closeQuietly(response);
       HttpClientUtils.closeQuietly(client);
@@ -189,7 +191,7 @@ public class ImmPortSubmissionServerResource extends CedarMicroserviceResource {
     Optional<String> immPortBearerToken = immPortUtil.getImmPortBearerToken();
     if (!immPortBearerToken.isPresent()) {
       logger.warn("No ImmPort token found");
-      return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build(); // TODO CEDAR error response
+      return CedarResponse.status(CedarResponseStatus.INTERNAL_SERVER_ERROR).build(); // TODO CEDAR error response
     }
 
     CloseableHttpResponse response = null;
@@ -205,7 +207,7 @@ public class ImmPortSubmissionServerResource extends CedarMicroserviceResource {
           workspaceID = data.getAdditionalParameters().get("workspaceId");
         } else {
           logger.warn("No workspaceId parameter specified");
-          return Response.status(Response.Status.BAD_REQUEST).build();  // TODO CEDAR error response
+          return CedarResponse.status(CedarResponseStatus.BAD_REQUEST).build();  // TODO CEDAR error response
         }
         String submissionLocalFolderPath = FlowUploadUtil
             .getSubmissionLocalFolderPath(ImmPortConstants.IMMPORT_LOCAL_FOLDER_NAME, userId, data.getSubmissionId());
@@ -224,7 +226,7 @@ public class ImmPortSubmissionServerResource extends CedarMicroserviceResource {
           response = client.execute(post);
           int statusCode = response.getStatusLine().getStatusCode();
 
-          if (statusCode == Response.Status.OK.getStatusCode()) {
+          if (statusCode == CedarResponseStatus.OK.getStatusCode()) {
             CEDARSubmitResponse cedarSubmitResponse = immPortSubmissionResponseBody2CEDARSubmissionResponse(
                 response.getEntity());
             SubmissionStatusManager.getInstance().addSubmission(
@@ -237,20 +239,20 @@ public class ImmPortSubmissionServerResource extends CedarMicroserviceResource {
           } else {
             logger.warn("Unexpected status code returned from " + immPortSubmissionUrl + ": " + response
                 .getStatusLine().getStatusCode());
-            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build(); // TODO CEDAR error response
+            return CedarResponse.status(CedarResponseStatus.INTERNAL_SERVER_ERROR).build(); // TODO CEDAR error response
           }
         } else {
           return Response.ok(new HashMap()).build(); // We are still building the request
         }
       } else {
         logger.warn("No form data supplied");
-        return Response.status(Response.Status.BAD_REQUEST).build(); // TODO CEDAR error response
+        return CedarResponse.status(CedarResponseStatus.BAD_REQUEST).build(); // TODO CEDAR error response
       }
     } catch (IOException | SubmissionInstanceNotFoundException | IllegalAccessException | FileUploadException |
-        JAXBException |
-        DatatypeConfigurationException e) {
+             JAXBException |
+             DatatypeConfigurationException e) {
       logger.warn("Exception submitting to ImmPort: " + e.getMessage());
-      return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build(); // TODO CEDAR error response
+      return CedarResponse.status(CedarResponseStatus.INTERNAL_SERVER_ERROR).build(); // TODO CEDAR error response
     } finally {
       HttpClientUtils.closeQuietly(response);
       HttpClientUtils.closeQuietly(client);
@@ -269,13 +271,13 @@ public class ImmPortSubmissionServerResource extends CedarMicroserviceResource {
     String workspaceID = request.getParameter("workspaceId"); // TODO CEDAR constant for parameter
     if (workspaceID == null || workspaceID.isEmpty()) {
       logger.warn("No workspaceId parameter specified");
-      return Response.status(Response.Status.BAD_REQUEST).build();  // TODO CEDAR error response
+      return CedarResponse.status(CedarResponseStatus.BAD_REQUEST).build();  // TODO CEDAR error response
     }
 
     Optional<String> immPortBearerToken = immPortUtil.getImmPortBearerToken();
     if (!immPortBearerToken.isPresent()) {
       logger.warn("No ImmPort token found");
-      return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build(); // TODO CEDAR error response
+      return CedarResponse.status(CedarResponseStatus.INTERNAL_SERVER_ERROR).build(); // TODO CEDAR error response
     }
 
     CloseableHttpResponse response = null;
@@ -295,7 +297,7 @@ public class ImmPortSubmissionServerResource extends CedarMicroserviceResource {
 
         int statusCode = response.getStatusLine().getStatusCode();
 
-        if (statusCode == Response.Status.OK.getStatusCode()) {
+        if (statusCode == CedarResponseStatus.OK.getStatusCode()) {
           CEDARSubmitResponse cedarSubmitResponse = immPortSubmissionResponseBody2CEDARSubmissionResponse(
               response.getEntity());
           String submissionID = cedarSubmitResponse.getSubmissionID();
@@ -308,15 +310,15 @@ public class ImmPortSubmissionServerResource extends CedarMicroserviceResource {
         } else {
           logger.warn("Unexpected status code returned from " + immPortSubmissionUrl + ": " + response
               .getStatusLine().getStatusCode());
-          return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build(); // TODO CEDAR error response
+          return CedarResponse.status(CedarResponseStatus.INTERNAL_SERVER_ERROR).build(); // TODO CEDAR error response
         }
       } else {
         logger.warn("No form data supplied");
-        return Response.status(Response.Status.BAD_REQUEST).build(); // TODO CEDAR error response
+        return CedarResponse.status(CedarResponseStatus.BAD_REQUEST).build(); // TODO CEDAR error response
       }
     } catch (IOException | FileUploadException e) {
       logger.warn("Exception submitting to ImmmPort " + immPortSubmissionUrl + ": " + e.getMessage());
-      return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build(); // TODO CEDAR error response
+      return CedarResponse.status(CedarResponseStatus.INTERNAL_SERVER_ERROR).build(); // TODO CEDAR error response
     } finally {
       HttpClientUtils.closeQuietly(response);
       HttpClientUtils.closeQuietly(client);
