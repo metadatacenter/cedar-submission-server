@@ -15,6 +15,7 @@ import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
 import org.metadatacenter.config.CedarConfig;
 import org.metadatacenter.config.ImmPortConfig;
+import org.metadatacenter.http.CedarResponseStatus;
 import org.metadatacenter.submission.ImmPortGetTokenResponse;
 import org.metadatacenter.submission.status.SubmissionState;
 import org.metadatacenter.submission.status.SubmissionStatus;
@@ -22,7 +23,6 @@ import org.metadatacenter.submission.status.SubmissionStatusUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -103,7 +103,7 @@ public class ImmPortUtil {
 
       response = client.execute(post);
 
-      if (response.getStatusLine().getStatusCode() == Response.Status.OK.getStatusCode()) {
+      if (response.getStatusLine().getStatusCode() == CedarResponseStatus.OK.getStatusCode()) {
         HttpEntity entity = response.getEntity();
         // Get ImmPortGetTokenResponse from stream
         ImmPortGetTokenResponse immPortGetTokenResponse = MAPPER

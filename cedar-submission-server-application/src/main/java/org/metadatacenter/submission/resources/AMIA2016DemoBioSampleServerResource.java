@@ -7,10 +7,12 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.metadatacenter.cedar.util.dw.CedarMicroserviceResource;
 import org.metadatacenter.config.CedarConfig;
 import org.metadatacenter.exception.CedarException;
+import org.metadatacenter.http.CedarResponseStatus;
 import org.metadatacenter.rest.context.CedarRequestContext;
 import org.metadatacenter.submission.AMIA2016DemoBioSampleTemplate;
 import org.metadatacenter.submission.ncbi.validation.BioSampleValidator;
 import org.metadatacenter.submission.ncbi.amia.AMIA2016DemoBioSampleTemplate2BioSampleConverter;
+import org.metadatacenter.util.http.CedarResponse;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
@@ -68,7 +70,7 @@ public class AMIA2016DemoBioSampleServerResource extends CedarMicroserviceResour
       return Response.ok(this.bioSampleValidator.validateBioSampleSubmission(bioSampleSubmissionXML)).build();
 
     } catch (JAXBException | DatatypeConfigurationException | IOException e) {
-      return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
+      return CedarResponse.status(CedarResponseStatus.INTERNAL_SERVER_ERROR).build();
     }
   }
 

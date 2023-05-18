@@ -2,6 +2,7 @@ package org.metadatacenter.submission.notifications;
 
 import org.glassfish.jersey.client.ClientProperties;
 import org.metadatacenter.config.CedarConfig;
+import org.metadatacenter.http.CedarResponseStatus;
 import org.metadatacenter.submission.status.SubmissionStatusDescriptor;
 import org.metadatacenter.submission.status.SubmissionType;
 import org.metadatacenter.util.test.TestUserUtil;
@@ -81,7 +82,7 @@ public class StatusNotifier {
 
     Response response = client.target(url).request().header("Authorization", adminUserAuthHeader).post(postContent);
 
-    if (response.getStatus() != Response.Status.OK.getStatusCode()) {
+    if (response.getStatus() != CedarResponseStatus.OK.getStatusCode()) {
       logger.warn("Internal error, statusCode=" + response.getStatus() + " postContent=" + postContent);
       throw new InternalError("Error sending message to user");
     }
