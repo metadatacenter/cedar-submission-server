@@ -4,8 +4,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 
 import java.util.*;
 
-import static org.metadatacenter.submission.ncbi.pipelines.cairr.NcbiCairrConstants.*;
-
 public class NcbiPipelinesCommonValidator {
 
   public static List<String> validateBioproject(JsonNode bioproject, List<String> bioprojectFields, List<String> bioprojectRequiredFieldValues) {
@@ -39,11 +37,10 @@ public class NcbiPipelinesCommonValidator {
         }
       }
       // File type and file names
-      Iterator<JsonNode> fileNamesIt = sra.get(sraFileNameField).iterator();
-      while (fileNamesIt.hasNext()) {
-        String fileNameField = fileNamesIt.next().asText();
+      for (JsonNode jsonNode : sra.get(sraFileNameField)) {
+        String fileNameField = jsonNode.asText();
         Optional<String> fileName = NcbiPipelinesCommonUtil.getTemplateFieldValue(sra, fileNameField);
-        if (!fileName.isPresent()) {
+        if (fileName.isEmpty()) {
           messages.add("File name field not present: " + fileNameField);
         }
       }

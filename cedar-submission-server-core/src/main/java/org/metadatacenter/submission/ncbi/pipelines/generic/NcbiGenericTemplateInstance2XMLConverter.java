@@ -139,11 +139,9 @@ public class NcbiGenericTemplateInstance2XMLConverter {
 
         if (sra.hasNonNull(SRA_FILE_NAME_FIELD) && sra.get(SRA_FILE_NAME_FIELD).size() > 0) {
 
-          Iterator<JsonNode> fileNameFieldsIt = sra.get(SRA_FILE_NAME_FIELD).iterator();
+          for (JsonNode jsonNode : sra.get(SRA_FILE_NAME_FIELD)) {
 
-          while (fileNameFieldsIt.hasNext()) {
-
-            String fileNameField = fileNameFieldsIt.next().asText();
+            String fileNameField = jsonNode.asText();
 
             Optional<String> fileName = NcbiPipelinesCommonUtil.getTemplateFieldValue(sra, fileNameField);
 

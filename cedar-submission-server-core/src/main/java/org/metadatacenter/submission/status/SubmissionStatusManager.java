@@ -69,24 +69,24 @@ public class SubmissionStatusManager {
   }
 
   public void updateSubmission(SubmissionStatus submissionStatus) {
-    String submissionID = submissionStatus.getSubmissionID();
+    String submissionID = submissionStatus.submissionID();
 
     if (!this.submissions.containsKey(submissionID)) {
       logger.warn("Attempt to update unknown submission " + submissionID);
     } else {
       SubmissionStatusDescriptor currentSubmissionStatusDescriptor = submissions.get(submissionID);
       SubmissionStatusDescriptor newSubmissionStatusDescriptor = new SubmissionStatusDescriptor(submissionID,
-          currentSubmissionStatusDescriptor.getUserID(), currentSubmissionStatusDescriptor.getStatusURL(),
-          submissionStatus, currentSubmissionStatusDescriptor.getSubmissionStatusTask());
+          currentSubmissionStatusDescriptor.userID(), currentSubmissionStatusDescriptor.statusURL(),
+          submissionStatus, currentSubmissionStatusDescriptor.submissionStatusTask());
 
       // If the status has changed, notify user. We consider that the status has changed in the following cases:
       // 1. The new state is different than the previous one (e.g., STARTED vs SUBMITTED)
       // 2. The new state is the same, but the messages are different (except for the STARTED state)
-      SubmissionStatus currentStatus = currentSubmissionStatusDescriptor.getSubmissionStatus();
-      SubmissionStatus newStatus = newSubmissionStatusDescriptor.getSubmissionStatus();
-      if ((currentStatus.getSubmissionState() != newStatus.getSubmissionState()) ||
-          (!currentStatus.getStatusMessage().equals(newStatus.getStatusMessage()) &&
-              !currentStatus.getSubmissionState().equals(SubmissionState.SUBMITTED))) {
+      SubmissionStatus currentStatus = currentSubmissionStatusDescriptor.submissionStatus();
+      SubmissionStatus newStatus = newSubmissionStatusDescriptor.submissionStatus();
+      if ((currentStatus.submissionState() != newStatus.submissionState()) ||
+          (!currentStatus.statusMessage().equals(newStatus.statusMessage()) &&
+              !currentStatus.submissionState().equals(SubmissionState.SUBMITTED))) {
         notifyUser(newSubmissionStatusDescriptor);
       }
 
@@ -94,9 +94,9 @@ public class SubmissionStatusManager {
 
       this.submissions.put(submissionID, newSubmissionStatusDescriptor);
 
-      if (submissionStatus.getSubmissionState() == SubmissionState.SUCCEEDED
-          || submissionStatus.getSubmissionState() == SubmissionState.REJECTED
-          || submissionStatus.getSubmissionState() == SubmissionState.ERROR) {
+      if (submissionStatus.submissionState() == SubmissionState.SUCCEEDED
+          || submissionStatus.submissionState() == SubmissionState.REJECTED
+          || submissionStatus.submissionState() == SubmissionState.ERROR) {
         removeSubmission(submissionID);
       }
     }
@@ -108,7 +108,7 @@ public class SubmissionStatusManager {
     } else {
       SubmissionStatusDescriptor submissionStatusDescriptor = this.submissions.get(submissionID);
 
-      if (submissionStatusDescriptor.getSubmissionStatus().getSubmissionState() != SubmissionState.SUCCEEDED) {
+      if (submissionStatusDescriptor.submissionStatus().submissionState() != SubmissionState.SUCCEEDED) {
         logger.warn("Removing incomplete submission " + submissionID);
       }
 
@@ -125,9 +125,9 @@ public class SubmissionStatusManager {
   }
 
   private void notifyUser(SubmissionStatusDescriptor submissionStatusDescriptor) {
-    logger.info("Notifying user for submission " + submissionStatusDescriptor.getSubmissionID() + "; status = "
-        + submissionStatusDescriptor.getSubmissionStatus().getSubmissionState() + ", message = "
-        + submissionStatusDescriptor.getSubmissionStatus().getStatusMessage());
+    logger.info("Notifying user for submission " + submissionStatusDescriptor.submissionID() + "; status = "
+        + submissionStatusDescriptor.submissionStatus().submissionState() + ", message = "
+        + submissionStatusDescriptor.submissionStatus().statusMessage());
 
     StatusNotifier.getInstance().sendMessage(submissionStatusDescriptor);
   }

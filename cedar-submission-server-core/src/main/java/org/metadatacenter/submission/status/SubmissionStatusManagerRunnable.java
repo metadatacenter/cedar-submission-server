@@ -32,15 +32,15 @@ public class SubmissionStatusManagerRunnable implements Runnable {
         if (!currentSubmissions.isEmpty()) {
 
           for (SubmissionStatusDescriptor submissionStatusDescriptor : currentSubmissions.values()) {
-            SubmissionStatusTask submissionStatusTask = submissionStatusDescriptor.getSubmissionStatusTask();
+            SubmissionStatusTask submissionStatusTask = submissionStatusDescriptor.submissionStatusTask();
             Future<SubmissionStatus> submissionStatusFuture = pool.submit(submissionStatusTask);
 
-            futures.put(submissionStatusDescriptor.getSubmissionID(), submissionStatusFuture);
+            futures.put(submissionStatusDescriptor.submissionID(), submissionStatusFuture);
           }
 
           for (int i = 0; i < currentSubmissions.size(); i++) {
             SubmissionStatus submissionStatus = pool.take().get(1000, TimeUnit.MILLISECONDS);
-            String submissionID = submissionStatus.getSubmissionID();
+            String submissionID = submissionStatus.submissionID();
 
             futures.remove(submissionID);
             this.submissionStatusManager.updateSubmission(submissionStatus);

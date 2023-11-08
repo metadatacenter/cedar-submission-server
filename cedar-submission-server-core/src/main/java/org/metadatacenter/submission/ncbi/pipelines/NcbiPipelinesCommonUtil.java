@@ -104,11 +104,10 @@ public class NcbiPipelinesCommonUtil {
 
     for (JsonNode sra : sras) {
 
-      if (sra.hasNonNull(sraFieldNameField) && sra.get(sraFieldNameField).size() > 0) {
-        Iterator<JsonNode> fileNameFieldsIt = sra.get(sraFieldNameField).iterator();
+      if (sra.hasNonNull(sraFieldNameField) && !sra.get(sraFieldNameField).isEmpty()) {
 
-        while (fileNameFieldsIt.hasNext()) {
-          String fileNameField = fileNameFieldsIt.next().asText();
+        for (JsonNode jsonNode : sra.get(sraFieldNameField)) {
+          String fileNameField = jsonNode.asText();
           Optional<String> fileName = NcbiPipelinesCommonUtil.getTemplateFieldValue(sra, fileNameField);
           sraFileNames.add(fileName.get());
         }

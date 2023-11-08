@@ -33,20 +33,20 @@ public class NcbiGenericConstants {
   protected static final String BIOPROJECT_RELEVANT_PUBLICATIONS_FIELD = "Relevant Publications";
 
   protected static final List<String> BIOPROJECT_FIELDS =
-      Collections.unmodifiableList(Arrays.asList(
+      List.of(
           BIOPROJECT_STUDY_ID_FIELD,
           BIOPROJECT_CONTACT_INFO_FIELD,
           BIOPROJECT_CONTACT_EMAIL_FIELD,
           BIOPROJECT_LAB_NAME_FIELD
-      ));
+      );
 
   protected static final List<String> BIOPROJECT_REQUIRED_FIELD_VALUES =
-      Collections.unmodifiableList(Arrays.asList(
+      List.of(
           BIOPROJECT_STUDY_ID_FIELD,
           BIOPROJECT_CONTACT_INFO_FIELD,
           BIOPROJECT_CONTACT_EMAIL_FIELD,
           BIOPROJECT_LAB_NAME_FIELD
-      ));
+      );
 
 
   /*** BioSample section ***/
@@ -78,7 +78,7 @@ public class NcbiGenericConstants {
   protected static final String BIOSAMPLE_DESCRIPTION_FIELD = "Sample Description";
 
   protected static final List<String> BIOSAMPLE_FIELDS =
-      Collections.unmodifiableList(Arrays.asList(
+      List.of(
           BIOSAMPLE_SAMPLE_NAME_FIELD,
           BIOSAMPLE_SAMPLE_TITLE_FIELD,
           BIOSAMPLE_ORGANISM_FIELD,
@@ -103,10 +103,10 @@ public class NcbiGenericConstants {
           BIOSAMPLE_SAMPLE_TYPE_FIELD,
           BIOSAMPLE_TREATMENT_FIELD,
           BIOSAMPLE_DESCRIPTION_FIELD
-      ));
+      );
 
   protected static final List<String> BIOSAMPLE_REQUIRED_FIELD_VALUES =
-      Collections.unmodifiableList(Arrays.asList(
+      List.of(
           BIOSAMPLE_SAMPLE_NAME_FIELD,
           BIOSAMPLE_ORGANISM_FIELD,
           BIOSAMPLE_ISOLATE_FIELD,
@@ -114,7 +114,7 @@ public class NcbiGenericConstants {
           BIOSAMPLE_BIOMATERIAL_PROVIDER_FIELD,
           BIOSAMPLE_SEX_FIELD,
           BIOSAMPLE_TISSUE_FIELD
-      ));
+      );
 
   /*** SRA section ***/
   protected static final String SRA_ELEMENT = "NCBI SRA for Human Tissue";
@@ -132,7 +132,7 @@ public class NcbiGenericConstants {
   protected static final String SRA_FILE_NAME_FIELD = "File Name";
 
   protected static final List<String> SRA_FIELDS =
-      Collections.unmodifiableList(Arrays.asList(
+      List.of(
           SRA_SAMPLE_NAME_FIELD,
           SRA_LIBRARY_ID_FIELD,
           SRA_TITLE_FIELD,
@@ -145,10 +145,10 @@ public class NcbiGenericConstants {
           SRA_DESIGN_DESCRIPTION_FIELD,
           SRA_FILE_TYPE_FIELD,
           SRA_FILE_NAME_FIELD
-      ));
+      );
 
   protected static final List<String> SRA_REQUIRED_FIELD_VALUES =
-      Collections.unmodifiableList(Arrays.asList(
+      List.of(
           SRA_SAMPLE_NAME_FIELD,
           SRA_LIBRARY_ID_FIELD,
           SRA_TITLE_FIELD,
@@ -161,7 +161,7 @@ public class NcbiGenericConstants {
           SRA_DESIGN_DESCRIPTION_FIELD,
           SRA_FILE_TYPE_FIELD,
           SRA_FILE_NAME_FIELD
-      ));
+      );
 
   // PRIVATE //
 

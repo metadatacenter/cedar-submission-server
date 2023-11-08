@@ -175,11 +175,11 @@ public class FlowUploadUtil {
   }
 
   public static String getLastFragmentOfUrl(String url) {
-    return url.substring(url.lastIndexOf("/") + 1, url.length());
+    return url.substring(url.lastIndexOf("/") + 1);
   }
 
   public static List<String> commaSeparatedStringToList(String string) {
-    if (string.trim().length() == 0) {
+    if (string.trim().isEmpty()) {
       return new ArrayList<>();
     } else {
       //Remove whitespaces and split by comma
