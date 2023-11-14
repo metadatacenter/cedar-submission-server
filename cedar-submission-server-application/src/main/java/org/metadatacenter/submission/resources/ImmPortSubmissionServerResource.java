@@ -146,7 +146,7 @@ public class ImmPortSubmissionServerResource extends CedarMicroserviceResource {
     c.must(c.user()).be(LoggedIn);
 
     Optional<String> immPortBearerToken = immPortUtil.getImmPortBearerToken();
-    if (!immPortBearerToken.isPresent()) {
+    if (immPortBearerToken.isEmpty()) {
       logger.warn("Could not get an ImmPort token");
       return CedarResponse.status(CedarResponseStatus.INTERNAL_SERVER_ERROR).build();  // TODO CEDAR error response
     }
@@ -189,7 +189,7 @@ public class ImmPortSubmissionServerResource extends CedarMicroserviceResource {
     c.must(c.user()).be(LoggedIn);
 
     Optional<String> immPortBearerToken = immPortUtil.getImmPortBearerToken();
-    if (!immPortBearerToken.isPresent()) {
+    if (immPortBearerToken.isEmpty()) {
       logger.warn("No ImmPort token found");
       return CedarResponse.status(CedarResponseStatus.INTERNAL_SERVER_ERROR).build(); // TODO CEDAR error response
     }
@@ -275,7 +275,7 @@ public class ImmPortSubmissionServerResource extends CedarMicroserviceResource {
     }
 
     Optional<String> immPortBearerToken = immPortUtil.getImmPortBearerToken();
-    if (!immPortBearerToken.isPresent()) {
+    if (immPortBearerToken.isEmpty()) {
       logger.warn("No ImmPort token found");
       return CedarResponse.status(CedarResponseStatus.INTERNAL_SERVER_ERROR).build(); // TODO CEDAR error response
     }

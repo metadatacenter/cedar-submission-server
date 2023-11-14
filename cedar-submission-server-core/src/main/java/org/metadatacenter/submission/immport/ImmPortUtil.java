@@ -56,7 +56,7 @@ public class ImmPortUtil {
     CloseableHttpClient client = null;
 
     Optional<String> token = getImmPortBearerToken();
-    if (!token.isPresent()) {
+    if (token.isEmpty()) {
       logger.warn("Could not get an ImmPort token");
       return new SubmissionStatus(submissionID, SubmissionState.ERROR, "Could not get an ImmPort token");
     }
@@ -109,11 +109,11 @@ public class ImmPortUtil {
         ImmPortGetTokenResponse immPortGetTokenResponse = MAPPER
             .readValue(entity.getContent(), ImmPortGetTokenResponse.class);
 
-        if (immPortGetTokenResponse.getStatus().intValue() == 200) {
+        if (immPortGetTokenResponse.getStatus() == 200) {
           return Optional.of(immPortGetTokenResponse.getToken());
         } else {
           logger.warn("Failed to get token from host " + submissionUrl + "; ImmPort status code="
-              + immPortGetTokenResponse.getStatus().intValue() + ", error=" + immPortGetTokenResponse.getError());
+              + immPortGetTokenResponse.getStatus() + ", error=" + immPortGetTokenResponse.getError());
           return Optional.empty();
         }
       } else {

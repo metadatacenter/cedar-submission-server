@@ -75,7 +75,7 @@ public class NcbiFtpStatusChecker {
           SubmissionStatusDescriptor submissionStatusDescriptor = SubmissionStatusManager.getInstance()
               .getCurrentSubmissions().get(submissionID);
           NcbiSubmissionStatusTask statusTask = (NcbiSubmissionStatusTask) submissionStatusDescriptor
-              .getSubmissionStatusTask();
+              .submissionStatusTask();
           statusTask.setLastStatusReportFile(mostRecentReportFileName.get());
 
           // generate submission status from the most recent report file
@@ -86,7 +86,7 @@ public class NcbiFtpStatusChecker {
           logger.info(submissionStatus.toString());
         } else { // the report file has already been checked so the status will be the same
           submissionStatus =
-              SubmissionStatusManager.getInstance().getCurrentSubmissions().get(submissionID).getSubmissionStatus();
+              SubmissionStatusManager.getInstance().getCurrentSubmissions().get(submissionID).submissionStatus();
         }
       } else { // the folder does not contain any report file yet
         String message = SubmissionStatusUtil.getShortStatusMessage(submissionID, SubmissionState.PROCESSING)

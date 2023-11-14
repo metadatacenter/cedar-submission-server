@@ -22,13 +22,13 @@ public class NcbiSubmissionStatusUtil {
 
   public static SubmissionStatus toSubmissionStatus(String submissionId, NcbiSubmissionStatusReport report) {
     SubmissionState submissionState = null;
-    if (report.getState().equals(NcbiSubmissionState.SUBMITTED)) {
+    if (report.state().equals(NcbiSubmissionState.SUBMITTED)) {
       submissionState = SubmissionState.PROCESSING;
-    } else if (report.getState().equals(NcbiSubmissionState.PROCESSING)) {
+    } else if (report.state().equals(NcbiSubmissionState.PROCESSING)) {
       submissionState = SubmissionState.PROCESSING;
-    } else if (report.getState().equals(NcbiSubmissionState.PROCESSED_ERROR)) {
+    } else if (report.state().equals(NcbiSubmissionState.PROCESSED_ERROR)) {
       submissionState = SubmissionState.ERROR;
-    } else if (report.getState().equals(NcbiSubmissionState.FAILED)) {
+    } else if (report.state().equals(NcbiSubmissionState.FAILED)) {
       submissionState = SubmissionState.REJECTED;
     }
     // TODO: complete with all NCBI states
@@ -37,7 +37,7 @@ public class NcbiSubmissionStatusUtil {
     }
 
     String message = SubmissionStatusUtil.getShortStatusMessage(submissionId, submissionState) +
-        "\nNCBI STATUS REPORT\n==================" + report.getTextReport();
+        "\nNCBI STATUS REPORT\n==================" + report.textReport();
 
     return new SubmissionStatus(submissionId, submissionState, message);
   }

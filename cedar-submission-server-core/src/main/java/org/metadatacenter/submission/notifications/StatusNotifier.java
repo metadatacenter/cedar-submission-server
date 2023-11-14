@@ -53,22 +53,22 @@ public class StatusNotifier {
     logger.info("Notification url:" + url);
 
     Map<String, Object> content = new HashMap<>();
-    content.put("subject", submissionStatusDescriptor.getSubmissionStatusTask().getSubmissionType().getValue()
-        + " Submission " + submissionStatusDescriptor.getSubmissionStatus().getSubmissionState());
-    content.put("body", submissionStatusDescriptor.getSubmissionStatus().getStatusMessage());
+    content.put("subject", submissionStatusDescriptor.submissionStatusTask().getSubmissionType().getValue()
+        + " Submission " + submissionStatusDescriptor.submissionStatus().submissionState());
+    content.put("body", submissionStatusDescriptor.submissionStatus().statusMessage());
 
     Map<String, Object> to = new HashMap<>();
     to.put("recipientType", "user");
-    to.put("@id", submissionStatusDescriptor.getUserID());
+    to.put("@id", submissionStatusDescriptor.userID());
     content.put("to", to);
 
     Map<String, Object> from = new HashMap<>();
     from.put("senderType", "process");
 
     String processId = null;
-    if (submissionStatusDescriptor.getSubmissionStatusTask().getSubmissionType().equals(SubmissionType.IMMPORT)) {
+    if (submissionStatusDescriptor.submissionStatusTask().getSubmissionType().equals(SubmissionType.IMMPORT)) {
       processId = "submission.IMMPORT";
-    } else if (submissionStatusDescriptor.getSubmissionStatusTask().getSubmissionType().equals(SubmissionType
+    } else if (submissionStatusDescriptor.submissionStatusTask().getSubmissionType().equals(SubmissionType
         .NCBI)) {
       processId = "submission.NCBI"; // It aligns with name in messaging server
     }

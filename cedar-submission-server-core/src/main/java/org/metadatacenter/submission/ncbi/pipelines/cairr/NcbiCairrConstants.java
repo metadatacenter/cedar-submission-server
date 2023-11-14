@@ -34,19 +34,19 @@ public class NcbiCairrConstants {
 
 
   protected static final List<String> BIOPROJECT_FIELDS =
-      Collections.unmodifiableList(Arrays.asList(
+      List.of(
           BIOPROJECT_STUDY_ID_FIELD,
           BIOPROJECT_CONTACT_INFO_FIELD,
           BIOPROJECT_LAB_NAME_FIELD
-      ));
+      );
 
 
   protected static final List<String> BIOPROJECT_REQUIRED_FIELD_VALUES =
-      Collections.unmodifiableList(Arrays.asList(
+      List.of(
           BIOPROJECT_STUDY_ID_FIELD,
           BIOPROJECT_CONTACT_INFO_FIELD,
           BIOPROJECT_LAB_NAME_FIELD
-      ));
+      );
 
   /*** BioSample section ***/
   // Subject
@@ -97,7 +97,7 @@ public class NcbiCairrConstants {
   protected static final String BIOSAMPLE_OPTIONAL_ATTRIBUTE_FIELD = "Optional BioSample Attribute";
 
   protected static final List<String> BIOSAMPLE_FIELDS =
-      Collections.unmodifiableList(Arrays.asList(
+      List.of(
           BIOSAMPLE_SUBJECT_ID_FIELD,
           BIOSAMPLE_SYNTHETIC_LIBRARY_FIELD,
           BIOSAMPLE_ORGANISM_FIELD,
@@ -138,10 +138,10 @@ public class NcbiCairrConstants {
           BIOSAMPLE_CELL_ISOLATION_FIELD,
           BIOSAMPLE_PROCESSING_PROTOCOL_FIELD,
           BIOSAMPLE_OPTIONAL_ATTRIBUTE_FIELD
-      ));
+      );
 
   protected static final List<String> BIOSAMPLE_REQUIRED_FIELD_VALUES =
-      Collections.unmodifiableList(Arrays.asList(
+      List.of(
           BIOSAMPLE_SUBJECT_ID_FIELD,
           BIOSAMPLE_SYNTHETIC_LIBRARY_FIELD,
           BIOSAMPLE_ORGANISM_FIELD,
@@ -180,7 +180,7 @@ public class NcbiCairrConstants {
           BIOSAMPLE_CELL_QUALITY_FIELD,
           BIOSAMPLE_CELL_ISOLATION_FIELD,
           BIOSAMPLE_PROCESSING_PROTOCOL_FIELD
-      ));
+      );
 
   /*** SRA section ***/
   protected static final String SRA_ELEMENT = "Sequence Read Archive for AIRR NCBI";
@@ -211,7 +211,7 @@ public class NcbiCairrConstants {
   protected static final String SRA_FILE_TYPE_FIELD = "File Type";
   protected static final String SRA_FILE_NAME_FIELD = "filename";
 
-  protected static final List<String> SRA_FIELDS = Collections.unmodifiableList(Arrays.asList(
+  protected static final List<String> SRA_FIELDS = List.of(
       SRA_SAMPLE_ID_FIELD,
       SRA_TARGET_SUBSTRATE_FIELD,
       SRA_TARGET_SUBSTRATE_QUALITY_FIELD,
@@ -238,7 +238,7 @@ public class NcbiCairrConstants {
       SRA_SEQUENCING_KIT_FIELD,
       SRA_FILE_TYPE_FIELD,
       SRA_FILE_NAME_FIELD
-  ));
+  );
 
   protected static final List<String> SRA_REQUIRED_FIELD_VALUES = SRA_FIELDS;
 
