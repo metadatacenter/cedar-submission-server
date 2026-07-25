@@ -8,7 +8,6 @@ import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.CharEncoding;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -359,7 +358,7 @@ public class ImmPortSubmissionServerResource extends CedarMicroserviceResource {
   private CEDARWorkspaceResponse immPortWorkspacesResponseBody2CEDARWorkspaceResponse(HttpEntity responseEntity)
       throws IOException {
     if (responseEntity != null) {
-      String responseBody = EntityUtils.toString(responseEntity, CharEncoding.UTF_8);
+      String responseBody = EntityUtils.toString(responseEntity, StandardCharsets.UTF_8);
       JsonNode immPortWorkspaces = MAPPER.readTree(responseBody);
 
       if (immPortWorkspaces.has("error")) {
@@ -388,7 +387,7 @@ public class ImmPortSubmissionServerResource extends CedarMicroserviceResource {
   private CEDARSubmitResponse immPortSubmissionResponseBody2CEDARSubmissionResponse(HttpEntity responseEntity)
       throws IOException {
     if (responseEntity != null) {
-      String responseBody = EntityUtils.toString(responseEntity, CharEncoding.UTF_8);
+      String responseBody = EntityUtils.toString(responseEntity, StandardCharsets.UTF_8);
       JsonNode immPortSubmissionResponseBody = MAPPER.readTree(responseBody);
 
       if (immPortSubmissionResponseBody.has("error")) {

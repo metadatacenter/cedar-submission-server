@@ -1,7 +1,6 @@
 package org.metadatacenter.submission.immport;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import org.apache.commons.lang.CharEncoding;
 import org.apache.http.HttpEntity;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
@@ -24,6 +23,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -135,7 +135,7 @@ public class ImmPortUtil {
                                                                                  HttpEntity responseEntity) throws
       IOException {
     if (responseEntity != null) {
-      String responseBody = EntityUtils.toString(responseEntity, CharEncoding.UTF_8);
+      String responseBody = EntityUtils.toString(responseEntity, StandardCharsets.UTF_8);
       JsonNode immPortSubmissionResponseBody = MAPPER.readTree(responseBody);
 
       System.err.println("ImmPort response JSON " + immPortSubmissionResponseBody);
