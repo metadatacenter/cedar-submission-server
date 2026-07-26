@@ -3,10 +3,10 @@ package org.metadatacenter.submission.resources;
 import com.codahale.metrics.annotation.Timed;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.io.Files;
-import org.apache.commons.fileupload.FileItem;
-import org.apache.commons.fileupload.FileUploadException;
-import org.apache.commons.fileupload.disk.DiskFileItemFactory;
-import org.apache.commons.fileupload.servlet.ServletFileUpload;
+import org.apache.commons.fileupload2.core.DiskFileItem;
+import org.apache.commons.fileupload2.core.DiskFileItemFactory;
+import org.apache.commons.fileupload2.core.FileUploadException;
+import org.apache.commons.fileupload2.jakarta.servlet5.JakartaServletFileUpload;
 import org.apache.commons.io.IOUtils;
 import org.apache.hc.core5.http.HttpEntity;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
@@ -42,10 +42,10 @@ import org.metadatacenter.util.http.CedarResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.ws.rs.*;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.xml.bind.JAXBException;
+import jakarta.ws.rs.*;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
+import jakarta.xml.bind.JAXBException;
 import javax.xml.datatype.DatatypeConfigurationException;
 import java.io.File;
 import java.io.FileInputStream;
@@ -198,7 +198,7 @@ public class ImmPortSubmissionServerResource extends CedarMicroserviceResource {
     CloseableHttpClient client = null;
 
     try {
-      if (ServletFileUpload.isMultipartContent(request)) {
+      if (JakartaServletFileUpload.isMultipartContent(request)) {
         String userId = FlowUploadUtil.getLastFragmentOfUrl(c.getCedarUser().getId());
         FlowData data = FlowUploadUtil.getFlowData(request);
 
@@ -248,7 +248,7 @@ public class ImmPortSubmissionServerResource extends CedarMicroserviceResource {
         logger.warn("No form data supplied");
         return CedarResponse.status(CedarResponseStatus.BAD_REQUEST).build(); // TODO CEDAR error response
       }
-    } catch (IOException | ParseException | SubmissionInstanceNotFoundException | IllegalAccessException | FileUploadException |
+    } catch (IOException | ParseException | SubmissionInstanceNotFoundException | IllegalAccessException |
              JAXBException |
              DatatypeConfigurationException e) {
       logger.warn("Exception submitting to ImmPort: " + e.getMessage());
@@ -284,7 +284,7 @@ public class ImmPortSubmissionServerResource extends CedarMicroserviceResource {
     CloseableHttpClient client = null;
 
     try {
-      if (ServletFileUpload.isMultipartContent(request)) {
+      if (JakartaServletFileUpload.isMultipartContent(request)) {
 
         HttpEntity multiPartEntity = getMultipartContentFromRequest(workspaceID);
 
@@ -316,7 +316,7 @@ public class ImmPortSubmissionServerResource extends CedarMicroserviceResource {
         logger.warn("No form data supplied");
         return CedarResponse.status(CedarResponseStatus.BAD_REQUEST).build(); // TODO CEDAR error response
       }
-    } catch (IOException | ParseException | FileUploadException e) {
+    } catch (IOException | ParseException e) {
       logger.warn("Exception submitting to ImmmPort " + immPortSubmissionUrl + ": " + e.getMessage());
       return CedarResponse.status(CedarResponseStatus.INTERNAL_SERVER_ERROR).build(); // TODO CEDAR error response
     } finally {
@@ -332,10 +332,11 @@ public class ImmPortSubmissionServerResource extends CedarMicroserviceResource {
     builder.addTextBody(ImmPortConstants.IMMPORT_USERNAME_FIELD, immPortUserName);
 
     File tempDir = Files.createTempDir();
-    List<FileItem> fileItems = new ServletFileUpload(new DiskFileItemFactory(1024 * 1024, tempDir)).
-        parseRequest(request);
+    List<DiskFileItem> fileItems = new JakartaServletFileUpload<>(
+        DiskFileItemFactory.builder().setThreshold(1024 * 1024).setPath(tempDir.toPath()).get())
+        .parseRequest(request);
 
-    for (FileItem fileItem : fileItems) {
+    for (DiskFileItem fileItem : fileItems) {
       String fileName = fileItem.getName();
       String fieldName = fileItem.getFieldName();
       if (!fileItem.isFormField()) {

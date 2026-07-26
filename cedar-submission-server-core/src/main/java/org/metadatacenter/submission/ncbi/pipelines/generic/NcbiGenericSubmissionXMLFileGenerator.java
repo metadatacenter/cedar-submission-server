@@ -8,7 +8,7 @@ import org.metadatacenter.submission.ncbi.NcbiConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.xml.bind.JAXBException;
+import jakarta.xml.bind.JAXBException;
 import javax.xml.datatype.DatatypeConfigurationException;
 import java.io.File;
 import java.io.IOException;
