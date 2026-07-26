@@ -15,6 +15,8 @@ public class NcbiSubmissionQueueProcessor implements Managed {
 
   private static final Logger log = LoggerFactory.getLogger(NcbiSubmissionQueueProcessor.class);
 
+  private static final int RETRY_DELAY_SECONDS = 10;
+
   private final NcbiSubmissionQueueService ncbiSubmissionQueueService;
   private final NcbiSubmissionExecutorService ncbiSubmissionExecutorService;
   private boolean doProcessing;
@@ -28,6 +30,28 @@ public class NcbiSubmissionQueueProcessor implements Managed {
 
   private void digestMessages() {
     log.info("NcbiSubmissionQueueProcessor.start()");
+    while (doProcessing) {
+      try {
+        consumeMessages();
+      } catch (Exception e) {
+        if (doProcessing) {
+          // The consumer must never die silently: log the failure and keep retrying, so a queue
+          // (Redis) outage suspends processing instead of ending it
+          log.error("The NCBI submission queue consumer failed, probably because the queue (Redis) became unreachable. "
+              + "Retrying in " + RETRY_DELAY_SECONDS + " seconds.", e);
+          try {
+            Thread.sleep(RETRY_DELAY_SECONDS * 1000L);
+          } catch (InterruptedException ie) {
+            Thread.currentThread().interrupt();
+            return;
+          }
+        }
+      }
+    }
+    log.info("NcbiSubmissionQueueProcessor finished gracefully");
+  }
+
+  private void consumeMessages() {
     ncbiSubmissionQueueService.initializeBlockingQueue();
     List<String> submissionMessages;
     while (doProcessing) {
@@ -57,7 +81,6 @@ public class NcbiSubmissionQueueProcessor implements Managed {
         log.warn("Unable to handle message, it is null.");
       }
     }
-    log.info("NcbiSubmissionQueueProcessor finished gracefully");
   }
 
   @Override

@@ -29,6 +29,10 @@ public class SubmissionServerApplicationSmokeTest {
     environment.put("CEDAR_SUBMISSION_HTTP_PORT", "19010");
     environment.put("CEDAR_SUBMISSION_ADMIN_PORT", "19110");
     environment.put("CEDAR_SUBMISSION_STOP_PORT", "19210");
+    // Redis goes to a dead port: the NCBI queue consumer takes its first contact on a background
+    // thread and retries, and enqueueing (including the shutdown wake-up) is best-effort, so the
+    // boot and clean teardown never depend on a live Redis.
+    environment.put("CEDAR_REDIS_PERSISTENT_PORT", "1");
     CedarEnvironmentSource.setOverride(environment);
   }
 
