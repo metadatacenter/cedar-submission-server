@@ -220,7 +220,7 @@ public class NcbiCairrSubmissionServerResource
         logger.error(e.getMessage(), e);
         return CedarResponse.status(CedarResponseStatus.INTERNAL_SERVER_ERROR).build();
       } catch (IllegalAccessException e) {
-        e.printStackTrace();
+        logger.error("Error reading the multipart content of the CAIRR submission upload request", e);
       }
       return Response.ok().build();
     } else {
