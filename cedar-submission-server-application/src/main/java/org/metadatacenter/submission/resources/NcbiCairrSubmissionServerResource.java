@@ -4,8 +4,8 @@ import com.codahale.metrics.annotation.Timed;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.commons.fileupload.FileUploadException;
-import org.apache.commons.fileupload.servlet.ServletFileUpload;
+import org.apache.commons.fileupload2.core.FileUploadException;
+import org.apache.commons.fileupload2.jakarta.servlet5.JakartaServletFileUpload;
 import org.joda.time.DateTimeZone;
 import org.metadatacenter.cedar.util.dw.CedarMicroserviceResource;
 import org.metadatacenter.config.CedarConfig;
@@ -29,13 +29,13 @@ import org.metadatacenter.util.http.CedarResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.ws.rs.Consumes;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.xml.bind.JAXBException;
+import jakarta.ws.rs.Consumes;
+import jakarta.ws.rs.POST;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
+import jakarta.xml.bind.JAXBException;
 import javax.xml.datatype.DatatypeConfigurationException;
 import java.io.IOException;
 import java.text.ParseException;
@@ -170,7 +170,7 @@ public class NcbiCairrSubmissionServerResource
     c.must(c.user()).be(LoggedIn);
 
     // Check that this is a file upload request
-    if (ServletFileUpload.isMultipartContent(request)) {
+    if (JakartaServletFileUpload.isMultipartContent(request)) {
 
       try {
         String userId = c.getCedarUser().getId();
@@ -215,12 +215,12 @@ public class NcbiCairrSubmissionServerResource
           SubmissionUploadManager.getInstance().removeSubmissionStatus(data.getSubmissionId());
         }
 
-      } catch (IOException | FileUploadException | SubmissionInstanceNotFoundException | JAXBException |
+      } catch (IOException | SubmissionInstanceNotFoundException | JAXBException |
                DatatypeConfigurationException e) {
         logger.error(e.getMessage(), e);
         return CedarResponse.status(CedarResponseStatus.INTERNAL_SERVER_ERROR).build();
       } catch (IllegalAccessException e) {
-        e.printStackTrace();
+        logger.error("Error reading the multipart content of the CAIRR submission upload request", e);
       }
       return Response.ok().build();
     } else {

@@ -3,20 +3,20 @@ package org.metadatacenter.submission.ncbi.validation;
 import generated.BioSampleValidate;
 import generated.TypeActionStatus;
 import generated.TypeStatus;
-import org.apache.http.HttpEntity;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.ContentType;
-import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.hc.core5.http.HttpEntity;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
+import org.apache.hc.client5.http.classic.methods.HttpPost;
+import org.apache.hc.core5.http.ContentType;
+import org.apache.hc.core5.http.io.entity.StringEntity;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.HttpClientBuilder;
 import org.metadatacenter.submission.CEDARValidationResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Unmarshaller;
+import jakarta.xml.bind.JAXBContext;
+import jakarta.xml.bind.JAXBException;
+import jakarta.xml.bind.Unmarshaller;
 import javax.xml.datatype.DatatypeConfigurationException;
 import java.io.File;
 import java.io.IOException;
@@ -70,13 +70,13 @@ public class BioSampleValidator
 
       response = client.execute(post);
 
-      if (response.getStatusLine().getStatusCode() == 200) {
+      if (response.getCode() == 200) {
         HttpEntity entity = response.getEntity();
         InputStream xmlResponseStream = entity.getContent();
         BioSampleValidate bioSampleValidationResponse = bioSampleXMLResponse2BioSampleValidate(xmlResponseStream);
         return bioSampleValidationResponse2CEDARValidationResponse(bioSampleValidationResponse);
       } else {
-        return generateUnexpectedStatusCodeCEDARValidationResponse(response.getStatusLine().getStatusCode());
+        return generateUnexpectedStatusCodeCEDARValidationResponse(response.getCode());
       }
     } catch (IOException | JAXBException e) {
       return generateUnexpectedConnectionErrorCEDARValidationResponse(e.getMessage());

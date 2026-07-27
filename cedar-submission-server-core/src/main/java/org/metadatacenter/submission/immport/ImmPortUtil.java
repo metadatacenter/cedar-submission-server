@@ -1,18 +1,18 @@
 package org.metadatacenter.submission.immport;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import org.apache.commons.lang.CharEncoding;
-import org.apache.http.HttpEntity;
-import org.apache.http.NameValuePair;
-import org.apache.http.client.entity.UrlEncodedFormEntity;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.client.utils.HttpClientUtils;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClientBuilder;
-import org.apache.http.message.BasicNameValuePair;
-import org.apache.http.util.EntityUtils;
+import org.apache.hc.core5.http.HttpEntity;
+import org.apache.hc.core5.http.NameValuePair;
+import org.apache.hc.client5.http.entity.UrlEncodedFormEntity;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
+import org.apache.hc.client5.http.classic.methods.HttpGet;
+import org.apache.hc.client5.http.classic.methods.HttpPost;
+import org.apache.hc.core5.io.Closer;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.HttpClientBuilder;
+import org.apache.hc.core5.http.message.BasicNameValuePair;
+import org.apache.hc.core5.http.ParseException;
+import org.apache.hc.core5.http.io.entity.EntityUtils;
 import org.metadatacenter.config.CedarConfig;
 import org.metadatacenter.config.ImmPortConfig;
 import org.metadatacenter.http.CedarResponseStatus;
@@ -24,6 +24,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -69,23 +70,22 @@ public class ImmPortUtil {
       client = HttpClientBuilder.create().build();
       response = client.execute(get);
 
-      if (response.getStatusLine().getStatusCode() == 200) {
+      if (response.getCode() == 200) {
         HttpEntity entity = response.getEntity();
         return immPortSubmissionResponseBody2SubmissionStatus(submissionID, entity);
       } else {
         String errorMessage =
-            "Unexpected status code calling " + immPortStatusURL + "; status=" + response.getStatusLine()
-                .getStatusCode();
+            "Unexpected status code calling " + immPortStatusURL + "; status=" + response.getCode();
         logger.warn(errorMessage);
         return new SubmissionStatus(submissionID, SubmissionState.ERROR, errorMessage);
       }
-    } catch (IOException e) {
+    } catch (IOException | ParseException e) {
       String errorMessage = "IO exception calling import status endpoint: " + e.getMessage();
       logger.warn(errorMessage);
       return new SubmissionStatus(submissionID, SubmissionState.ERROR, errorMessage);
     } finally {
-      HttpClientUtils.closeQuietly(response);
-      HttpClientUtils.closeQuietly(client);
+      Closer.closeQuietly(response);
+      Closer.closeQuietly(client);
     }
   }
 
@@ -98,12 +98,12 @@ public class ImmPortUtil {
       List<NameValuePair> parameters = new ArrayList<>(2);
       parameters.add(new BasicNameValuePair(ImmPortConstants.IMMPORT_USERNAME_FIELD, userName));
       parameters.add(new BasicNameValuePair(ImmPortConstants.IMMPORT_PASSWORD_FIELD, password));
-      post.setEntity(new UrlEncodedFormEntity(parameters, "UTF-8"));
+      post.setEntity(new UrlEncodedFormEntity(parameters, StandardCharsets.UTF_8));
       post.setHeader(HTTP_HEADER_ACCEPT, CONTENT_TYPE_APPLICATION_JSON);
 
       response = client.execute(post);
 
-      if (response.getStatusLine().getStatusCode() == CedarResponseStatus.OK.getStatusCode()) {
+      if (response.getCode() == CedarResponseStatus.OK.getStatusCode()) {
         HttpEntity entity = response.getEntity();
         // Get ImmPortGetTokenResponse from stream
         ImmPortGetTokenResponse immPortGetTokenResponse = MAPPER
@@ -118,24 +118,23 @@ public class ImmPortUtil {
         }
       } else {
         logger.warn(
-            "Failed to get token from host " + submissionUrl + "; status code=" + response.getStatusLine()
-                .getStatusCode());
+            "Failed to get token from host " + submissionUrl + "; status code=" + response.getCode());
         return Optional.empty();
       }
     } catch (IOException e) {
       logger.warn("IO error getting token from host " + submissionUrl + "; error=" + e.getMessage());
       return Optional.empty();
     } finally {
-      HttpClientUtils.closeQuietly(response);
-      HttpClientUtils.closeQuietly(client);
+      Closer.closeQuietly(response);
+      Closer.closeQuietly(client);
     }
   }
 
   static private SubmissionStatus immPortSubmissionResponseBody2SubmissionStatus(String submissionID,
                                                                                  HttpEntity responseEntity) throws
-      IOException {
+      IOException, ParseException {
     if (responseEntity != null) {
-      String responseBody = EntityUtils.toString(responseEntity, CharEncoding.UTF_8);
+      String responseBody = EntityUtils.toString(responseEntity, StandardCharsets.UTF_8);
       JsonNode immPortSubmissionResponseBody = MAPPER.readTree(responseBody);
 
       System.err.println("ImmPort response JSON " + immPortSubmissionResponseBody);

@@ -1,11 +1,11 @@
 package org.metadatacenter.submission;
 
-import io.dropwizard.setup.Bootstrap;
-import io.dropwizard.setup.Environment;
+import io.dropwizard.core.setup.Bootstrap;
+import io.dropwizard.core.setup.Environment;
+import org.metadatacenter.cedar.util.dw.CedarDefaultHealthCheck;
 import org.metadatacenter.cedar.util.dw.CedarMicroserviceApplication;
 import org.metadatacenter.config.CedarConfig;
 import org.metadatacenter.model.ServerName;
-import org.metadatacenter.submission.health.SubmissionServerHealthCheck;
 import org.metadatacenter.submission.ncbi.queue.NcbiSubmissionExecutorService;
 import org.metadatacenter.submission.ncbi.queue.NcbiSubmissionQueueProcessor;
 import org.metadatacenter.submission.ncbi.queue.NcbiSubmissionQueueService;
@@ -48,7 +48,7 @@ public class SubmissionServerApplication extends CedarMicroserviceApplication<Su
   @Override
   public void runApp(SubmissionServerConfiguration configuration, Environment environment) {
 
-    final IndexResource index = new IndexResource();
+    final IndexResource index = new IndexResource(cedarConfig);
     environment.jersey().register(index);
 
     // Register resources
@@ -71,7 +71,7 @@ public class SubmissionServerApplication extends CedarMicroserviceApplication<Su
         (cedarConfig);
     environment.jersey().register(immPortSubmissionServerResource);
 
-    final SubmissionServerHealthCheck healthCheck = new SubmissionServerHealthCheck();
+    final CedarDefaultHealthCheck healthCheck = new CedarDefaultHealthCheck();
     environment.healthChecks().register("message", healthCheck);
 
     // NCBI submission processor

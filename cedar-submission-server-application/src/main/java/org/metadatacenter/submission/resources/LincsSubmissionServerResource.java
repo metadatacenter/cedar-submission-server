@@ -2,10 +2,11 @@ package org.metadatacenter.submission.resources;
 
 import com.codahale.metrics.annotation.Timed;
 import org.apache.commons.io.IOUtils;
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.fluent.Request;
-import org.apache.http.entity.ContentType;
+import org.apache.hc.core5.http.HttpEntity;
+import org.apache.hc.core5.http.ClassicHttpResponse;
+import org.apache.hc.client5.http.fluent.Request;
+import org.apache.hc.core5.util.Timeout;
+import org.apache.hc.core5.http.ContentType;
 import org.metadatacenter.cedar.util.dw.CedarMicroserviceResource;
 import org.metadatacenter.config.CedarConfig;
 import org.metadatacenter.constant.HttpConnectionConstants;
@@ -18,15 +19,15 @@ import org.metadatacenter.util.http.CedarResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.ws.rs.Consumes;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
+import jakarta.ws.rs.Consumes;
+import jakarta.ws.rs.POST;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
 import java.io.IOException;
 
-import static javax.ws.rs.core.Response.Status.*;
+import static jakarta.ws.rs.core.Response.Status.*;
 import static org.metadatacenter.rest.assertion.GenericAssertions.LoggedIn;
 
 @Path("/command")
@@ -56,25 +57,25 @@ public class LincsSubmissionServerResource extends CedarMicroserviceResource {
 
     String payload = c.request().getRequestBody().asJsonString();
 
-    HttpResponse lincsResponse = sendPostRequestToLincsServer(payload);
+    ClassicHttpResponse lincsResponse = sendPostRequestToLincsServer(payload);
     return unpackLincsResponseAndForwardIt(lincsResponse);
   }
 
-  private HttpResponse sendPostRequestToLincsServer(String content) throws CedarProcessingException {
-    Request proxyRequest = Request.Post(LINCS_VALIDATION_ENDPOINT)
-        .connectTimeout(HttpConnectionConstants.CONNECTION_TIMEOUT)
-        .socketTimeout(HttpConnectionConstants.SOCKET_TIMEOUT)
+  private ClassicHttpResponse sendPostRequestToLincsServer(String content) throws CedarProcessingException {
+    Request proxyRequest = Request.post(LINCS_VALIDATION_ENDPOINT)
+        .connectTimeout(Timeout.ofMilliseconds(HttpConnectionConstants.CONNECTION_TIMEOUT))
+        .responseTimeout(Timeout.ofMilliseconds(HttpConnectionConstants.SOCKET_TIMEOUT))
         .bodyString(content, ContentType.APPLICATION_JSON);
     try {
-      return proxyRequest.execute().returnResponse();
+      return (ClassicHttpResponse) proxyRequest.execute().returnResponse();
     } catch (IOException e) {
       logger.error(e.getMessage(), e);
       throw new CedarProcessingException(e);
     }
   }
 
-  private Response unpackLincsResponseAndForwardIt(HttpResponse httpResponse) throws CedarProcessingException {
-    int statusCode = httpResponse.getStatusLine().getStatusCode();
+  private Response unpackLincsResponseAndForwardIt(ClassicHttpResponse httpResponse) throws CedarProcessingException {
+    int statusCode = httpResponse.getCode();
     HttpEntity responseEntity = httpResponse.getEntity();
     try {
       Response response = null;

@@ -3,22 +3,22 @@ package org.metadatacenter.submission.resources;
 import com.codahale.metrics.annotation.Timed;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.io.Files;
-import org.apache.commons.fileupload.FileItem;
-import org.apache.commons.fileupload.FileUploadException;
-import org.apache.commons.fileupload.disk.DiskFileItemFactory;
-import org.apache.commons.fileupload.servlet.ServletFileUpload;
+import org.apache.commons.fileupload2.core.DiskFileItem;
+import org.apache.commons.fileupload2.core.DiskFileItemFactory;
+import org.apache.commons.fileupload2.core.FileUploadException;
+import org.apache.commons.fileupload2.jakarta.servlet5.JakartaServletFileUpload;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.CharEncoding;
-import org.apache.http.HttpEntity;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.client.utils.HttpClientUtils;
-import org.apache.http.entity.ContentType;
-import org.apache.http.entity.mime.MultipartEntityBuilder;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClientBuilder;
-import org.apache.http.util.EntityUtils;
+import org.apache.hc.core5.http.HttpEntity;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
+import org.apache.hc.client5.http.classic.methods.HttpGet;
+import org.apache.hc.client5.http.classic.methods.HttpPost;
+import org.apache.hc.core5.io.Closer;
+import org.apache.hc.core5.http.ContentType;
+import org.apache.hc.client5.http.entity.mime.MultipartEntityBuilder;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.HttpClientBuilder;
+import org.apache.hc.core5.http.ParseException;
+import org.apache.hc.core5.http.io.entity.EntityUtils;
 import org.metadatacenter.cedar.util.dw.CedarMicroserviceResource;
 import org.metadatacenter.config.CedarConfig;
 import org.metadatacenter.exception.CedarException;
@@ -42,10 +42,10 @@ import org.metadatacenter.util.http.CedarResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.ws.rs.*;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.xml.bind.JAXBException;
+import jakarta.ws.rs.*;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
+import jakarta.xml.bind.JAXBException;
 import javax.xml.datatype.DatatypeConfigurationException;
 import java.io.File;
 import java.io.FileInputStream;
@@ -163,20 +163,20 @@ public class ImmPortSubmissionServerResource extends CedarMicroserviceResource {
       client = HttpClientBuilder.create().build();
       response = client.execute(get);
 
-      if (response.getStatusLine().getStatusCode() == 200) {
+      if (response.getCode() == 200) {
         HttpEntity entity = response.getEntity();
         return Response.ok(immPortWorkspacesResponseBody2CEDARWorkspaceResponse(entity)).build();
       } else {
         logger.warn("Unexpected status code calling " + workspaceUrl + "; status=" + response
-            .getStatusLine().getStatusCode());
+            .getCode());
         return CedarResponse.status(CedarResponseStatus.INTERNAL_SERVER_ERROR).build(); // TODO CEDAR error response
       }
-    } catch (IOException e) {
+    } catch (IOException | ParseException e) {
       logger.warn("IO exception connecting to host " + workspaceUrl + ": " + e.getMessage());
       return CedarResponse.status(CedarResponseStatus.INTERNAL_SERVER_ERROR).build(); // TODO CEDAR error response
     } finally {
-      HttpClientUtils.closeQuietly(response);
-      HttpClientUtils.closeQuietly(client);
+      Closer.closeQuietly(response);
+      Closer.closeQuietly(client);
     }
   }
 
@@ -198,7 +198,7 @@ public class ImmPortSubmissionServerResource extends CedarMicroserviceResource {
     CloseableHttpClient client = null;
 
     try {
-      if (ServletFileUpload.isMultipartContent(request)) {
+      if (JakartaServletFileUpload.isMultipartContent(request)) {
         String userId = FlowUploadUtil.getLastFragmentOfUrl(c.getCedarUser().getId());
         FlowData data = FlowUploadUtil.getFlowData(request);
 
@@ -224,7 +224,7 @@ public class ImmPortSubmissionServerResource extends CedarMicroserviceResource {
           post.setEntity(multiPartEntity);
           client = HttpClientBuilder.create().build();
           response = client.execute(post);
-          int statusCode = response.getStatusLine().getStatusCode();
+          int statusCode = response.getCode();
 
           if (statusCode == CedarResponseStatus.OK.getStatusCode()) {
             CEDARSubmitResponse cedarSubmitResponse = immPortSubmissionResponseBody2CEDARSubmissionResponse(
@@ -238,7 +238,7 @@ public class ImmPortSubmissionServerResource extends CedarMicroserviceResource {
             return Response.ok(cedarSubmitResponse).build();
           } else {
             logger.warn("Unexpected status code returned from " + immPortSubmissionUrl + ": " + response
-                .getStatusLine().getStatusCode());
+                .getCode());
             return CedarResponse.status(CedarResponseStatus.INTERNAL_SERVER_ERROR).build(); // TODO CEDAR error response
           }
         } else {
@@ -248,14 +248,14 @@ public class ImmPortSubmissionServerResource extends CedarMicroserviceResource {
         logger.warn("No form data supplied");
         return CedarResponse.status(CedarResponseStatus.BAD_REQUEST).build(); // TODO CEDAR error response
       }
-    } catch (IOException | SubmissionInstanceNotFoundException | IllegalAccessException | FileUploadException |
+    } catch (IOException | ParseException | SubmissionInstanceNotFoundException | IllegalAccessException |
              JAXBException |
              DatatypeConfigurationException e) {
       logger.warn("Exception submitting to ImmPort: " + e.getMessage());
       return CedarResponse.status(CedarResponseStatus.INTERNAL_SERVER_ERROR).build(); // TODO CEDAR error response
     } finally {
-      HttpClientUtils.closeQuietly(response);
-      HttpClientUtils.closeQuietly(client);
+      Closer.closeQuietly(response);
+      Closer.closeQuietly(client);
     }
   }
 
@@ -284,7 +284,7 @@ public class ImmPortSubmissionServerResource extends CedarMicroserviceResource {
     CloseableHttpClient client = null;
 
     try {
-      if (ServletFileUpload.isMultipartContent(request)) {
+      if (JakartaServletFileUpload.isMultipartContent(request)) {
 
         HttpEntity multiPartEntity = getMultipartContentFromRequest(workspaceID);
 
@@ -295,7 +295,7 @@ public class ImmPortSubmissionServerResource extends CedarMicroserviceResource {
         client = HttpClientBuilder.create().build();
         response = client.execute(post);
 
-        int statusCode = response.getStatusLine().getStatusCode();
+        int statusCode = response.getCode();
 
         if (statusCode == CedarResponseStatus.OK.getStatusCode()) {
           CEDARSubmitResponse cedarSubmitResponse = immPortSubmissionResponseBody2CEDARSubmissionResponse(
@@ -309,19 +309,19 @@ public class ImmPortSubmissionServerResource extends CedarMicroserviceResource {
           return Response.ok(cedarSubmitResponse).build();
         } else {
           logger.warn("Unexpected status code returned from " + immPortSubmissionUrl + ": " + response
-              .getStatusLine().getStatusCode());
+              .getCode());
           return CedarResponse.status(CedarResponseStatus.INTERNAL_SERVER_ERROR).build(); // TODO CEDAR error response
         }
       } else {
         logger.warn("No form data supplied");
         return CedarResponse.status(CedarResponseStatus.BAD_REQUEST).build(); // TODO CEDAR error response
       }
-    } catch (IOException | FileUploadException e) {
+    } catch (IOException | ParseException e) {
       logger.warn("Exception submitting to ImmmPort " + immPortSubmissionUrl + ": " + e.getMessage());
       return CedarResponse.status(CedarResponseStatus.INTERNAL_SERVER_ERROR).build(); // TODO CEDAR error response
     } finally {
-      HttpClientUtils.closeQuietly(response);
-      HttpClientUtils.closeQuietly(client);
+      Closer.closeQuietly(response);
+      Closer.closeQuietly(client);
     }
   }
 
@@ -332,10 +332,11 @@ public class ImmPortSubmissionServerResource extends CedarMicroserviceResource {
     builder.addTextBody(ImmPortConstants.IMMPORT_USERNAME_FIELD, immPortUserName);
 
     File tempDir = Files.createTempDir();
-    List<FileItem> fileItems = new ServletFileUpload(new DiskFileItemFactory(1024 * 1024, tempDir)).
-        parseRequest(request);
+    List<DiskFileItem> fileItems = new JakartaServletFileUpload<>(
+        DiskFileItemFactory.builder().setThreshold(1024 * 1024).setPath(tempDir.toPath()).get())
+        .parseRequest(request);
 
-    for (FileItem fileItem : fileItems) {
+    for (DiskFileItem fileItem : fileItems) {
       String fileName = fileItem.getName();
       String fieldName = fileItem.getFieldName();
       if (!fileItem.isFormField()) {
@@ -357,9 +358,9 @@ public class ImmPortSubmissionServerResource extends CedarMicroserviceResource {
   }
 
   private CEDARWorkspaceResponse immPortWorkspacesResponseBody2CEDARWorkspaceResponse(HttpEntity responseEntity)
-      throws IOException {
+      throws IOException, ParseException {
     if (responseEntity != null) {
-      String responseBody = EntityUtils.toString(responseEntity, CharEncoding.UTF_8);
+      String responseBody = EntityUtils.toString(responseEntity, StandardCharsets.UTF_8);
       JsonNode immPortWorkspaces = MAPPER.readTree(responseBody);
 
       if (immPortWorkspaces.has("error")) {
@@ -386,9 +387,9 @@ public class ImmPortSubmissionServerResource extends CedarMicroserviceResource {
   }
 
   private CEDARSubmitResponse immPortSubmissionResponseBody2CEDARSubmissionResponse(HttpEntity responseEntity)
-      throws IOException {
+      throws IOException, ParseException {
     if (responseEntity != null) {
-      String responseBody = EntityUtils.toString(responseEntity, CharEncoding.UTF_8);
+      String responseBody = EntityUtils.toString(responseEntity, StandardCharsets.UTF_8);
       JsonNode immPortSubmissionResponseBody = MAPPER.readTree(responseBody);
 
       if (immPortSubmissionResponseBody.has("error")) {
