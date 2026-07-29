@@ -21,11 +21,15 @@ public class SubmissionStatusManagerRunnable implements Runnable {
 
   @Override
   public void run() {
-    ExecutorService threadPool = Executors.newFixedThreadPool(NUMBER_OF_THREADS);
+    ExecutorService threadPool = Executors.newFixedThreadPool(NUMBER_OF_THREADS, r -> {
+      Thread t = new Thread(r, "submission-status-check");
+      t.setDaemon(true);
+      return t;
+    });
     Map<String, Future<SubmissionStatus>> futures = new HashMap<>();
     CompletionService<SubmissionStatus> pool = new ExecutorCompletionService<>(threadPool);
 
-    while (true) {
+    while (!Thread.currentThread().isInterrupted()) {
       try {
         Map<String, SubmissionStatusDescriptor> currentSubmissions = submissionStatusManager.getCurrentSubmissions();
 
@@ -50,7 +54,10 @@ public class SubmissionStatusManagerRunnable implements Runnable {
       } catch (CancellationException e) {
         logger.error("Cancellation exception : " + e.getMessage());
       } catch (InterruptedException e) {
-        logger.error("Interrupted exception : " + e.getMessage());
+        // Shutdown signal: restore the interrupt and leave the loop instead of swallowing it.
+        logger.info("Submission status manager interrupted; stopping.");
+        Thread.currentThread().interrupt();
+        break;
       } catch (ExecutionException e) {
         logger.error("Execution exception : " + e.getMessage());
       } catch (TimeoutException e) {
@@ -64,6 +71,7 @@ public class SubmissionStatusManagerRunnable implements Runnable {
         futures.clear();
       }
     }
+    threadPool.shutdownNow();
   }
 }
 
