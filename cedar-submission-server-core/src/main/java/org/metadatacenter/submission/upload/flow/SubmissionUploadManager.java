@@ -1,5 +1,6 @@
 package org.metadatacenter.submission.upload.flow;
 
+import jakarta.ws.rs.BadRequestException;
 import org.metadatacenter.submission.exception.SubmissionInstanceNotFoundException;
 
 import java.util.ArrayList;
@@ -67,7 +68,7 @@ public class SubmissionUploadManager {
     if (fileUploadStatus.getFileUploadedChunks() == fileUploadStatus.getFileTotalChunks()) {
       return true;
     } else if (fileUploadStatus.getFileUploadedChunks() > fileUploadStatus.getFileTotalChunks()) {
-      throw new InternalError("Uploaded file chunks is higher than total file chunks");
+      throw new BadRequestException("Uploaded file chunks is higher than total file chunks");
     } else {
       return false;
     }
@@ -82,7 +83,7 @@ public class SubmissionUploadManager {
     if (submissionUploadStatus.getUploadedFilesCount() == submissionUploadStatus.getTotalFilesCount()) {
       return true;
     } else if (submissionUploadStatus.getUploadedFilesCount() > submissionUploadStatus.getTotalFilesCount()) {
-      throw new InternalError("Number of uploaded files is higher than the total number of files (submissionId = " +
+      throw new BadRequestException("Number of uploaded files is higher than the total number of files (submissionId = " +
           submissionId);
     } else {
       return false;
@@ -100,7 +101,7 @@ public class SubmissionUploadManager {
       throw new SubmissionInstanceNotFoundException("Submission not found (submissionId = " + submissionId);
     }
     if (!isSubmissionUploadComplete(submissionId)) {
-      throw new InternalError("The submission upload is not complete (submissionId = " + submissionId);
+      throw new BadRequestException("The submission upload is not complete (submissionId = " + submissionId);
     }
     SubmissionUploadStatus submissionUploadStatus = submissionsUploadStatus.get(submissionId);
     for (Map.Entry<String, FileUploadStatus> entry : submissionUploadStatus.getFilesUploadStatus().entrySet()) {

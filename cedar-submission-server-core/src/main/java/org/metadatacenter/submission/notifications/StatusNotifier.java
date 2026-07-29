@@ -84,7 +84,9 @@ public class StatusNotifier {
 
     if (response.getStatus() != CedarResponseStatus.OK.getStatusCode()) {
       logger.warn("Internal error, statusCode=" + response.getStatus() + " postContent=" + postContent);
-      throw new InternalError("Error sending message to user");
+      // A failed downstream notification is a genuine server-side fault (500), but not JVM corruption:
+      // use a RuntimeException so it flows through catch (Exception) and the CedarExceptionMapper.
+      throw new IllegalStateException("Error sending message to user");
     }
   }
 }
