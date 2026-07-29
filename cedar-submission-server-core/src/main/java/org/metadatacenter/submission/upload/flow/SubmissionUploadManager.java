@@ -11,7 +11,11 @@ import java.util.Map;
 public class SubmissionUploadManager {
 
   private static SubmissionUploadManager singleInstance;
-  private Map<String, SubmissionUploadStatus> submissionsUploadStatus = new HashMap<>();
+  // Keyed by (ownerUserId, submissionId), not by the client-supplied submissionId alone. Otherwise two
+  // users that pick the same submissionId would share one entry: their chunk counts would merge and the
+  // file-path lookups would return one user's files to the other, who would then submit them under their
+  // own credentials. Composing the owner into the key makes another user's entry unaddressable.
+  private Map<String, SubmissionUploadStatus> submissionsUploadStatus = new HashMap<>(); // key(ownerUserId, submissionId) -> status
 
   // Single instance
   private SubmissionUploadManager() {
@@ -24,22 +28,28 @@ public class SubmissionUploadManager {
     return singleInstance;
   }
 
-  // Updates the upload status with the latest file chunk that has been uploaded
-  public synchronized void updateStatus(FlowData data, String submissionFolderPath) {
+  // A NUL byte cannot appear in a CEDAR user id or in a flow.js submissionId, so it is an unambiguous
+  // separator: no (ownerUserId, submissionId) pair can collide with a different pair.
+  private static String key(String ownerUserId, String submissionId) {
+    return ownerUserId + "\u0000" + submissionId;
+  }
 
-    String submissionId = data.getSubmissionId();
+  // Updates the upload status with the latest file chunk that has been uploaded
+  public synchronized void updateStatus(FlowData data, String ownerUserId, String submissionFolderPath) {
+
+    String key = key(ownerUserId, data.getSubmissionId());
     String fileId = data.getFlowIdentifier();
     long totalFilesCount = data.getTotalFilesCount();
     long fileTotalChunks = data.getFlowTotalChunks();
 
     // If the submission does not exist in the map, create it
-    if (!submissionsUploadStatus.containsKey(submissionId)) {
+    if (!submissionsUploadStatus.containsKey(key)) {
       Map<String, FileUploadStatus> filesUploadStatus = new HashMap<>();
       SubmissionUploadStatus submissionUploadStatus =
           new SubmissionUploadStatus(totalFilesCount, 0, filesUploadStatus, submissionFolderPath);
-      submissionsUploadStatus.put(submissionId, submissionUploadStatus);
+      submissionsUploadStatus.put(key, submissionUploadStatus);
     }
-    SubmissionUploadStatus submissionUploadStatus = submissionsUploadStatus.get(submissionId);
+    SubmissionUploadStatus submissionUploadStatus = submissionsUploadStatus.get(key);
 
     // If the file does not exist in the submission, create it
     if (!submissionUploadStatus.getFilesUploadStatus().containsKey(fileId)) {
@@ -74,11 +84,12 @@ public class SubmissionUploadManager {
     }
   }
 
-  public boolean isSubmissionUploadComplete(String submissionId) throws SubmissionInstanceNotFoundException {
-    if (!submissionsUploadStatus.containsKey(submissionId)) {
+  public boolean isSubmissionUploadComplete(String ownerUserId, String submissionId) throws SubmissionInstanceNotFoundException {
+    String key = key(ownerUserId, submissionId);
+    if (!submissionsUploadStatus.containsKey(key)) {
       throw new SubmissionInstanceNotFoundException("Submission not found (submissionId = " + submissionId);
     }
-    SubmissionUploadStatus submissionUploadStatus = submissionsUploadStatus.get(submissionId);
+    SubmissionUploadStatus submissionUploadStatus = submissionsUploadStatus.get(key);
 
     if (submissionUploadStatus.getUploadedFilesCount() == submissionUploadStatus.getTotalFilesCount()) {
       return true;
@@ -90,27 +101,28 @@ public class SubmissionUploadManager {
     }
   }
 
-  public void removeSubmissionStatus(String submissionId) {
-    submissionsUploadStatus.remove(submissionId);
+  public void removeSubmissionStatus(String ownerUserId, String submissionId) {
+    submissionsUploadStatus.remove(key(ownerUserId, submissionId));
   }
 
   // Returns local file paths
-  public List<String> getSubmissionFilePaths(String submissionId) throws SubmissionInstanceNotFoundException {
+  public List<String> getSubmissionFilePaths(String ownerUserId, String submissionId) throws SubmissionInstanceNotFoundException {
+    String key = key(ownerUserId, submissionId);
     List<String> filePaths = new ArrayList<>();
-    if (!submissionsUploadStatus.containsKey(submissionId)) {
+    if (!submissionsUploadStatus.containsKey(key)) {
       throw new SubmissionInstanceNotFoundException("Submission not found (submissionId = " + submissionId);
     }
-    if (!isSubmissionUploadComplete(submissionId)) {
+    if (!isSubmissionUploadComplete(ownerUserId, submissionId)) {
       throw new BadRequestException("The submission upload is not complete (submissionId = " + submissionId);
     }
-    SubmissionUploadStatus submissionUploadStatus = submissionsUploadStatus.get(submissionId);
+    SubmissionUploadStatus submissionUploadStatus = submissionsUploadStatus.get(key);
     for (Map.Entry<String, FileUploadStatus> entry : submissionUploadStatus.getFilesUploadStatus().entrySet()) {
       filePaths.add(entry.getValue().getFileLocalPath());
     }
     return filePaths;
   }
 
-  public SubmissionUploadStatus getSubmissionsUploadStatus(String submissionId) {
-    return submissionsUploadStatus.get(submissionId);
+  public SubmissionUploadStatus getSubmissionsUploadStatus(String ownerUserId, String submissionId) {
+    return submissionsUploadStatus.get(key(ownerUserId, submissionId));
   }
 }

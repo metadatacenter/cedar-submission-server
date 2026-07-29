@@ -197,10 +197,10 @@ public class NcbiGenericSubmissionServerResource
             .saveToLocalFile(data, userId, request.getContentLength(), submissionLocalFolderPath);
         logger.info("File created. Path: " + filePath);
         // Update the submission upload status
-        SubmissionUploadManager.getInstance().updateStatus(data, submissionLocalFolderPath);
+        SubmissionUploadManager.getInstance().updateStatus(data, userId, submissionLocalFolderPath);
 
         // If the submission upload is complete, trigger the FTP submission to the NCBI servers
-        if (SubmissionUploadManager.getInstance().isSubmissionUploadComplete(data.getSubmissionId())) {
+        if (SubmissionUploadManager.getInstance().isSubmissionUploadComplete(userId, data.getSubmissionId())) {
           logger.info("NCBI submission successfully uploaded to CEDAR: ");
           logger.info("  submission id: " + data.getSubmissionId());
           logger.info("  submission local folder: " + submissionLocalFolderPath);
@@ -217,7 +217,7 @@ public class NcbiGenericSubmissionServerResource
           logger.info("Enqueuing submission");
           ncbiSubmissionQueueService.enqueueSubmission(ncbiSubmission);
           // Remove the submission from the status map
-          SubmissionUploadManager.getInstance().removeSubmissionStatus(data.getSubmissionId());
+          SubmissionUploadManager.getInstance().removeSubmissionStatus(userId, data.getSubmissionId());
         }
 
       } catch (IOException | SubmissionInstanceNotFoundException | JAXBException |
