@@ -24,7 +24,12 @@ public class SubmissionStatusManager {
   private CedarConfig cedarConfig;
 
   private SubmissionStatusManager() {
-    this.executor = Executors.newFixedThreadPool(10);
+    // Daemon threads so this background manager can never pin the JVM open during shutdown/redeploy.
+    this.executor = Executors.newFixedThreadPool(10, r -> {
+      Thread t = new Thread(r, "submission-status-manager");
+      t.setDaemon(true);
+      return t;
+    });
   }
 
   public static synchronized SubmissionStatusManager getInstance() {
@@ -46,7 +51,9 @@ public class SubmissionStatusManager {
 
   public void stop() {
     logger.info("Stopping the submission status manager");
-    executor.shutdown();
+    // shutdownNow(), not shutdown(): the runnable loops until interrupted, so it must be interrupted
+    // to stop — a plain shutdown() would let it run forever.
+    executor.shutdownNow();
     try {
       executor.awaitTermination(100, TimeUnit.MILLISECONDS);
     } catch (InterruptedException e) {
