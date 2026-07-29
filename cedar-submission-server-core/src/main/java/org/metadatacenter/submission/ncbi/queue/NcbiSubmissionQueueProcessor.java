@@ -19,7 +19,8 @@ public class NcbiSubmissionQueueProcessor implements Managed {
 
   private final NcbiSubmissionQueueService ncbiSubmissionQueueService;
   private final NcbiSubmissionExecutorService ncbiSubmissionExecutorService;
-  private boolean doProcessing;
+  private volatile boolean doProcessing;
+  private ExecutorService executor;
 
   public NcbiSubmissionQueueProcessor(NcbiSubmissionQueueService ncbiSubmissionQueueService,
                                       NcbiSubmissionExecutorService ncbiSubmissionExecutorService) {
@@ -85,7 +86,7 @@ public class NcbiSubmissionQueueProcessor implements Managed {
 
   @Override
   public void start() throws Exception {
-    ExecutorService executor = Executors.newSingleThreadExecutor();
+    executor = Executors.newSingleThreadExecutor();
     executor.submit(this::digestMessages);
   }
 
@@ -97,5 +98,8 @@ public class NcbiSubmissionQueueProcessor implements Managed {
     log.info("Close Jedis");
     ncbiSubmissionQueueService.enqueueSubmission(null);
     ncbiSubmissionQueueService.close();
+    if (executor != null) {
+      executor.shutdown();
+    }
   }
 }
