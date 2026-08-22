@@ -74,10 +74,10 @@ public class ImmPortSubmissionServerResource extends CedarMicroserviceResource {
     immPortUtil = new ImmPortUtil(cedarConfig);
   }
 
-  private HttpEntity getMultipartContentFromSubmission(String submissionID, String workspaceID)
+  private HttpEntity getMultipartContentFromSubmission(String userId, String submissionID, String workspaceID)
       throws IOException, JAXBException, DatatypeConfigurationException {
-    List<String> submissionMetadataFilePaths = getSubmissionMetadataFilePaths(submissionID);
-    List<String> submissionDataFilePaths = getSubmissionDataFilePaths(submissionID);
+    List<String> submissionMetadataFilePaths = getSubmissionMetadataFilePaths(userId, submissionID);
+    List<String> submissionDataFilePaths = getSubmissionDataFilePaths(userId, submissionID);
     MultipartEntityBuilder builder = MultipartEntityBuilder.create();
 
     builder.addTextBody(ImmPortConstants.IMMPORT_WORKSPACE_ID_FIELD, workspaceID);
@@ -105,12 +105,12 @@ public class ImmPortSubmissionServerResource extends CedarMicroserviceResource {
     return builder.build();
   }
 
-  private static List<String> getSubmissionMetadataFilePaths(String submissionId)
+  private static List<String> getSubmissionMetadataFilePaths(String userId, String submissionId)
       throws IOException, JAXBException, DatatypeConfigurationException {
     List<String> submissionMetadataFilePaths = new ArrayList<>();
 
     Map<String, FileUploadStatus> submissionUploadStatus = SubmissionUploadManager.getInstance()
-        .getSubmissionsUploadStatus(submissionId).getFilesUploadStatus();
+        .getSubmissionsUploadStatus(userId, submissionId).getFilesUploadStatus();
 
     for (Map.Entry<String, FileUploadStatus> entry : submissionUploadStatus.entrySet()) {
       FileUploadStatus fileUploadStatus = entry.getValue();
@@ -121,12 +121,12 @@ public class ImmPortSubmissionServerResource extends CedarMicroserviceResource {
     return submissionMetadataFilePaths;
   }
 
-  private static List<String> getSubmissionDataFilePaths(String submissionId)
+  private static List<String> getSubmissionDataFilePaths(String userId, String submissionId)
       throws IOException, JAXBException, DatatypeConfigurationException {
     List<String> submissionDataFilePaths = new ArrayList<>();
 
     Map<String, FileUploadStatus> submissionUploadStatus = SubmissionUploadManager.getInstance()
-        .getSubmissionsUploadStatus(submissionId).getFilesUploadStatus();
+        .getSubmissionsUploadStatus(userId, submissionId).getFilesUploadStatus();
 
     for (Map.Entry<String, FileUploadStatus> entry : submissionUploadStatus.entrySet()) {
       FileUploadStatus fileUploadStatus = entry.getValue();
@@ -214,10 +214,10 @@ public class ImmPortSubmissionServerResource extends CedarMicroserviceResource {
         String filePath = FlowUploadUtil.saveToLocalFile(data, userId, request.getContentLength(),
             submissionLocalFolderPath);
         logger.info("File created. Path: " + filePath);
-        SubmissionUploadManager.getInstance().updateStatus(data, submissionLocalFolderPath);
+        SubmissionUploadManager.getInstance().updateStatus(data, userId, submissionLocalFolderPath);
 
-        if (SubmissionUploadManager.getInstance().isSubmissionUploadComplete(data.getSubmissionId())) {
-          HttpEntity multiPartEntity = getMultipartContentFromSubmission(data.submissionId, workspaceID);
+        if (SubmissionUploadManager.getInstance().isSubmissionUploadComplete(userId, data.getSubmissionId())) {
+          HttpEntity multiPartEntity = getMultipartContentFromSubmission(userId, data.submissionId, workspaceID);
           HttpPost post = new HttpPost(immPortSubmissionUrl);
           post.setHeader(HTTP_HEADER_AUTHORIZATION, HTTP_AUTH_HEADER_BEARER_PREFIX + immPortBearerToken.get());
           post.setHeader(HTTP_HEADER_ACCEPT, CONTENT_TYPE_APPLICATION_JSON);

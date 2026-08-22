@@ -24,7 +24,7 @@ public class NcbiSubmissionUtil {
 
     List<String> submissionFilePaths = new ArrayList<>();
     Map<String, FileUploadStatus> filesUploadStatus = SubmissionUploadManager.getInstance()
-        .getSubmissionsUploadStatus(submissionId).getFilesUploadStatus();
+        .getSubmissionsUploadStatus(userId, submissionId).getFilesUploadStatus();
 
     // Iterate over the submission files. Use the instance to generate the submission.xml file, keep the xml file
     for (Map.Entry<String, FileUploadStatus> entry : filesUploadStatus.entrySet()) {

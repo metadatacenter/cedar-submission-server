@@ -1,5 +1,6 @@
 # CEDAR Submission Server
 
+[![CI](https://github.com/metadatacenter/cedar-submission-server/actions/workflows/ci.yml/badge.svg?branch=develop)](https://github.com/metadatacenter/cedar-submission-server/actions/workflows/ci.yml)
 
 The server will listen on port 9010.
 
