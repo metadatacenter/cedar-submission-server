@@ -23,9 +23,8 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 /**
  * The NCBI submission queue against a real Redis.
  * <p>
- * The drop path carries extra weight here. The processor's stop() enqueues a wake-up message to
- * unblock its own consumer thread, so an enqueue that threw when Redis was gone would break the
- * managed object's shutdown and hang teardown rather than merely losing a submission.
+ * The drop path carries extra weight here: queue failure must not turn submission acceptance into
+ * an HTTP failure, and invalid null work must never become a durable poison message.
  */
 @Timeout(30)
 class NcbiSubmissionQueueServiceTest {
@@ -116,26 +115,11 @@ class NcbiSubmissionQueueServiceTest {
     }
   }
 
-  /**
-   * The shutdown wake-up: the processor enqueues a null submission to unblock its consumer. It has
-   * to serialize and push like any other message when Redis is up, and be dropped rather than
-   * thrown when Redis is gone - shutdown runs in both conditions.
-   */
   @Test
-  void theShutdownWakeUpMessageIsAccepted() {
+  void aNullSubmissionIsNotEnqueued() {
     assertDoesNotThrow(() -> submissionQueue.enqueueSubmission(null));
 
     submissionQueue.initializeBlockingQueue();
-    assertEquals(1, submissionQueue.messageCount(), "the wake-up should reach the queue");
-
-    NcbiSubmissionQueueService offline =
-        new NcbiSubmissionQueueService(QueueTestConfig.onPort(EmbeddedRedis.freePort()));
-    try {
-      assertDoesNotThrow(() -> offline.enqueueSubmission(null),
-          "shutdown must not throw when the queue is unreachable");
-      assertEquals(1, offline.getDroppedEventCount());
-    } finally {
-      offline.close();
-    }
+    assertEquals(0, submissionQueue.messageCount(), "null work must not become a durable queue message");
   }
 }
