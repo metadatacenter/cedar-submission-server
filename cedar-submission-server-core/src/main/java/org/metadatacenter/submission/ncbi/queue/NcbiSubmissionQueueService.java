@@ -18,10 +18,12 @@ public class NcbiSubmissionQueueService extends QueueServiceWithBlockingQueue {
   }
 
   public void enqueueSubmission(NcbiSubmission submission) {
+    if (submission == null) {
+      log.warn("A null NCBI submission was not enqueued");
+      return;
+    }
     // Enqueueing is best-effort: serialize first, then push. A connection failure is logged and
-    // the submission dropped, so an unreachable queue (Redis) can not fail the caller. This matters
-    // for the processor's stop(), which enqueues a wake-up message during shutdown - a throw there
-    // would break the managed-object shutdown and hang teardown.
+    // the submission dropped, so an unreachable queue (Redis) can not fail the caller.
     String json;
     try {
       json = JsonMapper.MAPPER.writeValueAsString(submission);

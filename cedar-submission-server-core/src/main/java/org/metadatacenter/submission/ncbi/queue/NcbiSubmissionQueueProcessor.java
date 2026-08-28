@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 public class NcbiSubmissionQueueProcessor implements Managed {
 
@@ -59,31 +60,39 @@ public class NcbiSubmissionQueueProcessor implements Managed {
   private void consumeMessages() {
     ncbiSubmissionQueueService.initializeBlockingQueue();
     List<String> submissionMessages;
+    log.info("Waiting for submissions in the NCBI submission queue.");
     while (doProcessing) {
-      log.info("Waiting for a submission in the NCBI submission queue.");
       submissionMessages = ncbiSubmissionQueueService.waitForMessages();
-      NcbiSubmissionQueueEvent event = null;
-      if (submissionMessages != null && !submissionMessages.isEmpty()) {
-        log.info("Got submission message.");
-        String value = submissionMessages.get(1);
-        try {
-          event = new NcbiSubmissionQueueEvent(JsonMapper.MAPPER.readValue(value, NcbiSubmission.class));
-        } catch (IOException e) {
-          log.error("There was an error while deserializing submission", e);
-        }
+      if (submissionMessages == null || submissionMessages.isEmpty()) {
+        continue;
       }
-      if (event != null) {
-        try {
-          if (event.getSubmission()!=null) {
-            log.info(" no. files: " + event.getSubmission().getLocalFilePaths().size());
-          }
-          log.info(" created at: " + event.getCreatedAt());
-          ncbiSubmissionExecutorService.handleEvent(event);
-        } catch (Exception e) {
-          log.error("There was an error while handling the message", e);
+      log.info("Got submission message.");
+      String value = submissionMessages.get(1);
+      NcbiSubmission submission;
+      try {
+        submission = JsonMapper.MAPPER.readValue(value, NcbiSubmission.class);
+      } catch (IOException e) {
+        log.error("There was an error while deserializing submission", e);
+        ncbiSubmissionQueueService.deadLetter(value);
+        continue;
+      }
+      // Older shutdown logic put a JSON null sentinel on the durable queue. Consume and
+      // acknowledge any such residue instead of handing a null submission to the executor.
+      if (submission == null) {
+        ncbiSubmissionQueueService.acknowledge(value);
+        continue;
+      }
+      NcbiSubmissionQueueEvent event = new NcbiSubmissionQueueEvent(submission);
+      try {
+        log.info(" no. files: " + submission.getLocalFilePaths().size());
+        log.info(" created at: " + event.getCreatedAt());
+        ncbiSubmissionExecutorService.handleEvent(event);
+        if (!ncbiSubmissionQueueService.acknowledge(value)) {
+          throw new IllegalStateException("The handled NCBI submission could not be acknowledged");
         }
-      } else {
-        log.warn("Unable to handle message, it is null.");
+      } catch (Exception e) {
+        log.error("There was an error while handling the message", e);
+        ncbiSubmissionQueueService.deadLetter(value);
       }
     }
   }
@@ -99,11 +108,12 @@ public class NcbiSubmissionQueueProcessor implements Managed {
     log.info("NcbiSubmissionQueueProcessor.stop()");
     log.info("Set looping flag to false");
     doProcessing = false;
-    log.info("Close Jedis");
-    ncbiSubmissionQueueService.enqueueSubmission(null);
-    ncbiSubmissionQueueService.close();
+    ncbiSubmissionQueueService.interruptWait();
     if (executor != null) {
-      executor.shutdown();
+      executor.shutdownNow();
+      executor.awaitTermination(5, TimeUnit.SECONDS);
     }
+    log.info("Close Jedis");
+    ncbiSubmissionQueueService.close();
   }
 }

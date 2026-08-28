@@ -5,8 +5,6 @@ import org.apache.commons.fileupload2.core.DiskFileItem;
 import org.apache.commons.fileupload2.core.DiskFileItemFactory;
 import org.apache.commons.fileupload2.core.FileUploadException;
 import org.apache.commons.fileupload2.jakarta.servlet5.JakartaServletFileUpload;
-import org.joda.time.DateTime;
-import org.joda.time.DateTimeZone;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,6 +14,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.RandomAccessFile;
 import java.nio.file.Path;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.*;
 
 public class FlowUploadUtil {
@@ -222,8 +222,8 @@ public class FlowUploadUtil {
 //    return paths;
 //  }
 
-  public static String getDateBasedFolderName(DateTimeZone dateTimeZone) {
-    return DateTime.now(dateTimeZone).toString().replace(":", "-");
+  public static String getDateBasedFolderName(ZoneId zoneId) {
+    return ZonedDateTime.now(zoneId).toString().replace(":", "-");
   }
 
   public static String getLastFragmentOfUrl(String url) {
