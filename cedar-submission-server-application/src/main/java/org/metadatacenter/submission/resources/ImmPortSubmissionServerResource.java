@@ -6,7 +6,7 @@ import com.google.common.io.Files;
 import org.apache.commons.fileupload2.core.DiskFileItem;
 import org.apache.commons.fileupload2.core.DiskFileItemFactory;
 import org.apache.commons.fileupload2.core.FileUploadException;
-import org.apache.commons.fileupload2.jakarta.servlet5.JakartaServletFileUpload;
+import org.apache.commons.fileupload2.jakarta.servlet6.JakartaServletFileUpload;
 import org.apache.commons.io.IOUtils;
 import org.apache.hc.core5.http.HttpEntity;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
