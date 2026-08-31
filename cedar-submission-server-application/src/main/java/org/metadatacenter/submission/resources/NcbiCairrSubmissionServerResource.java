@@ -1,6 +1,11 @@
 package org.metadatacenter.submission.resources;
 
 import com.codahale.metrics.annotation.Timed;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -78,7 +83,16 @@ public class NcbiCairrSubmissionServerResource
   @POST
   @Timed
   @Path("/validate-cairr")
-  public Response validate() throws CedarException {
+  @Operation(summary = "Validate an AIRR instance for NCBI",
+      description = "Convert a CEDAR AIRR instance into the NCBI submission XML and validate it, "
+          + "returning the report. Validation only: nothing is sent to NCBI here.")
+  @ApiResponses({
+      @ApiResponse(responseCode = "200", description = "The validation report"),
+      @ApiResponse(responseCode = "400", description = "The instance could not be read as an AIRR submission"),
+      @ApiResponse(responseCode = "401", description = "Unauthorized"),
+      @ApiResponse(responseCode = "500", description = "The submission XML could not be generated")
+  })
+  public Response validateCairr() throws CedarException {
 
     final String instanceField = "instance";
     final String userFileNamesField = "userFileNames";
@@ -163,6 +177,17 @@ public class NcbiCairrSubmissionServerResource
   @Timed
   @Path("/upload-cairr-to-cedar")
   @Consumes(MediaType.MULTIPART_FORM_DATA)
+  @Operation(summary = "Upload an AIRR submission package and send it to NCBI",
+      description = "Receive the files of an AIRR submission, assemble them in CEDAR, and once they "
+          + "are all present send them to NCBI over FTP. The package arrives a chunk at a time, so a caller sends this repeatedly; the submission starts by itself once the last chunk lands. A 200 therefore means the chunk was stored and any submission it completed was started, not that the repository has accepted anything. A package must carry exactly one "
+          + "metadata file. Submissions are sent one at a time, through a queue.")
+  @ApiResponses({
+      @ApiResponse(responseCode = "200", description = "The chunk was stored; any submission it completed has been started"),
+      @ApiResponse(responseCode = "400",
+          description = "Not a multipart upload, or the package does not carry exactly one metadata file"),
+      @ApiResponse(responseCode = "401", description = "Unauthorized"),
+      @ApiResponse(responseCode = "500", description = "The chunk could not be stored or the submission could not be prepared")
+  })
   public Response uploadCAIRRToCEDAR()
       throws CedarException {
 

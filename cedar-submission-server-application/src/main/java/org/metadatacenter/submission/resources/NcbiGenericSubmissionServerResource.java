@@ -1,6 +1,11 @@
 package org.metadatacenter.submission.resources;
 
 import com.codahale.metrics.annotation.Timed;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -84,7 +89,17 @@ public class NcbiGenericSubmissionServerResource
   @POST
   @Timed
   @Path("/validate-ncbi")
-  public Response validate() throws CedarException {
+  @Operation(summary = "Validate an instance for NCBI BioSample",
+      description = "Convert a CEDAR instance into the NCBI BioSample submission XML and validate "
+          + "it, returning the report. Validation only: nothing is sent to NCBI here. This is the "
+          + "generic route, which works from the instance's own template rather than a fixed one.")
+  @ApiResponses({
+      @ApiResponse(responseCode = "200", description = "The validation report"),
+      @ApiResponse(responseCode = "400", description = "The instance could not be read as a BioSample submission"),
+      @ApiResponse(responseCode = "401", description = "Unauthorized"),
+      @ApiResponse(responseCode = "500", description = "The submission XML could not be generated")
+  })
+  public Response validateNcbi() throws CedarException {
     final String instanceField = "instance";
     final String userFileNamesField = "userFileNames";
 
@@ -169,6 +184,17 @@ public class NcbiGenericSubmissionServerResource
   @Timed
   @Path("/upload-ncbi-to-cedar")
   @Consumes(MediaType.MULTIPART_FORM_DATA)
+  @Operation(summary = "Upload a BioSample submission package and send it to NCBI",
+      description = "Receive the files of a BioSample submission, assemble them in CEDAR, and once "
+          + "they are all present send them to NCBI over FTP. The package arrives a chunk at a time, so a caller sends this repeatedly; the submission starts by itself once the last chunk lands. A 200 therefore means the chunk was stored and any submission it completed was started, not that the repository has accepted anything. A package must carry exactly "
+          + "one metadata file. Submissions are sent one at a time, through a queue.")
+  @ApiResponses({
+      @ApiResponse(responseCode = "200", description = "The chunk was stored; any submission it completed has been started"),
+      @ApiResponse(responseCode = "400",
+          description = "Not a multipart upload, or the package does not carry exactly one metadata file"),
+      @ApiResponse(responseCode = "401", description = "Unauthorized"),
+      @ApiResponse(responseCode = "500", description = "The chunk could not be stored or the submission could not be prepared")
+  })
   public Response uploadNCBIToCEDAR()
       throws CedarException {
 

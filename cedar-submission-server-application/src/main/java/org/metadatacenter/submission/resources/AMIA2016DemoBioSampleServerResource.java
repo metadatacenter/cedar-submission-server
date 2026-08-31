@@ -1,6 +1,11 @@
 package org.metadatacenter.submission.resources;
 
 import com.codahale.metrics.annotation.Timed;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -32,6 +37,8 @@ import static org.metadatacenter.util.json.JsonMapper.MAPPER;
 @Path("/command")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
+@Tag(name = "NCBI BioSample")
+@SecurityRequirement(name = "api_key")
 public class AMIA2016DemoBioSampleServerResource extends CedarMicroserviceResource {
   private final BioSampleValidator bioSampleValidator;
 
@@ -51,7 +58,18 @@ public class AMIA2016DemoBioSampleServerResource extends CedarMicroserviceResour
   @POST
   @Timed
   @Path("/validate-biosample")
-  public Response validate() throws CedarException {
+  @Operation(summary = "Validate an AMIA 2016 demo BioSample instance",
+      description = "Convert a CEDAR instance of the AMIA 2016 demo BioSample template into NCBI's "
+          + "BioSample submission XML and validate that, returning the validator's report. Kept for "
+          + "the template that demo used; new work validates against the generic NCBI route. A "
+          + "controlled term where the template expects a literal is tolerated rather than rejected, "
+          + "since instances in the wild carry them.")
+  @ApiResponses({
+      @ApiResponse(responseCode = "200", description = "The BioSample validation report"),
+      @ApiResponse(responseCode = "401", description = "Unauthorized"),
+      @ApiResponse(responseCode = "500", description = "The instance could not be converted to BioSample XML")
+  })
+  public Response validateBioSample() throws CedarException {
     CedarRequestContext c = buildRequestContext();
     c.must(c.user()).be(LoggedIn);
 

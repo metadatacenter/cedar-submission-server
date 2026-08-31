@@ -1,6 +1,11 @@
 package org.metadatacenter.submission.resources;
 
 import com.codahale.metrics.annotation.Timed;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.io.Files;
 import org.apache.commons.fileupload2.core.DiskFileItem;
@@ -60,6 +65,8 @@ import static org.metadatacenter.util.json.JsonMapper.MAPPER;
 
 @Path("/command")
 @Produces(MediaType.APPLICATION_JSON)
+@Tag(name = "ImmPort")
+@SecurityRequirement(name = "api_key")
 public class ImmPortSubmissionServerResource extends CedarMicroserviceResource {
   private static final Logger logger = LoggerFactory.getLogger(ImmPortSubmissionServerResource.class);
 
@@ -141,6 +148,14 @@ public class ImmPortSubmissionServerResource extends CedarMicroserviceResource {
   @Timed
   @Path("/immport-workspaces")
   @Consumes(MediaType.MULTIPART_FORM_DATA)
+  @Operation(summary = "List the caller's ImmPort workspaces",
+      description = "Ask ImmPort which workspaces the configured account can submit to, and return "
+          + "them. A submission names one of these.")
+  @ApiResponses({
+      @ApiResponse(responseCode = "200", description = "The available ImmPort workspaces"),
+      @ApiResponse(responseCode = "401", description = "Unauthorized"),
+      @ApiResponse(responseCode = "500", description = "ImmPort could not be reached, or no ImmPort token is configured")
+  })
   public Response immPortWorkspaces() throws CedarException {
     CedarRequestContext c = buildRequestContext();
     c.must(c.user()).be(LoggedIn);
@@ -184,6 +199,17 @@ public class ImmPortSubmissionServerResource extends CedarMicroserviceResource {
   @Timed
   @Path("/immport-submit")
   @Consumes(MediaType.MULTIPART_FORM_DATA)
+  @Operation(summary = "Upload a submission package and send it to ImmPort",
+      description = "Receive the files of an ImmPort submission, assemble them in CEDAR, and once "
+          + "they are all present submit them to the named workspace. The package arrives a chunk at a time, so a caller sends this repeatedly; the submission starts by itself once the last chunk lands. A 200 therefore means the chunk was stored and any submission it completed was started, not that the repository has accepted anything. While the package is "
+          + "still arriving the response is an empty object rather than a submission result.")
+  @ApiResponses({
+      @ApiResponse(responseCode = "200",
+          description = "The chunk was stored; ImmPort's result if this completed the submission, an empty object if not"),
+      @ApiResponse(responseCode = "400", description = "Not a multipart upload, or no workspace was named"),
+      @ApiResponse(responseCode = "401", description = "Unauthorized"),
+      @ApiResponse(responseCode = "500", description = "ImmPort could not be reached, or no ImmPort token is configured")
+  })
   public Response submitImmPort() throws CedarException {
     CedarRequestContext c = buildRequestContext();
     c.must(c.user()).be(LoggedIn);
@@ -264,6 +290,16 @@ public class ImmPortSubmissionServerResource extends CedarMicroserviceResource {
   @Timed
   @Path("/immport-submit-old")
   @Consumes(MediaType.MULTIPART_FORM_DATA)
+  @Operation(summary = "Send a submission to ImmPort in one request",
+      description = "The earlier ImmPort path, taking the whole submission as a single multipart "
+          + "request rather than in chunks. Kept for testing from the command line; the chunked "
+          + "route is what the workbench uses.")
+  @ApiResponses({
+      @ApiResponse(responseCode = "200", description = "ImmPort's submission result"),
+      @ApiResponse(responseCode = "400", description = "Not a multipart upload, or no workspaceId parameter"),
+      @ApiResponse(responseCode = "401", description = "Unauthorized"),
+      @ApiResponse(responseCode = "500", description = "ImmPort could not be reached, or no ImmPort token is configured")
+  })
   public Response submitImmPortOld() throws CedarException {
     CedarRequestContext c = buildRequestContext();
     c.must(c.user()).be(LoggedIn);

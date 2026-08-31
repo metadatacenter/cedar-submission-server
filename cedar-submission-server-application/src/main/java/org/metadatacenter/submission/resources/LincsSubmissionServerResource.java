@@ -1,6 +1,11 @@
 package org.metadatacenter.submission.resources;
 
 import com.codahale.metrics.annotation.Timed;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.apache.commons.io.IOUtils;
 import org.apache.hc.core5.http.HttpEntity;
 import org.apache.hc.core5.http.ClassicHttpResponse;
@@ -32,6 +37,8 @@ import static org.metadatacenter.rest.assertion.GenericAssertions.LoggedIn;
 
 @Path("/command")
 @Produces(MediaType.APPLICATION_JSON)
+@Tag(name = "LINCS")
+@SecurityRequirement(name = "api_key")
 public class LincsSubmissionServerResource extends CedarMicroserviceResource {
 
   private static final Logger logger = LoggerFactory.getLogger(LincsSubmissionServerResource.class);
@@ -51,6 +58,16 @@ public class LincsSubmissionServerResource extends CedarMicroserviceResource {
   @Timed
   @Path("/validate-lincs")
   @Consumes(MediaType.APPLICATION_JSON)
+  @Operation(summary = "Validate an instance against the LINCS validator",
+      description = "Forward a CEDAR instance to the LINCS dataset validator and return what it "
+          + "says. The status is the validator's own, so its refusal is reported as it reported it, "
+          + "and CEDAR adds no judgement of its own.")
+  @ApiResponses({
+      @ApiResponse(responseCode = "200", description = "The LINCS validation report"),
+      @ApiResponse(responseCode = "400", description = "The LINCS validator rejected the instance"),
+      @ApiResponse(responseCode = "401", description = "Unauthorized"),
+      @ApiResponse(responseCode = "500", description = "The LINCS validator could not be reached")
+  })
   public Response validateInstance() throws CedarException {
     CedarRequestContext c = buildRequestContext();
     c.must(c.user()).be(LoggedIn);
