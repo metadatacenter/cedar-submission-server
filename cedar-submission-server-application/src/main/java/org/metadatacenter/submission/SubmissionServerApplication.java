@@ -2,8 +2,8 @@ package org.metadatacenter.submission;
 
 import io.dropwizard.core.setup.Bootstrap;
 import io.dropwizard.core.setup.Environment;
+import org.metadatacenter.cedar.util.dw.CedarDependencyHealthCheck;
 import org.metadatacenter.cedar.util.dw.CedarMicroserviceIndexResource;
-import org.metadatacenter.cedar.util.dw.CedarDefaultHealthCheck;
 import org.metadatacenter.cedar.util.dw.CedarMicroserviceApplication;
 import org.metadatacenter.config.CedarConfig;
 import org.metadatacenter.model.ServerName;
@@ -73,12 +73,16 @@ public class SubmissionServerApplication extends CedarMicroserviceApplication<Su
         (cedarConfig);
     environment.jersey().register(immPortSubmissionServerResource);
 
-    final CedarDefaultHealthCheck healthCheck = new CedarDefaultHealthCheck();
-    environment.healthChecks().register("message", healthCheck);
 
     // NCBI submission processor
     NcbiSubmissionQueueProcessor ncbiSubmissionProcessor =
         new NcbiSubmissionQueueProcessor(ncbiSubmissionQueueService, ncbiSubmissionExecutorService);
     environment.lifecycle().manage(ncbiSubmissionProcessor);
+
+    // A submission is accepted by being put on this queue and processed off it. Unlike the
+    // application log queue the shared bootstrap probes, nothing here is droppable, so an
+    // unreachable Redis means this server cannot do the one thing it exists for.
+    environment.healthChecks().register("ncbi-submission-queue", CedarDependencyHealthCheck.gating(
+        "The NCBI submission queue", ncbiSubmissionQueueService::verifyConnectivity));
   }
 }
