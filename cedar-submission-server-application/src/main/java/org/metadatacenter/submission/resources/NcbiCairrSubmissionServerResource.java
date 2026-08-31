@@ -1,6 +1,8 @@
 package org.metadatacenter.submission.resources;
 
 import com.codahale.metrics.annotation.Timed;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -56,6 +58,8 @@ import static org.metadatacenter.rest.assertion.GenericAssertions.LoggedIn;
  */
 @Path("/command")
 @Produces(MediaType.APPLICATION_JSON)
+@Tag(name = "NCBI AIRR")
+@SecurityRequirement(name = "api_key")
 public class NcbiCairrSubmissionServerResource
     extends CedarMicroserviceResource {
 

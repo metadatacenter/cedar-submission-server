@@ -98,7 +98,11 @@ paths:
         "500":
           description: The chunk could not be stored or the submission could not be
             prepared
+      security:
+      - api_key: []
       summary: Upload an AIRR submission package and send it to NCBI
+      tags:
+      - NCBI AIRR
   /command/upload-ncbi-to-cedar:
     post:
       description: "Receive the files of a BioSample submission, assemble them in\
@@ -121,7 +125,11 @@ paths:
         "500":
           description: The chunk could not be stored or the submission could not be
             prepared
+      security:
+      - api_key: []
       summary: Upload a BioSample submission package and send it to NCBI
+      tags:
+      - NCBI BioSample
   /command/validate-biosample:
     post:
       description: "Convert a CEDAR instance of the AMIA 2016 demo BioSample template\
@@ -157,7 +165,11 @@ paths:
           description: Unauthorized
         "500":
           description: The submission XML could not be generated
+      security:
+      - api_key: []
       summary: Validate an AIRR instance for NCBI
+      tags:
+      - NCBI AIRR
   /command/validate-lincs:
     post:
       description: "Forward a CEDAR instance to the LINCS dataset validator and return\
@@ -194,7 +206,11 @@ paths:
           description: Unauthorized
         "500":
           description: The submission XML could not be generated
+      security:
+      - api_key: []
       summary: Validate an instance for NCBI BioSample
+      tags:
+      - NCBI BioSample
 components:
   securitySchemes:
     api_key:

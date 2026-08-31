@@ -96,7 +96,11 @@
             "description" : "The chunk could not be stored or the submission could not be prepared"
           }
         },
-        "summary" : "Upload an AIRR submission package and send it to NCBI"
+        "security" : [ {
+          "api_key" : [ ]
+        } ],
+        "summary" : "Upload an AIRR submission package and send it to NCBI",
+        "tags" : [ "NCBI AIRR" ]
       }
     },
     "/command/upload-ncbi-to-cedar" : {
@@ -117,7 +121,11 @@
             "description" : "The chunk could not be stored or the submission could not be prepared"
           }
         },
-        "summary" : "Upload a BioSample submission package and send it to NCBI"
+        "security" : [ {
+          "api_key" : [ ]
+        } ],
+        "summary" : "Upload a BioSample submission package and send it to NCBI",
+        "tags" : [ "NCBI BioSample" ]
       }
     },
     "/command/validate-biosample" : {
@@ -160,7 +168,11 @@
             "description" : "The submission XML could not be generated"
           }
         },
-        "summary" : "Validate an AIRR instance for NCBI"
+        "security" : [ {
+          "api_key" : [ ]
+        } ],
+        "summary" : "Validate an AIRR instance for NCBI",
+        "tags" : [ "NCBI AIRR" ]
       }
     },
     "/command/validate-lincs" : {
@@ -206,7 +218,11 @@
             "description" : "The submission XML could not be generated"
           }
         },
-        "summary" : "Validate an instance for NCBI BioSample"
+        "security" : [ {
+          "api_key" : [ ]
+        } ],
+        "summary" : "Validate an instance for NCBI BioSample",
+        "tags" : [ "NCBI BioSample" ]
       }
     }
   },
