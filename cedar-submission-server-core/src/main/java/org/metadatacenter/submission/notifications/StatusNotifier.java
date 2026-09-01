@@ -3,9 +3,9 @@ package org.metadatacenter.submission.notifications;
 import org.glassfish.jersey.client.ClientProperties;
 import org.metadatacenter.config.CedarConfig;
 import org.metadatacenter.http.CedarResponseStatus;
+import org.metadatacenter.server.security.CedarApiKeyAuthRequest;
 import org.metadatacenter.submission.status.SubmissionStatusDescriptor;
 import org.metadatacenter.submission.status.SubmissionType;
-import org.metadatacenter.util.test.TestUserUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -78,7 +78,8 @@ public class StatusNotifier {
 
     Entity postContent = Entity.entity(content, MediaType.APPLICATION_JSON);
 
-    String adminUserAuthHeader = TestUserUtil.getAdminUserAuthHeader(cedarConfig);
+    String adminUserAuthHeader = new CedarApiKeyAuthRequest(
+        cedarConfig.getAdminUserConfig().getApiKey()).getAuthHeader();
 
     Response response = client.target(url).request().header("Authorization", adminUserAuthHeader).post(postContent);
 
