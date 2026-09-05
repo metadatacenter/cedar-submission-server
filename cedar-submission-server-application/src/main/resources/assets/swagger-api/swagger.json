@@ -3,7 +3,7 @@
   "info" : {
     "description" : "Better Metadata - Better Science\n\nThe submission server takes CEDAR metadata to the repositories that expect it in their own\nshape: NCBI BioSample and AIRR, ImmPort, and LINCS.\n\nTwo things happen here. Validation converts a CEDAR instance into the target format and returns\nthat repository's own verdict on it, sending nothing. Submission receives a package of files a\nchunk at a time, assembles it, and forwards it once the last chunk lands — so a successful\nresponse means the chunk was stored and any submission it completed was started, not that the\nrepository has accepted anything.\n",
     "title" : "CEDAR Submission Server API",
-    "version" : "2.9.7"
+    "version" : "2.9.8"
   },
   "paths" : {
     "/command/immport-submit" : {

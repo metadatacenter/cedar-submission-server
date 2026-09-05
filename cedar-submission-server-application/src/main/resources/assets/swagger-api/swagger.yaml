@@ -12,7 +12,7 @@ info:
     response means the chunk was stored and any submission it completed was started, not that the
     repository has accepted anything.
   title: CEDAR Submission Server API
-  version: 2.9.7
+  version: 2.9.8
 paths:
   /command/immport-submit:
     post:
