@@ -31,12 +31,12 @@ import java.util.Map;
 public class SubmissionRoutesRespondTest {
 
   static {
-    // Must run before the test support boots the server, which reads the port env vars. Ports are
-    // distinct from the dev server and from every other booting test class.
+    // Must run before the test support boots the server, which reads the port env vars.
+    // OS-assigned ports keep concurrent test processes isolated.
     Map<String, String> environment = new HashMap<>(CedarEnvironmentSource.getAll());
-    environment.put("CEDAR_SUBMISSION_HTTP_PORT", "19021");
-    environment.put("CEDAR_SUBMISSION_ADMIN_PORT", "19121");
-    environment.put("CEDAR_SUBMISSION_STOP_PORT", "19221");
+    environment.put("CEDAR_SUBMISSION_HTTP_PORT", "0");
+    environment.put("CEDAR_SUBMISSION_ADMIN_PORT", "0");
+    environment.put("CEDAR_SUBMISSION_STOP_PORT", "0");
     CedarEnvironmentSource.setOverride(environment);
   }
 
