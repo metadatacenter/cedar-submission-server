@@ -24,11 +24,11 @@ public class SubmissionServerApplicationSmokeTest {
 
   static {
     // Must run before the test support boots the server, which reads the port env vars.
-    // Alternate server ports, so the test instance never collides with a running dev server.
+    // OS-assigned ports keep concurrent test processes isolated.
     Map<String, String> environment = new HashMap<>(CedarEnvironmentSource.getAll());
-    environment.put("CEDAR_SUBMISSION_HTTP_PORT", "19010");
-    environment.put("CEDAR_SUBMISSION_ADMIN_PORT", "19110");
-    environment.put("CEDAR_SUBMISSION_STOP_PORT", "19210");
+    environment.put("CEDAR_SUBMISSION_HTTP_PORT", "0");
+    environment.put("CEDAR_SUBMISSION_ADMIN_PORT", "0");
+    environment.put("CEDAR_SUBMISSION_STOP_PORT", "0");
     // Redis goes to a dead port: the NCBI queue consumer takes its first contact on a background
     // thread and retries, and enqueueing (including the shutdown wake-up) is best-effort, so the
     // boot and clean teardown never depend on a live Redis.
