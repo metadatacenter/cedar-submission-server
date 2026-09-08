@@ -159,6 +159,7 @@
         <configuration>
           <resourcePackages>
             <package>org.metadatacenter.submission.resources</package>
+            <package>org.metadatacenter.cedar.util.dw</package>
           </resourcePackages>
         </configuration>
       </plugin>
