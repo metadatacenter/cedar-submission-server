@@ -32,7 +32,7 @@ import java.util.Iterator;
 import java.util.Map;
 
 import static org.metadatacenter.rest.assertion.GenericAssertions.LoggedIn;
-import static org.metadatacenter.util.json.JsonMapper.MAPPER;
+import static org.metadatacenter.util.json.JsonMapper.STRICT_MAPPER;
 
 @Path("/command")
 @Produces(MediaType.APPLICATION_JSON)
@@ -79,7 +79,7 @@ public class AMIA2016DemoBioSampleServerResource extends CedarMicroserviceResour
 
       JsonNode instance = prepareForValidation(payload);
 
-      AMIA2016DemoBioSampleTemplate amia2016BioSampleInstance = MAPPER.readValue(instance.toString(),
+      AMIA2016DemoBioSampleTemplate amia2016BioSampleInstance = STRICT_MAPPER.readValue(instance.toString(),
           AMIA2016DemoBioSampleTemplate.class);
 
       String bioSampleSubmissionXML = this.amia2016DemoBioSampleTemplate2BioSampleConverter
@@ -109,19 +109,19 @@ public class AMIA2016DemoBioSampleServerResource extends CedarMicroserviceResour
     final String ATT_NAME_FIELD = "name";
     final String ATT_VALUE_FIELD = "value";
 
-    JsonNode instance = MAPPER.readTree(instanceString);
+    JsonNode instance = STRICT_MAPPER.readTree(instanceString);
 
-    ArrayNode newOptionalAttributes = MAPPER.createArrayNode();
+    ArrayNode newOptionalAttributes = STRICT_MAPPER.createArrayNode();
 
     if (instance.has(OPT_ATT_FIELD)) {
       for (JsonNode attribute : instance.get(OPT_ATT_FIELD)) {
         Iterator<Map.Entry<String, JsonNode>> attFields = attribute.fields();
-        ObjectNode newAttribute = MAPPER.createObjectNode();
+        ObjectNode newAttribute = STRICT_MAPPER.createObjectNode();
         // Iterates over the attribute name and value fields
         while (attFields.hasNext()) {
           Map.Entry<String, JsonNode> entry = attFields.next();
           if (entry.getKey().equals(ATT_NAME_FIELD) || entry.getKey().equals(ATT_VALUE_FIELD)) {
-            ObjectNode newAttributeField = MAPPER.createObjectNode();
+            ObjectNode newAttributeField = STRICT_MAPPER.createObjectNode();
             if (entry.getValue().has(VALUE_LABEL_FIELD)) {
               // Store rdfs:label into @value
               newAttributeField.set(VALUE_FIELD, entry.getValue().get(VALUE_LABEL_FIELD));

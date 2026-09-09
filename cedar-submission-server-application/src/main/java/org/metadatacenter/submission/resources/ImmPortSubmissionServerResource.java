@@ -61,7 +61,7 @@ import java.util.*;
 
 import static org.metadatacenter.constant.HttpConstants.*;
 import static org.metadatacenter.rest.assertion.GenericAssertions.LoggedIn;
-import static org.metadatacenter.util.json.JsonMapper.MAPPER;
+import static org.metadatacenter.util.json.JsonMapper.STRICT_MAPPER;
 
 @Path("/command")
 @Produces(MediaType.APPLICATION_JSON)
@@ -94,7 +94,7 @@ public class ImmPortSubmissionServerResource extends CedarMicroserviceResource {
       File submissionMetadataFile = new File(submissionMetadataFilePath);
       InputStream submissionMetadataJSONLDFileInputStream = new FileInputStream(submissionMetadataFile);
       // TODO Need more checking here to ensure it is a JSON file
-      JsonNode jsonLDNode = MAPPER.readTree(submissionMetadataJSONLDFileInputStream);
+      JsonNode jsonLDNode = STRICT_MAPPER.readTree(submissionMetadataJSONLDFileInputStream);
       JsonNode jsonNode = new JsonLdDocument(jsonLDNode).asJson(); // Translate from JSON-LD to JSON
       InputStream submissionMetadataJSONFileInputStream = IOUtils
           .toInputStream(jsonNode.toString(), StandardCharsets.UTF_8);
@@ -379,7 +379,7 @@ public class ImmPortSubmissionServerResource extends CedarMicroserviceResource {
         if ("instance".equals(fieldName)) {
           InputStream submissionMetadataJSONLDFileInputStream = fileItem.getInputStream();
           //TODO Need more checking here to ensure it is a JSON file
-          JsonNode jsonLDNode = MAPPER.readTree(submissionMetadataJSONLDFileInputStream);
+          JsonNode jsonLDNode = STRICT_MAPPER.readTree(submissionMetadataJSONLDFileInputStream);
           JsonNode jsonNode = new JsonLdDocument(jsonLDNode).asJson(); // Translate from JSON-LD to JSON
           InputStream submissionMetadataJSONFileInputStream = IOUtils
               .toInputStream(jsonNode.toString(), StandardCharsets.UTF_8);
@@ -397,7 +397,7 @@ public class ImmPortSubmissionServerResource extends CedarMicroserviceResource {
       throws IOException, ParseException {
     if (responseEntity != null) {
       String responseBody = EntityUtils.toString(responseEntity, StandardCharsets.UTF_8);
-      JsonNode immPortWorkspaces = MAPPER.readTree(responseBody);
+      JsonNode immPortWorkspaces = STRICT_MAPPER.readTree(responseBody);
 
       if (immPortWorkspaces.has("error")) {
         return createCEDARWorkspaceResponseWithError(immPortWorkspaces.get("error").textValue());
@@ -426,7 +426,7 @@ public class ImmPortSubmissionServerResource extends CedarMicroserviceResource {
       throws IOException, ParseException {
     if (responseEntity != null) {
       String responseBody = EntityUtils.toString(responseEntity, StandardCharsets.UTF_8);
-      JsonNode immPortSubmissionResponseBody = MAPPER.readTree(responseBody);
+      JsonNode immPortSubmissionResponseBody = STRICT_MAPPER.readTree(responseBody);
 
       if (immPortSubmissionResponseBody.has("error")) {
         return createCEDARSubmitResponseWithError(immPortSubmissionResponseBody.get("error").textValue());

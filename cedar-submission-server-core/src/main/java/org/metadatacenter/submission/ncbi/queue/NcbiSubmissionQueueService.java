@@ -26,7 +26,7 @@ public class NcbiSubmissionQueueService extends QueueServiceWithBlockingQueue {
     // the submission dropped, so an unreachable queue (Redis) can not fail the caller.
     String json;
     try {
-      json = JsonMapper.MAPPER.writeValueAsString(submission);
+      json = JsonMapper.STRICT_MAPPER.writeValueAsString(submission);
     } catch (JsonProcessingException e) {
       log.error("The submission could not be serialized. Dropping it.", e);
       return;

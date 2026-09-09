@@ -73,7 +73,7 @@ class NcbiSubmissionQueueServiceTest {
     assertNotNull(popped);
     assertEquals(QueueTestConfig.queueName(QueueService.NCBI_SUBMISSION_QUEUE_ID), popped.get(0));
 
-    NcbiSubmission read = JsonMapper.MAPPER.readValue(popped.get(1), NcbiSubmission.class);
+    NcbiSubmission read = JsonMapper.STRICT_MAPPER.readValue(popped.get(1), NcbiSubmission.class);
     assertEquals("submission-1", read.getId());
     assertEquals("https://metadatacenter.org/users/user-1", read.getCedarUserId());
     assertEquals("folder-submission-1", read.getSubmissionFolder());
@@ -87,9 +87,9 @@ class NcbiSubmissionQueueServiceTest {
     submissionQueue.enqueueSubmission(submission("second"));
 
     submissionQueue.initializeBlockingQueue();
-    assertEquals("first", JsonMapper.MAPPER
+    assertEquals("first", JsonMapper.STRICT_MAPPER
         .readValue(submissionQueue.waitForMessages().get(1), NcbiSubmission.class).getId());
-    assertEquals("second", JsonMapper.MAPPER
+    assertEquals("second", JsonMapper.STRICT_MAPPER
         .readValue(submissionQueue.waitForMessages().get(1), NcbiSubmission.class).getId());
   }
 
