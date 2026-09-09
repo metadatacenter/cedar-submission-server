@@ -129,7 +129,7 @@ public class NcbiCairrSubmissionServerResource
                 new TypeReference<ArrayList<String>>() {
                 });
           } catch (IOException e) {
-            return Response.status(CedarResponseStatus.INTERNAL_SERVER_ERROR.getStatusCode()).build();
+            return CedarResponse.internalServerError().exception(e).build();
           }
           fileNamesValidationResponse =
               this.ncbiCairrValidator.validateFilenames(instance, fileNames);

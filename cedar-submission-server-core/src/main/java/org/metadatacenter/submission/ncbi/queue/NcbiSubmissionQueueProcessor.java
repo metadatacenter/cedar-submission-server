@@ -70,7 +70,7 @@ public class NcbiSubmissionQueueProcessor implements Managed {
       String value = submissionMessages.get(1);
       NcbiSubmission submission;
       try {
-        submission = JsonMapper.MAPPER.readValue(value, NcbiSubmission.class);
+        submission = JsonMapper.TOLERANT_MAPPER.readValue(value, NcbiSubmission.class);
       } catch (IOException e) {
         log.error("There was an error while deserializing submission", e);
         ncbiSubmissionQueueService.deadLetter(value);
