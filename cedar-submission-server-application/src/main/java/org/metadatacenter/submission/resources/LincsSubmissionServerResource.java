@@ -126,7 +126,7 @@ public class LincsSubmissionServerResource extends CedarMicroserviceResource {
     loggingError(errorMessage, detailedMessage);
     return CedarResponse.badGateway()
         .errorKey(CedarErrorKey.UPSTREAM_SERVER_ERROR)
-        .errorMessage(errorMessage)
+        .message(errorMessage)
         .parameter("upstreamErrorMessage", detailedMessage)
         .build();
   }
@@ -137,7 +137,7 @@ public class LincsSubmissionServerResource extends CedarMicroserviceResource {
     loggingError(errorMessage, detailedMessage);
     return CedarResponse.badGateway()
         .errorKey(CedarErrorKey.UPSTREAM_SERVER_ERROR)
-        .errorMessage(errorMessage)
+        .message(errorMessage)
         .parameter("upstreamErrorMessage", detailedMessage)
         .build();
   }
@@ -149,7 +149,7 @@ public class LincsSubmissionServerResource extends CedarMicroserviceResource {
     loggingError(errorMessage, detailedMessage);
     return CedarResponse.badGateway()
         .errorKey(CedarErrorKey.UPSTREAM_SERVER_ERROR)
-        .errorMessage(errorMessage)
+        .message(errorMessage)
         .parameter("upstreamErrorMessage", detailedMessage)
         .build();
   }
@@ -161,7 +161,7 @@ public class LincsSubmissionServerResource extends CedarMicroserviceResource {
     loggingError(errorMessage, detailedMessage);
     return CedarResponse.status(CedarResponseStatus.fromStatusCode(statusCode))
         .errorKey(CedarErrorKey.UPSTREAM_SERVER_ERROR)
-        .errorMessage(errorMessage)
+        .message(errorMessage)
         .parameter("upstreamErrorMessage", detailedMessage)
         .build();
   }
