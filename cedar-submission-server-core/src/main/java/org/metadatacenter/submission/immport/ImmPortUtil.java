@@ -30,7 +30,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.metadatacenter.constant.HttpConstants.*;
-import static org.metadatacenter.util.json.JsonMapper.MAPPER;
+import static org.metadatacenter.util.json.JsonMapper.STRICT_MAPPER;
 
 public class ImmPortUtil {
 
@@ -106,7 +106,7 @@ public class ImmPortUtil {
       if (response.getCode() == CedarResponseStatus.OK.getStatusCode()) {
         HttpEntity entity = response.getEntity();
         // Get ImmPortGetTokenResponse from stream
-        ImmPortGetTokenResponse immPortGetTokenResponse = MAPPER
+        ImmPortGetTokenResponse immPortGetTokenResponse = STRICT_MAPPER
             .readValue(entity.getContent(), ImmPortGetTokenResponse.class);
 
         if (immPortGetTokenResponse.getStatus() == 200) {
@@ -135,7 +135,7 @@ public class ImmPortUtil {
       IOException, ParseException {
     if (responseEntity != null) {
       String responseBody = EntityUtils.toString(responseEntity, StandardCharsets.UTF_8);
-      JsonNode immPortSubmissionResponseBody = MAPPER.readTree(responseBody);
+      JsonNode immPortSubmissionResponseBody = STRICT_MAPPER.readTree(responseBody);
 
       System.err.println("ImmPort response JSON " + immPortSubmissionResponseBody);
 
