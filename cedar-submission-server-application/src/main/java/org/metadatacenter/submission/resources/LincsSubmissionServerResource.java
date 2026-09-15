@@ -10,17 +10,16 @@ import org.apache.commons.io.IOUtils;
 import org.apache.hc.core5.http.HttpEntity;
 import org.apache.hc.core5.http.ClassicHttpResponse;
 import org.apache.hc.client5.http.fluent.Request;
-import org.apache.hc.core5.util.Timeout;
 import org.apache.hc.core5.http.ContentType;
 import org.metadatacenter.cedar.util.dw.CedarMicroserviceResource;
 import org.metadatacenter.config.CedarConfig;
-import org.metadatacenter.constant.HttpConnectionConstants;
 import org.metadatacenter.error.CedarErrorKey;
 import org.metadatacenter.exception.CedarException;
 import org.metadatacenter.exception.CedarProcessingException;
 import org.metadatacenter.http.CedarResponseStatus;
 import org.metadatacenter.rest.context.CedarRequestContext;
 import org.metadatacenter.util.http.CedarResponse;
+import org.metadatacenter.util.http.HttpTimeouts;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -78,13 +77,19 @@ public class LincsSubmissionServerResource extends CedarMicroserviceResource {
     return unpackLincsResponseAndForwardIt(lincsResponse);
   }
 
+  /**
+   * Sends one validation request to the LINCS validator.
+   *
+   * <p>The validator is a service CEDAR does not operate, so the call takes the external class of
+   * outbound call: a connect timeout that allows for a handshake across the internet, and that
+   * class's own pool. It previously set two timeouts by hand and then executed on the fluent API's
+   * process-wide default executor, which pools nothing and reads no configuration.
+   */
   private ClassicHttpResponse sendPostRequestToLincsServer(String content) throws CedarProcessingException {
     Request proxyRequest = Request.post(LINCS_VALIDATION_ENDPOINT)
-        .connectTimeout(Timeout.ofMilliseconds(HttpConnectionConstants.CONNECTION_TIMEOUT))
-        .responseTimeout(Timeout.ofMilliseconds(HttpConnectionConstants.SOCKET_TIMEOUT))
         .bodyString(content, ContentType.APPLICATION_JSON);
     try {
-      return (ClassicHttpResponse) proxyRequest.execute().returnResponse();
+      return HttpTimeouts.EXTERNAL.execute(proxyRequest);
     } catch (IOException e) {
       logger.error(e.getMessage(), e);
       throw new CedarProcessingException(e);
