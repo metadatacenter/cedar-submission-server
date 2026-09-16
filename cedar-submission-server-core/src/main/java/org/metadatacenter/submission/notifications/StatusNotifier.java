@@ -1,19 +1,20 @@
 package org.metadatacenter.submission.notifications;
 
-import org.glassfish.jersey.client.ClientProperties;
+import org.apache.hc.client5.http.fluent.Request;
+import org.apache.hc.core5.http.ClassicHttpResponse;
+import org.apache.hc.core5.http.ContentType;
 import org.metadatacenter.config.CedarConfig;
 import org.metadatacenter.http.CedarResponseStatus;
 import org.metadatacenter.server.security.CedarApiKeyAuthRequest;
 import org.metadatacenter.submission.status.SubmissionStatusDescriptor;
 import org.metadatacenter.submission.status.SubmissionType;
+import org.metadatacenter.util.http.HttpTimeouts;
+import org.metadatacenter.util.json.JsonMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import jakarta.ws.rs.client.Client;
-import jakarta.ws.rs.client.ClientBuilder;
-import jakarta.ws.rs.client.Entity;
-import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.HttpHeaders;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -25,13 +26,9 @@ public class StatusNotifier {
   private static boolean initialized = false;
 
   private static CedarConfig cedarConfig = null;
-  private static Client client = null;
 
   private StatusNotifier(CedarConfig cfg) {
     cedarConfig = cfg;
-    client = ClientBuilder.newClient();
-    client.property(ClientProperties.CONNECT_TIMEOUT, 3000);
-    client.property(ClientProperties.READ_TIMEOUT, 30000);
   }
 
   public static void initialize(CedarConfig cedarConfig) {
@@ -76,17 +73,31 @@ public class StatusNotifier {
     from.put("processId", processId);
     content.put("from", from);
 
-    Entity postContent = Entity.entity(content, MediaType.APPLICATION_JSON);
-
     String adminUserAuthHeader = new CedarApiKeyAuthRequest(
         cedarConfig.getAdminUserConfig().getApiKey()).getAuthHeader();
 
-    Response response = client.target(url).request().header("Authorization", adminUserAuthHeader).post(postContent);
+    // The messaging server is the next CEDAR service, so this is the interactive class of outbound
+    // call: its timeouts, its pool and its retry policy. It used to be a JAX-RS client of its own,
+    // built here with two timeouts written into the code that no configuration could reach.
+    int status;
+    try {
+      String postContent = JsonMapper.STRICT_MAPPER.writeValueAsString(content);
+      try (ClassicHttpResponse response = HttpTimeouts.INTERACTIVE.execute(
+          Request.post(url)
+              .setHeader(HttpHeaders.AUTHORIZATION, adminUserAuthHeader)
+              .bodyString(postContent, ContentType.APPLICATION_JSON))) {
+        status = response.getCode();
+        if (status != CedarResponseStatus.OK.getStatusCode()) {
+          logger.warn("Internal error, statusCode=" + status + " postContent=" + postContent);
+        }
+      }
+    } catch (IOException e) {
+      // A failed downstream notification is a genuine server-side fault (500), but not JVM
+      // corruption: a RuntimeException flows through catch (Exception) and the CedarExceptionMapper.
+      throw new IllegalStateException("Error sending message to user", e);
+    }
 
-    if (response.getStatus() != CedarResponseStatus.OK.getStatusCode()) {
-      logger.warn("Internal error, statusCode=" + response.getStatus() + " postContent=" + postContent);
-      // A failed downstream notification is a genuine server-side fault (500), but not JVM corruption:
-      // use a RuntimeException so it flows through catch (Exception) and the CedarExceptionMapper.
+    if (status != CedarResponseStatus.OK.getStatusCode()) {
       throw new IllegalStateException("Error sending message to user");
     }
   }
