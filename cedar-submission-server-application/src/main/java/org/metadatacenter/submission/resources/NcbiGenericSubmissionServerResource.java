@@ -1,5 +1,7 @@
 package org.metadatacenter.submission.resources;
 
+import org.metadatacenter.util.json.JsonMapper;
+
 import com.codahale.metrics.annotation.Timed;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -10,7 +12,6 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.fileupload2.core.FileUploadException;
 import org.apache.commons.fileupload2.jakarta.servlet6.JakartaServletFileUpload;
 import org.metadatacenter.cedar.util.dw.CedarMicroserviceResource;
@@ -131,7 +132,7 @@ public class NcbiGenericSubmissionServerResource
         if (userFileNames.isArray()) {
           List fileNames = null;
           try {
-            fileNames = new ObjectMapper().readValue(userFileNames.traverse(),
+            fileNames = JsonMapper.STRICT_MAPPER.readValue(userFileNames.traverse(),
                 new TypeReference<ArrayList<String>>() {
                 });
           } catch (IOException e) {
