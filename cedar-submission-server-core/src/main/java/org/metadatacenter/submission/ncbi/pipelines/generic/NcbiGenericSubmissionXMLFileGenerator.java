@@ -1,8 +1,9 @@
 package org.metadatacenter.submission.ncbi.pipelines.generic;
 
+import org.metadatacenter.util.json.JsonMapper;
+
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.io.FileUtils;
 import org.metadatacenter.submission.ncbi.NcbiConstants;
 import org.slf4j.Logger;
@@ -25,7 +26,7 @@ public class NcbiGenericSubmissionXMLFileGenerator implements org.metadatacenter
 
     String submissionXml = null;
     try {
-      JsonNode instanceJson = (new ObjectMapper()).readTree(instanceFile);
+      JsonNode instanceJson = (JsonMapper.TOLERANT_MAPPER).readTree(instanceFile);
       submissionXml = converter.convertTemplateInstanceToXML(instanceJson);
     } catch (JsonMappingException e) {
       throw new IOException("The instance uploaded is not compatible with the CAIRR template", e);
