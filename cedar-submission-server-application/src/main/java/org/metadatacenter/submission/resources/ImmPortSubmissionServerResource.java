@@ -237,7 +237,7 @@ public class ImmPortSubmissionServerResource extends CedarMicroserviceResource {
     try {
       if (JakartaServletFileUpload.isMultipartContent(request)) {
         String userId = FlowUploadUtil.getLastFragmentOfUrl(c.getCedarUser().getId());
-        FlowData data = FlowUploadUtil.getFlowData(request);
+        try (FlowData data = FlowUploadUtil.getFlowData(request)) {
 
         String workspaceID = null;
         if (data.getAdditionalParameters().containsKey("workspaceId")) {
@@ -251,7 +251,6 @@ public class ImmPortSubmissionServerResource extends CedarMicroserviceResource {
         String filePath = FlowUploadUtil.saveToLocalFile(data, userId, request.getContentLength(),
             submissionLocalFolderPath);
         logger.info("File created. Path: " + filePath);
-        SubmissionUploadManager.getInstance().updateStatus(data, userId, submissionLocalFolderPath);
 
         if (SubmissionUploadManager.getInstance().isSubmissionUploadComplete(userId, data.getSubmissionId())) {
           HttpEntity multiPartEntity = getMultipartContentFromSubmission(userId, data.submissionId, workspaceID);
@@ -280,6 +279,7 @@ public class ImmPortSubmissionServerResource extends CedarMicroserviceResource {
           }
         } else {
           return Response.ok(new HashMap()).build(); // We are still building the request
+        }
         }
       } else {
         logger.warn("No form data supplied");
