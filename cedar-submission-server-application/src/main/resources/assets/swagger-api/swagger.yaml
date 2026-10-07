@@ -82,8 +82,10 @@ paths:
           description: The available ImmPort workspaces
         "401":
           description: Unauthorized
-        "500":
-          description: "ImmPort could not be reached, or no ImmPort token is configured"
+        "502":
+          description: ImmPort returned an unusable response
+        "503":
+          description: ImmPort or its authentication is unavailable
       security:
       - api_key: []
       summary: List the caller's ImmPort workspaces
@@ -186,17 +188,21 @@ paths:
   /command/validate-lincs:
     post:
       description: "Forward a CEDAR instance to the LINCS dataset validator and return\
-        \ what it says. The status is the validator's own, so its refusal is reported\
-        \ as it reported it, and CEDAR adds no judgement of its own."
+        \ what it says. Validator 400, 401, 403 and 500 responses are reported as\
+        \ gateway failures; other refusals retain their status. Transport failures\
+        \ return 503."
       operationId: validateInstance
       responses:
         "200":
           description: The LINCS validation report
         "400":
-          description: The LINCS validator rejected the instance
+          description: Invalid CEDAR request
         "401":
           description: Unauthorized
-        "500":
+        "502":
+          description: The LINCS validator refused the request or returned an unreadable
+            answer
+        "503":
           description: The LINCS validator could not be reached
       security:
       - api_key: []
@@ -569,6 +575,8 @@ components:
           - dataCiteDOIDisabled
           - pinnedVersionUnavailable
           - resourceNotFound
+          - rateLimitExceeded
+          - rateLimitUnavailable
           - internalError
           nullable: true
         errorReasonKey:
@@ -616,24 +624,9 @@ components:
           description: Named scalar values associated with the error.
         status:
           type: string
-          description: Symbolic HTTP response status.
-          enum:
-          - BAD_REQUEST
-          - UNAUTHORIZED
-          - FORBIDDEN
-          - NOT_FOUND
-          - METHOD_NOT_ALLOWED
-          - NOT_ACCEPTABLE
-          - CONFLICT
-          - PRECONDITION_FAILED
-          - UNSUPPORTED_MEDIA_TYPE
-          - UNPROCESSABLE_ENTITY
-          - PRECONDITION_REQUIRED
-          - INTERNAL_SERVER_ERROR
-          - NOT_IMPLEMENTED
-          - BAD_GATEWAY
-          - SERVICE_UNAVAILABLE
-          - HTTP_VERSION_NOT_SUPPORTED
+          description: "Symbolic HTTP response status, or HTTP_<code> for an unnamed\
+            \ status."
+          pattern: "^[A-Z][A-Z0-9_]*$"
         statusCode:
           type: integer
           format: int32
