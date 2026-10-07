@@ -8,7 +8,7 @@ import java.util.Map;
  * Object that represents a chunk of data uploaded to the server using the Flow.js library
  * See: https://github.com/flowjs/flow.js
  */
-public class FlowData {
+public class FlowData implements AutoCloseable {
 
   public String submissionId;
   public long totalFilesCount;
@@ -145,5 +145,8 @@ public class FlowData {
 
   public void setAdditionalParameters(Map<String, String> additionalParameters) {
     this.additionalParameters = additionalParameters;
+  }
+  @Override public void close() throws java.io.IOException {
+    if (flowFileInputStream != null) flowFileInputStream.close();
   }
 }

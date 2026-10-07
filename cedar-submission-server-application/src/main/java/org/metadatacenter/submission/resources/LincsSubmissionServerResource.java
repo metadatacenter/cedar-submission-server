@@ -6,8 +6,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import org.apache.commons.io.IOUtils;
-import org.apache.hc.core5.http.HttpEntity;
 import org.apache.hc.core5.http.ClassicHttpResponse;
 import org.apache.hc.client5.http.fluent.Request;
 import org.apache.hc.core5.http.ContentType;
@@ -16,7 +14,10 @@ import org.metadatacenter.config.CedarConfig;
 import org.metadatacenter.error.CedarErrorKey;
 import org.metadatacenter.exception.CedarException;
 import org.metadatacenter.exception.CedarProcessingException;
-import org.metadatacenter.http.CedarResponseStatus;
+import org.metadatacenter.exception.CedarDependencyUnavailableException;
+import org.metadatacenter.util.json.JsonMapper;
+import org.apache.hc.core5.http.io.entity.EntityUtils;
+import java.nio.charset.StandardCharsets;
 import org.metadatacenter.rest.context.CedarRequestContext;
 import org.metadatacenter.util.http.CedarResponse;
 import org.metadatacenter.util.http.HttpTimeouts;
@@ -31,7 +32,6 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import java.io.IOException;
 
-import static jakarta.ws.rs.core.Response.Status.*;
 import static org.metadatacenter.rest.assertion.GenericAssertions.LoggedIn;
 
 @Path("/command")
@@ -44,13 +44,17 @@ public class LincsSubmissionServerResource extends CedarMicroserviceResource {
 
   private static final String LINCS_VALIDATION_ENDPOINT = "http://dev3.ccs.miami.edu:8080/dcic/api/dataset-validation";
 
+  private final String validationEndpoint;
+  private final HttpTimeouts timeouts;
+
   public LincsSubmissionServerResource(CedarConfig cedarConfig) {
-    super(cedarConfig);
+    this(cedarConfig, LINCS_VALIDATION_ENDPOINT, HttpTimeouts.EXTERNAL);
   }
 
-  private static void loggingError(String errorMessage, String detailedMessage) {
-    logger.error(errorMessage);
-    logger.error("Message from the upstream server: " + detailedMessage);
+  LincsSubmissionServerResource(CedarConfig config, String validationEndpoint, HttpTimeouts timeouts) {
+    super(config);
+    this.validationEndpoint = validationEndpoint;
+    this.timeouts = timeouts;
   }
 
   @POST
@@ -59,13 +63,14 @@ public class LincsSubmissionServerResource extends CedarMicroserviceResource {
   @Consumes(MediaType.APPLICATION_JSON)
   @Operation(summary = "Validate an instance against the LINCS validator",
       description = "Forward a CEDAR instance to the LINCS dataset validator and return what it "
-          + "says. The status is the validator's own, so its refusal is reported as it reported it, "
-          + "and CEDAR adds no judgement of its own.")
+          + "says. Validator 400, 401, 403 and 500 responses are reported as gateway failures; other "
+          + "refusals retain their status. Transport failures return 503.")
   @ApiResponses({
       @ApiResponse(responseCode = "200", description = "The LINCS validation report"),
-      @ApiResponse(responseCode = "400", description = "The LINCS validator rejected the instance"),
+      @ApiResponse(responseCode = "400", description = "Invalid CEDAR request"),
       @ApiResponse(responseCode = "401", description = "Unauthorized"),
-      @ApiResponse(responseCode = "500", description = "The LINCS validator could not be reached")
+      @ApiResponse(responseCode = "502", description = "The LINCS validator refused the request or returned an unreadable answer"),
+      @ApiResponse(responseCode = "503", description = "The LINCS validator could not be reached")
   })
   public Response validateInstance() throws CedarException {
     CedarRequestContext c = buildRequestContext();
@@ -73,8 +78,11 @@ public class LincsSubmissionServerResource extends CedarMicroserviceResource {
 
     String payload = c.request().getRequestBody().asJsonString();
 
-    ClassicHttpResponse lincsResponse = sendPostRequestToLincsServer(payload);
-    return unpackLincsResponseAndForwardIt(lincsResponse);
+    try (ClassicHttpResponse lincsResponse = sendPostRequestToLincsServer(payload)) {
+      return unpackLincsResponseAndForwardIt(lincsResponse);
+    } catch (IOException e) {
+      throw new CedarDependencyUnavailableException("LINCS validator is unavailable", e);
+    }
   }
 
   /**
@@ -86,88 +94,38 @@ public class LincsSubmissionServerResource extends CedarMicroserviceResource {
    * process-wide default executor, which pools nothing and reads no configuration.
    */
   private ClassicHttpResponse sendPostRequestToLincsServer(String content) throws CedarProcessingException {
-    Request proxyRequest = Request.post(LINCS_VALIDATION_ENDPOINT)
+    Request proxyRequest = Request.post(validationEndpoint)
         .bodyString(content, ContentType.APPLICATION_JSON);
     try {
-      return HttpTimeouts.EXTERNAL.execute(proxyRequest);
+      return timeouts.execute(proxyRequest);
     } catch (IOException e) {
       logger.error(e.getMessage(), e);
-      throw new CedarProcessingException(e);
+      throw new CedarDependencyUnavailableException("LINCS validator is unavailable", e);
     }
   }
 
-  private Response unpackLincsResponseAndForwardIt(ClassicHttpResponse httpResponse) throws CedarProcessingException {
-    int statusCode = httpResponse.getCode();
-    HttpEntity responseEntity = httpResponse.getEntity();
+  private Response unpackLincsResponseAndForwardIt(ClassicHttpResponse response) {
+    int status = response.getCode();
     try {
-      Response response = null;
-      if (statusCode == OK.getStatusCode()) {
-        response = handleSuccessResponse(responseEntity);
-      } else if (statusCode == BAD_REQUEST.getStatusCode()) {
-        response = handleClientErrorResponse(responseEntity);
-      } else if (statusCode == UNAUTHORIZED.getStatusCode()) {
-        response = handleUnauthorizedResponse(responseEntity);
-      } else if (statusCode == INTERNAL_SERVER_ERROR.getStatusCode()) {
-        response = handleServerErrorResponse(responseEntity);
-      } else {
-        response = handleOtherErrorResponse(statusCode, responseEntity);
+      String body = response.getEntity() == null ? "" : EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8);
+      if (status == 200) {
+        var report = JsonMapper.STRICT_MAPPER.readTree(body);
+        if (report == null) throw new IOException("Empty validation report");
+        return CedarResponse.ok().entity(report).build();
       }
-      return response;
-    } catch (IOException e) {
-      logger.error(e.getMessage(), e);
-      throw new CedarProcessingException(e);
+      // Retain the established validator refusal policy while preserving unfamiliar statuses.
+      int outward = status == 400 || status == 401 || status == 403 || status == 500 ? 502 : status;
+      var result = CedarResponse.status(outward)
+          .errorKey(CedarErrorKey.UPSTREAM_SERVER_ERROR)
+          .message("The LINCS validator answered " + status)
+          .parameter("upstreamStatusCode", status)
+          .parameter("upstreamService", "LINCS");
+      var retry = response.getFirstHeader("Retry-After");
+      if (retry != null) result.header("Retry-After", retry.getValue());
+      return result.build();
+    } catch (IOException | org.apache.hc.core5.http.ParseException e) {
+      return CedarResponse.badGateway().errorKey(CedarErrorKey.UPSTREAM_SERVER_ERROR)
+          .message("The LINCS validator returned an unreadable response").exception(e).build();
     }
-  }
-
-  private Response handleSuccessResponse(final HttpEntity responseEntity) throws IOException {
-    return CedarResponse.ok()
-        .entity(responseEntity.getContent())
-        .build();
-  }
-
-  private Response handleClientErrorResponse(final HttpEntity responseEntity) throws IOException {
-    String errorMessage = "The validation service from 'dev3.ccs.miami.edu' returns a Bad Request (400) status";
-    String detailedMessage = IOUtils.toString(responseEntity.getContent());
-    loggingError(errorMessage, detailedMessage);
-    return CedarResponse.badGateway()
-        .errorKey(CedarErrorKey.UPSTREAM_SERVER_ERROR)
-        .message(errorMessage)
-        .parameter("upstreamErrorMessage", detailedMessage)
-        .build();
-  }
-
-  private Response handleUnauthorizedResponse(HttpEntity responseEntity) throws IOException {
-    String errorMessage = "The validation service from 'dev3.ccs.miami.edu' returns an Unauthorized (401) status";
-    String detailedMessage = IOUtils.toString(responseEntity.getContent());
-    loggingError(errorMessage, detailedMessage);
-    return CedarResponse.badGateway()
-        .errorKey(CedarErrorKey.UPSTREAM_SERVER_ERROR)
-        .message(errorMessage)
-        .parameter("upstreamErrorMessage", detailedMessage)
-        .build();
-  }
-
-  private Response handleServerErrorResponse(HttpEntity responseEntity) throws IOException {
-    String errorMessage = "The validation service from 'dev3.ccs.miami.edu' returns an Internal Server Error (500) " +
-        "status";
-    String detailedMessage = IOUtils.toString(responseEntity.getContent());
-    loggingError(errorMessage, detailedMessage);
-    return CedarResponse.badGateway()
-        .errorKey(CedarErrorKey.UPSTREAM_SERVER_ERROR)
-        .message(errorMessage)
-        .parameter("upstreamErrorMessage", detailedMessage)
-        .build();
-  }
-
-  private Response handleOtherErrorResponse(int statusCode, HttpEntity responseEntity) throws IOException {
-    String errorMessage = String.format("The validation service from 'dev3.ccs.miami.edu' returns (%s) status",
-        statusCode);
-    String detailedMessage = IOUtils.toString(responseEntity.getContent());
-    loggingError(errorMessage, detailedMessage);
-    return CedarResponse.status(CedarResponseStatus.fromStatusCode(statusCode))
-        .errorKey(CedarErrorKey.UPSTREAM_SERVER_ERROR)
-        .message(errorMessage)
-        .parameter("upstreamErrorMessage", detailedMessage)
-        .build();
   }
 }

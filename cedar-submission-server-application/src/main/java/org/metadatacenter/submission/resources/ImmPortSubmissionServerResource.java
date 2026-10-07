@@ -15,7 +15,6 @@ import org.apache.commons.fileupload2.jakarta.servlet6.JakartaServletFileUpload;
 import org.apache.commons.io.IOUtils;
 import org.apache.hc.core5.http.HttpEntity;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
-import org.apache.hc.client5.http.classic.methods.HttpGet;
 import org.apache.hc.client5.http.classic.methods.HttpPost;
 import org.apache.hc.core5.io.Closer;
 import org.apache.hc.core5.http.ContentType;
@@ -26,6 +25,11 @@ import org.apache.hc.core5.http.ParseException;
 import org.apache.hc.core5.http.io.entity.EntityUtils;
 import org.metadatacenter.cedar.util.dw.CedarMicroserviceResource;
 import org.metadatacenter.config.CedarConfig;
+import org.apache.hc.core5.http.ClassicHttpResponse;
+import org.apache.hc.client5.http.fluent.Request;
+import org.metadatacenter.error.CedarErrorKey;
+import org.metadatacenter.exception.CedarDependencyUnavailableException;
+import org.metadatacenter.util.http.HttpTimeouts;
 import org.metadatacenter.exception.CedarException;
 import org.metadatacenter.http.CedarResponseStatus;
 import org.metadatacenter.model.trimmer.JsonLdDocument;
@@ -75,10 +79,18 @@ public class ImmPortSubmissionServerResource extends CedarMicroserviceResource {
   private final ImmPortUtil immPortUtil;
 
   public ImmPortSubmissionServerResource(CedarConfig cedarConfig) {
+    this(cedarConfig, new ImmPortUtil(cedarConfig), HttpTimeouts.EXTERNAL);
+  }
+
+  private final HttpTimeouts workspaceTimeouts;
+
+  ImmPortSubmissionServerResource(CedarConfig cedarConfig, ImmPortUtil immPortUtil,
+                                 HttpTimeouts workspaceTimeouts) {
     super(cedarConfig);
+    this.workspaceTimeouts = workspaceTimeouts;
     immPortSubmissionUrl = cedarConfig.getSubmissionConfig().getImmPort().getSubmissionEndpoint().getUrl();
     immPortUserName = cedarConfig.getSubmissionConfig().getImmPort().getAuthentication().getUser();
-    immPortUtil = new ImmPortUtil(cedarConfig);
+    this.immPortUtil = immPortUtil;
   }
 
   private HttpEntity getMultipartContentFromSubmission(String userId, String submissionID, String workspaceID)
@@ -154,44 +166,43 @@ public class ImmPortSubmissionServerResource extends CedarMicroserviceResource {
   @ApiResponses({
       @ApiResponse(responseCode = "200", description = "The available ImmPort workspaces"),
       @ApiResponse(responseCode = "401", description = "Unauthorized"),
-      @ApiResponse(responseCode = "500", description = "ImmPort could not be reached, or no ImmPort token is configured")
+      @ApiResponse(responseCode = "502", description = "ImmPort returned an unusable response"),
+      @ApiResponse(responseCode = "503", description = "ImmPort or its authentication is unavailable")
   })
   public Response immPortWorkspaces() throws CedarException {
     CedarRequestContext c = buildRequestContext();
     c.must(c.user()).be(LoggedIn);
 
-    Optional<String> immPortBearerToken = immPortUtil.getImmPortBearerToken();
-    if (immPortBearerToken.isEmpty()) {
-      logger.warn("Could not get an ImmPort token");
-      return CedarResponse.status(CedarResponseStatus.INTERNAL_SERVER_ERROR).build();  // TODO CEDAR error response
+    Optional<String> token = immPortUtil.getImmPortBearerToken();
+    if (token.isEmpty()) {
+      return CedarResponse.status(503).message("ImmPort authentication is unavailable")
+          .errorKey(CedarErrorKey.UPSTREAM_SERVER_ERROR).build();
     }
-
-    CloseableHttpResponse response = null;
-    CloseableHttpClient client = null;
-
-    String workspaceUrl = immPortUtil.getWorkspaceUrl();
-
-    try {
-      HttpGet get = new HttpGet(workspaceUrl);
-      get.setHeader(HTTP_HEADER_AUTHORIZATION, HTTP_AUTH_HEADER_BEARER_PREFIX + immPortBearerToken.get());
-      get.setHeader(HTTP_HEADER_ACCEPT, CONTENT_TYPE_APPLICATION_JSON);
-      client = HttpClientBuilder.create().build();
-      response = client.execute(get);
-
-      if (response.getCode() == 200) {
-        HttpEntity entity = response.getEntity();
-        return Response.ok(immPortWorkspacesResponseBody2CEDARWorkspaceResponse(entity)).build();
-      } else {
-        logger.warn("Unexpected status code calling " + workspaceUrl + "; status=" + response
-            .getCode());
-        return CedarResponse.status(CedarResponseStatus.INTERNAL_SERVER_ERROR).build(); // TODO CEDAR error response
+    try (ClassicHttpResponse upstream = workspaceTimeouts.execute(
+        Request.get(immPortUtil.getWorkspaceUrl())
+            .setHeader(HTTP_HEADER_AUTHORIZATION, HTTP_AUTH_HEADER_BEARER_PREFIX + token.get())
+            .setHeader(HTTP_HEADER_ACCEPT, CONTENT_TYPE_APPLICATION_JSON))) {
+      int status = upstream.getCode();
+      if (status != 200) {
+        // Credentials belong to this deployment; the caller cannot fix their rejection by logging in.
+        int outward = status == 401 || status == 403 || status >= 500 || status < 400 ? 502 : status;
+        var result = CedarResponse.status(outward)
+            .errorKey(CedarErrorKey.UPSTREAM_SERVER_ERROR)
+            .message("ImmPort workspace service answered " + status)
+            .parameter("upstreamStatusCode", status).parameter("upstreamService", "ImmPort");
+        var retry = upstream.getFirstHeader("Retry-After");
+        if (retry != null) result.header("Retry-After", retry.getValue());
+        return result.build();
       }
-    } catch (IOException | ParseException e) {
-      logger.warn("IO exception connecting to host " + workspaceUrl + ": " + e.getMessage());
-      return CedarResponse.status(CedarResponseStatus.INTERNAL_SERVER_ERROR).build(); // TODO CEDAR error response
-    } finally {
-      Closer.closeQuietly(response);
-      Closer.closeQuietly(client);
+      try {
+        if (upstream.getEntity() == null) throw new IOException("Empty ImmPort response");
+        return Response.ok(immPortWorkspacesResponseBody2CEDARWorkspaceResponse(upstream.getEntity())).build();
+      } catch (IOException | ParseException e) {
+        return CedarResponse.badGateway().message("ImmPort returned an unreadable workspace response")
+            .errorKey(CedarErrorKey.UPSTREAM_SERVER_ERROR).exception(e).build();
+      }
+    } catch (IOException e) {
+      throw new CedarDependencyUnavailableException("ImmPort is unavailable", e);
     }
   }
 
@@ -226,7 +237,7 @@ public class ImmPortSubmissionServerResource extends CedarMicroserviceResource {
     try {
       if (JakartaServletFileUpload.isMultipartContent(request)) {
         String userId = FlowUploadUtil.getLastFragmentOfUrl(c.getCedarUser().getId());
-        FlowData data = FlowUploadUtil.getFlowData(request);
+        try (FlowData data = FlowUploadUtil.getFlowData(request)) {
 
         String workspaceID = null;
         if (data.getAdditionalParameters().containsKey("workspaceId")) {
@@ -240,7 +251,6 @@ public class ImmPortSubmissionServerResource extends CedarMicroserviceResource {
         String filePath = FlowUploadUtil.saveToLocalFile(data, userId, request.getContentLength(),
             submissionLocalFolderPath);
         logger.info("File created. Path: " + filePath);
-        SubmissionUploadManager.getInstance().updateStatus(data, userId, submissionLocalFolderPath);
 
         if (SubmissionUploadManager.getInstance().isSubmissionUploadComplete(userId, data.getSubmissionId())) {
           HttpEntity multiPartEntity = getMultipartContentFromSubmission(userId, data.submissionId, workspaceID);
@@ -269,6 +279,7 @@ public class ImmPortSubmissionServerResource extends CedarMicroserviceResource {
           }
         } else {
           return Response.ok(new HashMap()).build(); // We are still building the request
+        }
         }
       } else {
         logger.warn("No form data supplied");
@@ -399,6 +410,7 @@ public class ImmPortSubmissionServerResource extends CedarMicroserviceResource {
       String responseBody = EntityUtils.toString(responseEntity, StandardCharsets.UTF_8);
       JsonNode immPortWorkspaces = STRICT_MAPPER.readTree(responseBody);
 
+      if (immPortWorkspaces == null || !immPortWorkspaces.isObject()) throw new IOException("Invalid workspace object");
       if (immPortWorkspaces.has("error")) {
         return createCEDARWorkspaceResponseWithError(immPortWorkspaces.get("error").textValue());
       } else {
