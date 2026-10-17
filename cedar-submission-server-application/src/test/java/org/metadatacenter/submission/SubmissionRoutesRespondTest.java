@@ -12,7 +12,9 @@ import org.metadatacenter.submission.resources.ImmPortSubmissionServerResource;
 import org.metadatacenter.submission.resources.LincsSubmissionServerResource;
 import org.metadatacenter.submission.resources.NcbiCairrSubmissionServerResource;
 import org.metadatacenter.submission.resources.NcbiGenericSubmissionServerResource;
+import org.metadatacenter.util.json.JsonMapper;
 import org.metadatacenter.util.test.RouteSurface;
+import org.metadatacenter.util.test.TestHttpClient;
 
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -102,6 +104,35 @@ public class SubmissionRoutesRespondTest {
     }
     Assertions.assertEquals(0, failures.length(),
         "A mismatched Content-Type was not reported as 415 Unsupported Media Type:\n" + failures);
+  }
+
+  /**
+   * A request that will not accept a JSON answer is refused with 406 in the shared error body, which
+   * the OpenAPI document lists on every route. Content negotiation happens during dispatch, before the
+   * endpoint's authentication assertion, so this is observable without credentials.
+   */
+  @Test
+  public void aRequestRefusingJsonIsRefusedInTheSharedErrorBody() throws Exception {
+    StringBuilder failures = new StringBuilder();
+    for (RouteSurface.Endpoint endpoint : RouteSurface.endpoints(RESOURCE_CLASSES)) {
+      HttpRequest.Builder request = HttpRequest.newBuilder()
+          .uri(URI.create("http://localhost:" + SERVER.getLocalPort() + RouteSurface.resolvedPath(endpoint)))
+          .header("Accept", "text/html");
+      if (endpoint.verb.equals("GET")) {
+        request.GET();
+      } else {
+        request.header("Content-Type", RouteSurface.contentTypeFor(endpoint))
+            .method(endpoint.verb, HttpRequest.BodyPublishers.ofString("{}"));
+      }
+      HttpResponse<String> response = TestHttpClient.send(request.build());
+      int bodyStatus = response.statusCode() == 406
+          ? JsonMapper.STRICT_MAPPER.readTree(response.body()).path("statusCode").asInt() : 0;
+      if (bodyStatus != 406) {
+        failures.append(endpoint.key()).append(": ").append(response.statusCode()).append(' ')
+            .append(response.body()).append('\n');
+      }
+    }
+    Assertions.assertEquals(0, failures.length(), "Not refused with 406 in the shared error body:\n" + failures);
   }
 
 }

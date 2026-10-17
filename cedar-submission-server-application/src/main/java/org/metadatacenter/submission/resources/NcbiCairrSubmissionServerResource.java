@@ -53,6 +53,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.metadatacenter.rest.assertion.GenericAssertions.LoggedIn;
+import static org.metadatacenter.submission.resources.SubmissionApiDocs.*;
 
 /**
  * See here for submission instructions to NCBI:
@@ -95,9 +96,19 @@ public class NcbiCairrSubmissionServerResource
           + "returning the report. Validation only: nothing is sent to NCBI here.")
   @ApiResponses({
       @ApiResponse(responseCode = "200", description = "The validation report"),
-      @ApiResponse(responseCode = "400", description = "The instance could not be read as an AIRR submission"),
-      @ApiResponse(responseCode = "401", description = "Unauthorized"),
-      @ApiResponse(responseCode = "500", description = "The submission XML could not be generated")
+      @ApiResponse(responseCode = "400", description = VALIDATION_BODY_REFUSED,
+          content = @Content(schema = @Schema(implementation = CedarError.class))),
+      @ApiResponse(responseCode = "401", description = UNAUTHORIZED,
+          content = @Content(schema = @Schema(implementation = CedarError.class))),
+      @ApiResponse(responseCode = "406", description = NOT_ACCEPTABLE,
+          content = @Content(schema = @Schema(implementation = CedarError.class))),
+      @ApiResponse(responseCode = "429", description = RATE_LIMITED,
+          content = @Content(schema = @Schema(implementation = CedarError.class))),
+      @ApiResponse(responseCode = "500", description = "The file names could not be read, or the submission XML "
+          + "could not be generated",
+          content = @Content(schema = @Schema(implementation = CedarError.class))),
+      @ApiResponse(responseCode = "503", description = UNAVAILABLE,
+          content = @Content(schema = @Schema(implementation = CedarError.class)))
   })
   public Response validateCairr() throws CedarException {
 
@@ -195,8 +206,19 @@ public class NcbiCairrSubmissionServerResource
           + "malformed or the chunk disagrees with the upload it belongs to. A refused chunk's message names "
           + "the problem.",
           content = @Content(schema = @Schema(implementation = CedarError.class))),
-      @ApiResponse(responseCode = "401", description = "Unauthorized"),
-      @ApiResponse(responseCode = "500", description = "The chunk could not be stored or the submission could not be prepared")
+      @ApiResponse(responseCode = "401", description = UNAUTHORIZED,
+          content = @Content(schema = @Schema(implementation = CedarError.class))),
+      @ApiResponse(responseCode = "406", description = NOT_ACCEPTABLE,
+          content = @Content(schema = @Schema(implementation = CedarError.class))),
+      @ApiResponse(responseCode = "415", description = NOT_MULTIPART,
+          content = @Content(schema = @Schema(implementation = CedarError.class))),
+      @ApiResponse(responseCode = "429", description = RATE_LIMITED,
+          content = @Content(schema = @Schema(implementation = CedarError.class))),
+      @ApiResponse(responseCode = "500", description = "The chunk could not be stored or the submission could not "
+          + "be prepared",
+          content = @Content(schema = @Schema(implementation = CedarError.class))),
+      @ApiResponse(responseCode = "503", description = UNAVAILABLE,
+          content = @Content(schema = @Schema(implementation = CedarError.class)))
   })
   public Response uploadCAIRRToCEDAR()
       throws CedarException {
