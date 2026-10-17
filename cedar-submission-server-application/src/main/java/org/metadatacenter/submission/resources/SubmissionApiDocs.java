@@ -26,7 +26,7 @@ final class SubmissionApiDocs {
       + "unavailable";
 
   static final String VALIDATION_BODY_REFUSED = "The body is not JSON, or is not an object holding instance "
-      + "and, optionally, userFileNames. Only the first refusal carries a message.";
+      + "and, optionally, userFileNames, and no other field. The message names the problem.";
 
   private SubmissionApiDocs() {
   }

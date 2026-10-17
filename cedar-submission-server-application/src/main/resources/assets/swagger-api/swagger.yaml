@@ -48,8 +48,7 @@ paths:
                 $ref: "#/components/schemas/CedarError"
           description: "Not a multipart upload, no workspace was named, or the chunk\
             \ is refused because an upload field is missing or malformed or the chunk\
-            \ disagrees with the upload it belongs to. A refused chunk's message names\
-            \ the problem."
+            \ disagrees with the upload it belongs to. The message names the problem."
         "401":
           content:
             application/json:
@@ -108,7 +107,8 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/CedarError"
-          description: "Not a multipart upload, or no workspaceId parameter"
+          description: "Not a multipart upload, or no workspaceId parameter. The message\
+            \ names the problem."
         "401":
           content:
             application/json:
@@ -273,7 +273,7 @@ paths:
           description: "Not a multipart upload, the package does not carry exactly\
             \ one metadata file, or the chunk is refused because an upload field is\
             \ missing or malformed or the chunk disagrees with the upload it belongs\
-            \ to. A refused chunk's message names the problem."
+            \ to. The message names the problem."
         "401":
           content:
             application/json:
@@ -340,7 +340,7 @@ paths:
           description: "Not a multipart upload, the package does not carry exactly\
             \ one metadata file, or the chunk is refused because an upload field is\
             \ missing or malformed or the chunk disagrees with the upload it belongs\
-            \ to. A refused chunk's message names the problem."
+            \ to. The message names the problem."
         "401":
           content:
             application/json:
@@ -460,7 +460,8 @@ paths:
               schema:
                 $ref: "#/components/schemas/CedarError"
           description: "The body is not JSON, or is not an object holding instance\
-            \ and, optionally, userFileNames. Only the first refusal carries a message."
+            \ and, optionally, userFileNames, and no other field. The message names\
+            \ the problem."
         "401":
           content:
             application/json:
@@ -616,7 +617,8 @@ paths:
               schema:
                 $ref: "#/components/schemas/CedarError"
           description: "The body is not JSON, or is not an object holding instance\
-            \ and, optionally, userFileNames. Only the first refusal carries a message."
+            \ and, optionally, userFileNames, and no other field. The message names\
+            \ the problem."
         "401":
           content:
             application/json:

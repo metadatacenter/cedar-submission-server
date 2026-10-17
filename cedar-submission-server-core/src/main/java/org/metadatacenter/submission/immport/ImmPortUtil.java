@@ -218,4 +218,8 @@ public class ImmPortUtil {
   public String getWorkspaceUrl() {
     return workspaceUrl;
   }
+
+  public String getSubmissionUrl() {
+    return submissionUrl;
+  }
 }

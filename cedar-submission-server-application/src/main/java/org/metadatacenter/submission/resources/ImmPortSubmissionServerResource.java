@@ -92,7 +92,7 @@ public class ImmPortSubmissionServerResource extends CedarMicroserviceResource {
                                  HttpTimeouts workspaceTimeouts) {
     super(cedarConfig);
     this.workspaceTimeouts = workspaceTimeouts;
-    immPortSubmissionUrl = cedarConfig.getSubmissionConfig().getImmPort().getSubmissionEndpoint().getUrl();
+    immPortSubmissionUrl = immPortUtil.getSubmissionUrl();
     immPortUserName = cedarConfig.getSubmissionConfig().getImmPort().getAuthentication().getUser();
     this.immPortUtil = immPortUtil;
   }
@@ -252,7 +252,7 @@ public class ImmPortSubmissionServerResource extends CedarMicroserviceResource {
           description = "The chunk was stored; ImmPort's result if this completed the submission, an empty object if not"),
       @ApiResponse(responseCode = "400", description = "Not a multipart upload, no workspace was named, "
           + "or the chunk is refused because an upload field is missing or malformed or the chunk disagrees with "
-          + "the upload it belongs to. A refused chunk's message names the problem.",
+          + "the upload it belongs to. The message names the problem.",
           content = @Content(schema = @Schema(implementation = CedarError.class))),
       @ApiResponse(responseCode = "401", description = UNAUTHORIZED,
           content = @Content(schema = @Schema(implementation = CedarError.class))),
@@ -275,7 +275,7 @@ public class ImmPortSubmissionServerResource extends CedarMicroserviceResource {
     Optional<String> immPortBearerToken = immPortUtil.getImmPortBearerToken();
     if (immPortBearerToken.isEmpty()) {
       logger.warn("No ImmPort token found");
-      return CedarResponse.status(CedarResponseStatus.INTERNAL_SERVER_ERROR).build(); // TODO CEDAR error response
+      return CedarResponse.internalServerError().message(IMMPORT_AUTHENTICATION_UNAVAILABLE).build();
     }
 
     CloseableHttpResponse response = null;
@@ -291,7 +291,7 @@ public class ImmPortSubmissionServerResource extends CedarMicroserviceResource {
           workspaceID = data.getAdditionalParameters().get("workspaceId");
         } else {
           logger.warn("No workspaceId parameter specified");
-          return CedarResponse.status(CedarResponseStatus.BAD_REQUEST).build();  // TODO CEDAR error response
+          return CedarResponse.badRequest().message("Missing field: workspaceId").build();
         }
         String submissionLocalFolderPath = FlowUploadUtil
             .getSubmissionLocalFolderPath(ImmPortConstants.IMMPORT_LOCAL_FOLDER_NAME, userId, data.getSubmissionId());
@@ -322,7 +322,7 @@ public class ImmPortSubmissionServerResource extends CedarMicroserviceResource {
           } else {
             logger.warn("Unexpected status code returned from " + immPortSubmissionUrl + ": " + response
                 .getCode());
-            return CedarResponse.status(CedarResponseStatus.INTERNAL_SERVER_ERROR).build(); // TODO CEDAR error response
+            return CedarResponse.internalServerError().message(immPortAnswered(statusCode)).build();
           }
         } else {
           return Response.ok(new HashMap()).build(); // We are still building the request
@@ -330,13 +330,12 @@ public class ImmPortSubmissionServerResource extends CedarMicroserviceResource {
         }
       } else {
         logger.warn("No form data supplied");
-        return CedarResponse.status(CedarResponseStatus.BAD_REQUEST).build(); // TODO CEDAR error response
+        return CedarResponse.badRequest().message(NOT_MULTIPART_UPLOAD).build();
       }
     } catch (IOException | ParseException | SubmissionInstanceNotFoundException | IllegalAccessException |
              JAXBException |
              DatatypeConfigurationException e) {
-      logger.warn("Exception submitting to ImmPort: " + e.getMessage());
-      return CedarResponse.status(CedarResponseStatus.INTERNAL_SERVER_ERROR).build(); // TODO CEDAR error response
+      return CedarResponse.internalServerError().message(CHUNK_NOT_SENT).exception(e).build();
     } finally {
       Closer.closeQuietly(response);
       Closer.closeQuietly(client);
@@ -354,7 +353,8 @@ public class ImmPortSubmissionServerResource extends CedarMicroserviceResource {
           + "route is what the workbench uses.")
   @ApiResponses({
       @ApiResponse(responseCode = "200", description = "ImmPort's submission result"),
-      @ApiResponse(responseCode = "400", description = "Not a multipart upload, or no workspaceId parameter",
+      @ApiResponse(responseCode = "400", description = "Not a multipart upload, or no workspaceId parameter. "
+          + "The message names the problem.",
           content = @Content(schema = @Schema(implementation = CedarError.class))),
       @ApiResponse(responseCode = "401", description = UNAUTHORIZED,
           content = @Content(schema = @Schema(implementation = CedarError.class))),
@@ -377,13 +377,13 @@ public class ImmPortSubmissionServerResource extends CedarMicroserviceResource {
     String workspaceID = request.getParameter("workspaceId"); // TODO CEDAR constant for parameter
     if (workspaceID == null || workspaceID.isEmpty()) {
       logger.warn("No workspaceId parameter specified");
-      return CedarResponse.status(CedarResponseStatus.BAD_REQUEST).build();  // TODO CEDAR error response
+      return CedarResponse.badRequest().message("Missing parameter: workspaceId").build();
     }
 
     Optional<String> immPortBearerToken = immPortUtil.getImmPortBearerToken();
     if (immPortBearerToken.isEmpty()) {
       logger.warn("No ImmPort token found");
-      return CedarResponse.status(CedarResponseStatus.INTERNAL_SERVER_ERROR).build(); // TODO CEDAR error response
+      return CedarResponse.internalServerError().message(IMMPORT_AUTHENTICATION_UNAVAILABLE).build();
     }
 
     CloseableHttpResponse response = null;
@@ -416,15 +416,14 @@ public class ImmPortSubmissionServerResource extends CedarMicroserviceResource {
         } else {
           logger.warn("Unexpected status code returned from " + immPortSubmissionUrl + ": " + response
               .getCode());
-          return CedarResponse.status(CedarResponseStatus.INTERNAL_SERVER_ERROR).build(); // TODO CEDAR error response
+          return CedarResponse.internalServerError().message(immPortAnswered(statusCode)).build();
         }
       } else {
         logger.warn("No form data supplied");
-        return CedarResponse.status(CedarResponseStatus.BAD_REQUEST).build(); // TODO CEDAR error response
+        return CedarResponse.badRequest().message(NOT_MULTIPART_UPLOAD).build();
       }
     } catch (IOException | ParseException e) {
-      logger.warn("Exception submitting to ImmmPort " + immPortSubmissionUrl + ": " + e.getMessage());
-      return CedarResponse.status(CedarResponseStatus.INTERNAL_SERVER_ERROR).build(); // TODO CEDAR error response
+      return CedarResponse.internalServerError().message(REQUEST_NOT_SENT).exception(e).build();
     } finally {
       Closer.closeQuietly(response);
       Closer.closeQuietly(client);
@@ -435,6 +434,20 @@ public class ImmPortSubmissionServerResource extends CedarMicroserviceResource {
       + "(upstreamServerError, with ImmPort's status in parameters.upstreamStatusCode)";
   private static final String IMMPORT_SUBMISSION_FAILED = "No ImmPort token is available, or ImmPort could not "
       + "be reached or refused the submission";
+
+  private static final String IMMPORT_AUTHENTICATION_UNAVAILABLE = "ImmPort authentication is unavailable";
+
+  private static final String NOT_MULTIPART_UPLOAD = "The request is not a multipart/form-data upload";
+
+  private static final String CHUNK_NOT_SENT = "The chunk could not be stored, or the submission could not be "
+      + "prepared or sent to ImmPort";
+
+  private static final String REQUEST_NOT_SENT = "The request could not be read, or the submission could not be "
+      + "sent to ImmPort";
+
+  private static String immPortAnswered(int statusCode) {
+    return "ImmPort answered the submission with status " + statusCode;
+  }
 
   private HttpEntity getMultipartContentFromRequest(String workspaceID) throws FileUploadException, IOException {
     MultipartEntityBuilder builder = MultipartEntityBuilder.create();

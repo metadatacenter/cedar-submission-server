@@ -14,7 +14,6 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.metadatacenter.cedar.util.dw.CedarMicroserviceResource;
 import org.metadatacenter.config.CedarConfig;
 import org.metadatacenter.exception.CedarException;
-import org.metadatacenter.http.CedarResponseStatus;
 import org.metadatacenter.rest.context.CedarRequestContext;
 import org.metadatacenter.submission.AMIA2016DemoBioSampleTemplate;
 import org.metadatacenter.submission.ncbi.validation.BioSampleValidator;
@@ -49,8 +48,16 @@ public class AMIA2016DemoBioSampleServerResource extends CedarMicroserviceResour
   private final AMIA2016DemoBioSampleTemplate2BioSampleConverter amia2016DemoBioSampleTemplate2BioSampleConverter;
 
   public AMIA2016DemoBioSampleServerResource(CedarConfig cedarConfig) {
+    this(cedarConfig, new BioSampleValidator());
+  }
+
+  /**
+   * Builds the resource on the given BioSample validator, which sends the submission XML to NCBI. A test
+   * that drives this route supplies its own.
+   */
+  AMIA2016DemoBioSampleServerResource(CedarConfig cedarConfig, BioSampleValidator bioSampleValidator) {
     super(cedarConfig);
-    this.bioSampleValidator = new BioSampleValidator();
+    this.bioSampleValidator = bioSampleValidator;
     this.amia2016DemoBioSampleTemplate2BioSampleConverter = new AMIA2016DemoBioSampleTemplate2BioSampleConverter();
   }
 
@@ -104,7 +111,8 @@ public class AMIA2016DemoBioSampleServerResource extends CedarMicroserviceResour
       return Response.ok(this.bioSampleValidator.validateBioSampleSubmission(bioSampleSubmissionXML)).build();
 
     } catch (JAXBException | DatatypeConfigurationException | IOException e) {
-      return CedarResponse.status(CedarResponseStatus.INTERNAL_SERVER_ERROR).build();
+      return CedarResponse.internalServerError().message("The instance could not be converted to BioSample XML")
+          .exception(e).build();
     }
   }
 

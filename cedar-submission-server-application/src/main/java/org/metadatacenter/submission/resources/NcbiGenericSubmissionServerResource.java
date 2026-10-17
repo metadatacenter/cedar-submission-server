@@ -19,7 +19,6 @@ import org.apache.commons.fileupload2.jakarta.servlet6.JakartaServletFileUpload;
 import org.metadatacenter.cedar.util.dw.CedarMicroserviceResource;
 import org.metadatacenter.config.CedarConfig;
 import org.metadatacenter.exception.CedarException;
-import org.metadatacenter.http.CedarResponseStatus;
 import org.metadatacenter.rest.context.CedarRequestContext;
 import org.metadatacenter.submission.CEDARValidationResponse;
 import org.metadatacenter.submission.ncbi.NcbiConstants;
@@ -72,11 +71,22 @@ public class NcbiGenericSubmissionServerResource
   private final NcbiGenericValidator ncbiGenericValidator;
 
   public NcbiGenericSubmissionServerResource(CedarConfig cedarConfig) {
+    this(cedarConfig, new NcbiGenericValidator(), new NcbiGenericTemplateInstance2XMLConverter(),
+        new BioSampleValidator());
+  }
+
+  /**
+   * Builds the resource on the given instance validator, XML converter and BioSample validator. The
+   * BioSample validator sends the submission XML to NCBI, so a test that drives these routes supplies its own.
+   */
+  NcbiGenericSubmissionServerResource(CedarConfig cedarConfig, NcbiGenericValidator ncbiGenericValidator,
+                                      NcbiGenericTemplateInstance2XMLConverter ncbiGenericTemplateInstance2XMLConverter,
+                                      BioSampleValidator bioSampleValidator) {
     super(cedarConfig);
-    this.bioSampleValidator = new BioSampleValidator();
-    this.ncbiGenericTemplateInstance2XMLConverter = new NcbiGenericTemplateInstance2XMLConverter();
+    this.bioSampleValidator = bioSampleValidator;
+    this.ncbiGenericTemplateInstance2XMLConverter = ncbiGenericTemplateInstance2XMLConverter;
     this.ncbiGenericSubmissionXMLFileGenerator = new NcbiGenericSubmissionXMLFileGenerator();
-    this.ncbiGenericValidator = new NcbiGenericValidator();
+    this.ncbiGenericValidator = ncbiGenericValidator;
   }
 
   public static void injectServices(NcbiSubmissionQueueService ncbiSubmissionQueueService) {
@@ -149,7 +159,7 @@ public class NcbiGenericSubmissionServerResource
                 new TypeReference<ArrayList<String>>() {
                 });
           } catch (IOException e) {
-            return CedarResponse.status(CedarResponseStatus.INTERNAL_SERVER_ERROR).build();
+            return CedarResponse.internalServerError().message(FILE_NAMES_UNREADABLE).exception(e).build();
           }
           fileNamesValidationResponse =
               this.ncbiGenericValidator.validateFilenames(instance, fileNames);
@@ -158,11 +168,11 @@ public class NcbiGenericSubmissionServerResource
 
       // If 1 and 2 went well, we invoke NCBI's external validation
       if (cedarInstanceValidationResponse.getIsValid() && (fileNamesValidationResponse == null || fileNamesValidationResponse.getIsValid())) {
-        String submissionXML = null;
+        String submissionXML;
         try {
           submissionXML = this.ncbiGenericTemplateInstance2XMLConverter.convertTemplateInstanceToXML(instance);
         } catch (JAXBException | DatatypeConfigurationException | ParseException e) {
-          CedarResponse.status(CedarResponseStatus.INTERNAL_SERVER_ERROR).build();
+          return CedarResponse.internalServerError().message(NOT_CONVERTED).exception(e).build();
         }
         cedarFileNamesValidationResponse = this.bioSampleValidator.validateBioSampleSubmission(submissionXML);
       }
@@ -188,7 +198,7 @@ public class NcbiGenericSubmissionServerResource
       }
       return Response.ok(validationResponse).build();
     } else {
-      return CedarResponse.status(CedarResponseStatus.BAD_REQUEST).build();
+      return CedarResponse.badRequest().message(BODY_REFUSED).build();
     }
   }
 
@@ -210,8 +220,7 @@ public class NcbiGenericSubmissionServerResource
       @ApiResponse(responseCode = "200", description = "The chunk was stored; any submission it completed has been started"),
       @ApiResponse(responseCode = "400", description = "Not a multipart upload, the package does not carry "
           + "exactly one metadata file, or the chunk is refused because an upload field is missing or "
-          + "malformed or the chunk disagrees with the upload it belongs to. A refused chunk's message names "
-          + "the problem.",
+          + "malformed or the chunk disagrees with the upload it belongs to. The message names the problem.",
           content = @Content(schema = @Schema(implementation = CedarError.class))),
       @ApiResponse(responseCode = "401", description = UNAUTHORIZED,
           content = @Content(schema = @Schema(implementation = CedarError.class))),
@@ -244,7 +253,7 @@ public class NcbiGenericSubmissionServerResource
               "Incorrect number of metadata files (submissionId = " + data.getSubmissionId() + "; metadataFiles = " + data
                   .getMetadataFiles().size();
           logger.info(message);
-          return CedarResponse.status(CedarResponseStatus.BAD_REQUEST).build();
+          return CedarResponse.badRequest().message(metadataFilesRefused(data.getMetadataFiles().size())).build();
         }
         // Every request contains a file chunk that we will save in the appropriate position of a local file
         String submissionLocalFolderPath = FlowUploadUtil
@@ -279,16 +288,30 @@ public class NcbiGenericSubmissionServerResource
 
       } catch (IOException | JAXBException |
                DatatypeConfigurationException e) {
-        logger.error(e.getMessage(), e);
-        return CedarResponse.status(CedarResponseStatus.INTERNAL_SERVER_ERROR).build();
+        return CedarResponse.internalServerError().message(UPLOAD_FAILED).exception(e).build();
       } catch (IllegalAccessException e) {
         logger.error("Error reading the multipart content of the NCBI submission upload request", e);
       }
       return Response.ok().build();
     } else {
-      return CedarResponse.status(CedarResponseStatus.BAD_REQUEST).build();
+      return CedarResponse.badRequest().message(NOT_MULTIPART_UPLOAD).build();
     }
   }
 
+  private static final String BODY_REFUSED = "The body must be an object holding instance and, optionally, "
+      + "userFileNames, and no other field";
+
+  private static final String FILE_NAMES_UNREADABLE = "userFileNames could not be read as a list of file names";
+
+  private static final String NOT_CONVERTED = "The instance could not be converted to the NCBI submission XML";
+
+  private static final String NOT_MULTIPART_UPLOAD = "The request is not a multipart/form-data upload";
+
+  private static final String UPLOAD_FAILED = "The chunk could not be stored, or the submission could not be "
+      + "prepared";
+
+  private static String metadataFilesRefused(int count) {
+    return "metadataFiles must name exactly one metadata file, but names " + count;
+  }
 
 }

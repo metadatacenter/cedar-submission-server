@@ -18,18 +18,25 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
- * Every submission route documents every answer it gives, each refusal in the shared error body. Each
- * chunked upload documents its refusal of a chunk as the shared error body, which names the problem.
+ * Every submission route documents every answer it gives, each refusal in the shared error body. Each route
+ * that refuses a malformed request documents that the refusal's message names the problem.
  */
 class OpenApiContractTest {
 
+  /**
+   * Each of these routes refuses a malformed request with a message saying what is wrong. Only a refused
+   * chunk carried one, and the validation routes documented that a body of the wrong shape was refused
+   * without one.
+   */
   @ParameterizedTest
-  @ValueSource(strings = {"/command/upload-ncbi-to-cedar", "/command/upload-cairr-to-cedar", "/command/immport-submit"})
-  void theUploadDocumentsARefusedChunkAsTheSharedErrorBody(String path) throws IOException {
+  @ValueSource(strings = {"/command/validate-ncbi", "/command/upload-ncbi-to-cedar", "/command/validate-cairr",
+      "/command/upload-cairr-to-cedar", "/command/immport-submit", "/command/immport-submit-old"})
+  void eachRefusalOfAMalformedRequestDocumentsThatItsMessageNamesTheProblem(String path) throws IOException {
     JsonNode refusal = readSpec().path("paths").path(path).path("post").path("responses").path("400");
     assertEquals("#/components/schemas/CedarError",
         refusal.at("/content/application~1json/schema/$ref").asText(), refusal.toString());
-    assertTrue(refusal.path("description").asText().contains("message names the problem"), refusal.toString());
+    assertTrue(refusal.path("description").asText().endsWith("The message names the problem."),
+        refusal.toString());
   }
 
   /**
