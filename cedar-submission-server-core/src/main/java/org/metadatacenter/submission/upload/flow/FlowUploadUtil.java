@@ -5,6 +5,7 @@ import org.apache.commons.fileupload2.core.DiskFileItem;
 import org.apache.commons.fileupload2.core.DiskFileItemFactory;
 import org.apache.commons.fileupload2.core.FileUploadException;
 import org.apache.commons.fileupload2.jakarta.servlet6.JakartaServletFileUpload;
+import org.metadatacenter.util.http.CedarResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -70,37 +71,37 @@ public class FlowUploadUtil {
             additionalParameters.put(item.getFieldName(), item.getString());
           }
         } else {
-          if (uploadFile != null) throw new BadRequestException("Expected one file chunk");
+          if (uploadFile != null) throw refused("Expected one file chunk");
           uploadFile = item;
         }
       }
 
       // Throw an exception if any of the expected fields is missing
       if (submissionId == null) {
-        throw new BadRequestException("Missing field: submissionId");
+        throw refused("Missing field: submissionId");
       } else if (numberOfFiles == -1) {
-        throw new BadRequestException("Missing field: numberOfFiles");
+        throw refused("Missing field: numberOfFiles");
       } else if (flowChunkNumber == -1) {
-        throw new BadRequestException("Missing field: flowChunkNumber");
+        throw refused("Missing field: flowChunkNumber");
       } else if (metadataFiles == null) {
-        throw new BadRequestException("Missing field: metadataFiles");
+        throw refused("Missing field: metadataFiles");
       } else if (flowChunkSize == -1) {
-        throw new BadRequestException("Missing field: flowChunkSize");
+        throw refused("Missing field: flowChunkSize");
       } else if (flowCurrentChunkSize == -1) {
-        throw new BadRequestException("Missing field: flowCurrentChunkSize");
+        throw refused("Missing field: flowCurrentChunkSize");
       } else if (flowTotalSize == -1) {
-        throw new BadRequestException("Missing field: flowTotalSize");
+        throw refused("Missing field: flowTotalSize");
       } else if (flowIdentifier == null) {
-        throw new BadRequestException("Missing field: flowIdentifier");
+        throw refused("Missing field: flowIdentifier");
       } else if (flowFilename == null) {
-        throw new BadRequestException("Missing field: flowFilename");
+        throw refused("Missing field: flowFilename");
       } else if (flowRelativePath == null) {
-        throw new BadRequestException("Missing field: flowRelativePath");
+        throw refused("Missing field: flowRelativePath");
       } else if (flowTotalChunks == -1) {
-        throw new BadRequestException("Missing field: flowTotalChunks");
+        throw refused("Missing field: flowTotalChunks");
       }
 
-      if (uploadFile == null) throw new BadRequestException("Missing file chunk");
+      if (uploadFile == null) throw refused("Missing file chunk");
       final DiskFileItem file = uploadFile;
       InputStream flowFileInputStream = new java.io.FilterInputStream(file.getInputStream()) {
         private boolean closed;
@@ -136,7 +137,7 @@ public class FlowUploadUtil {
     // userId is server-derived and submissionId is client-supplied; sanitize both so neither can inject
     // a path component (e.g. a submissionId of "../..") and redirect the submission folder.
     if (!sanitizePathSegment(submissionId).equals(submissionId)) {
-      throw new BadRequestException("Upload identifier must be a single path segment");
+      throw refused("Upload identifier must be a single path segment");
     }
     String userFolder = sanitizePathSegment(FlowUploadUtil.getLastFragmentOfUrl(userId));
     return System.getProperty("java.io.tmpdir") + "/" + baseFolderName + "/user_" + userFolder + "/submission_" +
@@ -157,7 +158,7 @@ public class FlowUploadUtil {
 
   private static long parseNumber(String value) {
     try { return Long.parseLong(value); }
-    catch (NumberFormatException e) { throw new BadRequestException("Invalid numeric upload field", e); }
+    catch (NumberFormatException e) { throw refused("Invalid numeric upload field", e); }
   }
 
   public static String getDateBasedFolderName(ZoneId zoneId) {
@@ -179,6 +180,18 @@ public class FlowUploadUtil {
 
   public static boolean isMetadataFile(FlowData data) {
     return data.getMetadataFiles().contains(data.getFlowFilename());
+  }
+
+  /**
+   * A refusal of the upload request in the shared error body, with the message naming what is wrong. A
+   * BadRequestException without an entity reached the client as a 400 whose body carried no message.
+   */
+  static BadRequestException refused(String message) {
+    return refused(message, null);
+  }
+
+  static BadRequestException refused(String message, Throwable cause) {
+    return new BadRequestException(message, CedarResponse.badRequest().message(message).build(), cause);
   }
 
 }

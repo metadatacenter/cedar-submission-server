@@ -120,6 +120,24 @@ class SubmissionAnswerMatrixTest {
     assertEquals(503,response.statusCode()); assertEquals(0,calls.get());
     assertEquals(503,JsonMapper.STRICT_MAPPER.readTree(response.body()).path("statusCode").asInt());
   }
+  /**
+   * A refused chunk names its problem in the shared error body. The refusal was a BadRequestException
+   * without an entity, which reached the client as a 400 whose body carried no message.
+   */
+  @Test void aRefusedChunkNamesItsProblemInTheSharedErrorBody() throws Exception {
+    calls.set(0);
+    String body="--matrix\r\nContent-Disposition: form-data; name=\"numberOfFiles\"\r\n\r\n1\r\n--matrix--\r\n";
+    var request=HttpRequest.newBuilder(URI.create("http://127.0.0.1:"+server.getLocalPort()+"/command/immport-submit"))
+        .timeout(java.time.Duration.ofSeconds(5)).header("Authorization",auth)
+        .header("Content-Type","multipart/form-data; boundary=matrix")
+        .POST(HttpRequest.BodyPublishers.ofString(body)).build();
+    var response=HttpClient.newHttpClient().send(request,HttpResponse.BodyHandlers.ofString());
+    assertEquals(400,response.statusCode(),response.body());
+    var error=JsonMapper.STRICT_MAPPER.readTree(response.body());
+    assertEquals(400,error.path("statusCode").asInt(),response.body());
+    assertEquals("Missing field: submissionId",error.path("message").asText(),response.body());
+    assertEquals(0,calls.get(),"a refused chunk must not reach ImmPort");
+  }
   private static HttpResponse<String> request(String service) throws Exception {
     String route=service.equals("lincs") ? "/command/validate-lincs" : "/command/immport-workspaces";
     var request=HttpRequest.newBuilder(URI.create("http://127.0.0.1:"+server.getLocalPort()+route))

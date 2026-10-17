@@ -6,6 +6,8 @@ import com.codahale.metrics.annotation.Timed;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -31,6 +33,7 @@ import org.metadatacenter.submission.ncbi.validation.BioSampleValidator;
 import org.metadatacenter.submission.upload.flow.FlowData;
 import org.metadatacenter.submission.upload.flow.FlowUploadUtil;
 import org.metadatacenter.submission.upload.flow.SubmissionUploadManager;
+import org.metadatacenter.util.http.CedarError;
 import org.metadatacenter.util.http.CedarResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -187,8 +190,11 @@ public class NcbiCairrSubmissionServerResource
           + "metadata file. Submissions are sent one at a time, through a queue.")
   @ApiResponses({
       @ApiResponse(responseCode = "200", description = "The chunk was stored; any submission it completed has been started"),
-      @ApiResponse(responseCode = "400",
-          description = "Not a multipart upload, or the package does not carry exactly one metadata file"),
+      @ApiResponse(responseCode = "400", description = "Not a multipart upload, the package does not carry "
+          + "exactly one metadata file, or the chunk is refused because an upload field is missing or "
+          + "malformed or the chunk disagrees with the upload it belongs to. A refused chunk's message names "
+          + "the problem.",
+          content = @Content(schema = @Schema(implementation = CedarError.class))),
       @ApiResponse(responseCode = "401", description = "Unauthorized"),
       @ApiResponse(responseCode = "500", description = "The chunk could not be stored or the submission could not be prepared")
   })

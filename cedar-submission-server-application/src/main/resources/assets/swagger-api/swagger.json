@@ -34,7 +34,14 @@
             "description" : "The chunk was stored; ImmPort's result if this completed the submission, an empty object if not"
           },
           "400" : {
-            "description" : "Not a multipart upload, or no workspace was named"
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/CedarError"
+                }
+              }
+            },
+            "description" : "Not a multipart upload, no workspace was named, or the chunk is refused because an upload field is missing or malformed or the chunk disagrees with the upload it belongs to. A refused chunk's message names the problem."
           },
           "401" : {
             "description" : "Unauthorized"
@@ -109,7 +116,14 @@
             "description" : "The chunk was stored; any submission it completed has been started"
           },
           "400" : {
-            "description" : "Not a multipart upload, or the package does not carry exactly one metadata file"
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/CedarError"
+                }
+              }
+            },
+            "description" : "Not a multipart upload, the package does not carry exactly one metadata file, or the chunk is refused because an upload field is missing or malformed or the chunk disagrees with the upload it belongs to. A refused chunk's message names the problem."
           },
           "401" : {
             "description" : "Unauthorized"
@@ -134,7 +148,14 @@
             "description" : "The chunk was stored; any submission it completed has been started"
           },
           "400" : {
-            "description" : "Not a multipart upload, or the package does not carry exactly one metadata file"
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/CedarError"
+                }
+              }
+            },
+            "description" : "Not a multipart upload, the package does not carry exactly one metadata file, or the chunk is refused because an upload field is missing or malformed or the chunk disagrees with the upload it belongs to. A refused chunk's message names the problem."
           },
           "401" : {
             "description" : "Unauthorized"

@@ -2,6 +2,8 @@ package org.metadatacenter.submission.resources;
 
 import com.codahale.metrics.annotation.Timed;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -47,6 +49,7 @@ import org.metadatacenter.submission.upload.flow.FileUploadStatus;
 import org.metadatacenter.submission.upload.flow.FlowData;
 import org.metadatacenter.submission.upload.flow.FlowUploadUtil;
 import org.metadatacenter.submission.upload.flow.SubmissionUploadManager;
+import org.metadatacenter.util.http.CedarError;
 import org.metadatacenter.util.http.CedarResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -217,7 +220,10 @@ public class ImmPortSubmissionServerResource extends CedarMicroserviceResource {
   @ApiResponses({
       @ApiResponse(responseCode = "200",
           description = "The chunk was stored; ImmPort's result if this completed the submission, an empty object if not"),
-      @ApiResponse(responseCode = "400", description = "Not a multipart upload, or no workspace was named"),
+      @ApiResponse(responseCode = "400", description = "Not a multipart upload, no workspace was named, "
+          + "or the chunk is refused because an upload field is missing or malformed or the chunk disagrees with "
+          + "the upload it belongs to. A refused chunk's message names the problem.",
+          content = @Content(schema = @Schema(implementation = CedarError.class))),
       @ApiResponse(responseCode = "401", description = "Unauthorized"),
       @ApiResponse(responseCode = "500", description = "ImmPort could not be reached, or no ImmPort token is configured")
   })
