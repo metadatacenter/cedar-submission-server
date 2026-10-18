@@ -99,7 +99,12 @@ public class NcbiPipelinesCommonUtil {
 
   public static List<String> extractSraFileNames(JsonNode instance, String sraElement, String sraFieldNameField) {
 
-    JsonNode sras = NcbiPipelinesCommonUtil.getTemplateElementNode(instance, sraElement).get();
+    // An instance without the SRA element names no files. The instance validation reports the missing element.
+    Optional<JsonNode> sraElementNode = NcbiPipelinesCommonUtil.getTemplateElementNode(instance, sraElement);
+    if (sraElementNode.isEmpty()) {
+      return new ArrayList<>();
+    }
+    JsonNode sras = sraElementNode.get();
     List<String> sraFileNames = new ArrayList();
 
     for (JsonNode sra : sras) {
@@ -108,8 +113,8 @@ public class NcbiPipelinesCommonUtil {
 
         for (JsonNode jsonNode : sra.get(sraFieldNameField)) {
           String fileNameField = jsonNode.asText();
-          Optional<String> fileName = NcbiPipelinesCommonUtil.getTemplateFieldValue(sra, fileNameField);
-          sraFileNames.add(fileName.get());
+          // A file-name field without a value names no file. The instance validation reports it.
+          NcbiPipelinesCommonUtil.getTemplateFieldValue(sra, fileNameField).ifPresent(sraFileNames::add);
         }
 
       } else {

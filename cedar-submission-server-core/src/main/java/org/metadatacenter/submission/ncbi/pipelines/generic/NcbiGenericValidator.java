@@ -46,9 +46,11 @@ public class NcbiGenericValidator {
       messages.addAll(NcbiPipelinesCommonValidator.validateSra(sras.get(), SRA_FIELDS, SRA_FILE_NAME_FIELD, SRA_REQUIRED_FIELD_VALUES));
     }
 
-    /** Check the BioSample-SRA references **/
-    messages.addAll(NcbiPipelinesCommonValidator.validateBiosampleSraRefs(biosamples.get(), sras.get(),
-        BIOSAMPLE_SAMPLE_NAME_FIELD, SRA_SAMPLE_NAME_FIELD));
+    /** Check the BioSample-SRA references. They need both elements, and a missing element has its message. **/
+    if (biosamples.isPresent() && sras.isPresent()) {
+      messages.addAll(NcbiPipelinesCommonValidator.validateBiosampleSraRefs(biosamples.get(), sras.get(),
+          BIOSAMPLE_SAMPLE_NAME_FIELD, SRA_SAMPLE_NAME_FIELD));
+    }
 
     /** Return validation messages **/
     validationResponse.setMessages(messages);
