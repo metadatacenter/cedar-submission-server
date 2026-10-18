@@ -9,6 +9,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.exc.InvalidDefinitionException;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.metadatacenter.cedar.util.dw.CedarMicroserviceResource;
@@ -77,7 +78,8 @@ public class AMIA2016DemoBioSampleServerResource extends CedarMicroserviceResour
           + "since instances in the wild carry them.")
   @ApiResponses({
       @ApiResponse(responseCode = "200", description = "The BioSample validation report"),
-      @ApiResponse(responseCode = "400", description = "The body is not JSON",
+      @ApiResponse(responseCode = "400", description = "The body is not JSON, or does not fit the AMIA 2016 demo "
+          + "BioSample template",
           content = @Content(schema = @Schema(implementation = CedarError.class))),
       @ApiResponse(responseCode = "401", description = UNAUTHORIZED,
           content = @Content(schema = @Schema(implementation = CedarError.class))),
@@ -98,23 +100,30 @@ public class AMIA2016DemoBioSampleServerResource extends CedarMicroserviceResour
 
     String payload = c.request().getRequestBody().asJsonString();
 
+    AMIA2016DemoBioSampleTemplate amia2016BioSampleInstance;
     try {
-
       JsonNode instance = prepareForValidation(payload);
+      amia2016BioSampleInstance = STRICT_MAPPER.readValue(instance.toString(), AMIA2016DemoBioSampleTemplate.class);
+    } catch (InvalidDefinitionException e) {
+      // Jackson cannot use the template class, which is this server's fault rather than the caller's
+      return CedarResponse.internalServerError().message(NOT_CONVERTED).exception(e).build();
+    } catch (IOException e) {
+      // The body was parsed as JSON before this route ran, so a failure here means it does not fit the template
+      return CedarResponse.badRequest().message(NOT_CONVERTED).build();
+    }
 
-      AMIA2016DemoBioSampleTemplate amia2016BioSampleInstance = STRICT_MAPPER.readValue(instance.toString(),
-          AMIA2016DemoBioSampleTemplate.class);
-
+    try {
       String bioSampleSubmissionXML = this.amia2016DemoBioSampleTemplate2BioSampleConverter
           .generateBioSampleSubmissionXMLFromAMIA2016DemoBioSampleTemplateInstance(amia2016BioSampleInstance);
 
       return Response.ok(this.bioSampleValidator.validateBioSampleSubmission(bioSampleSubmissionXML)).build();
 
-    } catch (JAXBException | DatatypeConfigurationException | IOException e) {
-      return CedarResponse.internalServerError().message("The instance could not be converted to BioSample XML")
-          .exception(e).build();
+    } catch (JAXBException | DatatypeConfigurationException e) {
+      return CedarResponse.internalServerError().message(NOT_CONVERTED).exception(e).build();
     }
   }
+
+  private static final String NOT_CONVERTED = "The instance could not be converted to BioSample XML";
 
   /* Utilities */
 

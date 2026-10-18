@@ -352,8 +352,8 @@ public class ImmPortSubmissionServerResource extends CedarMicroserviceResource {
           + "route is what the workbench uses.")
   @ApiResponses({
       @ApiResponse(responseCode = "200", description = "ImmPort's submission result"),
-      @ApiResponse(responseCode = "400", description = "Not a multipart upload, or no workspaceId parameter. "
-          + "The message names the problem.",
+      @ApiResponse(responseCode = "400", description = "Not a multipart upload, a multipart body that cannot be "
+          + "parsed, or no workspaceId parameter. The message names the problem.",
           content = @Content(schema = @Schema(implementation = CedarError.class))),
       @ApiResponse(responseCode = "401", description = UNAUTHORIZED,
           content = @Content(schema = @Schema(implementation = CedarError.class))),
@@ -422,6 +422,9 @@ public class ImmPortSubmissionServerResource extends CedarMicroserviceResource {
         return CedarResponse.badRequest().message(NOT_MULTIPART_UPLOAD).build();
       }
     } catch (IOException | ParseException e) {
+      if (e instanceof FileUploadException uploadFailure && isMalformedBody(uploadFailure)) {
+        return CedarResponse.badRequest().message(REQUEST_NOT_SENT).build();
+      }
       return CedarResponse.internalServerError().message(REQUEST_NOT_SENT).exception(e).build();
     } finally {
       Closer.closeQuietly(response);
@@ -446,6 +449,15 @@ public class ImmPortSubmissionServerResource extends CedarMicroserviceResource {
 
   private static String immPortAnswered(int statusCode) {
     return "ImmPort answered the submission with status " + statusCode;
+  }
+
+  /**
+   * Whether the multipart parser refused the request body as malformed. The parser reports a failure to read
+   * the request, or to write a part to disk, as a plain FileUploadException caused by that IOException. Any
+   * other FileUploadException it throws reports a malformed body.
+   */
+  static boolean isMalformedBody(FileUploadException e) {
+    return e.getClass() != FileUploadException.class || !(e.getCause() instanceof IOException);
   }
 
   private HttpEntity getMultipartContentFromRequest(String workspaceID) throws FileUploadException, IOException {

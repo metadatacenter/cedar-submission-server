@@ -127,7 +127,7 @@
                 }
               }
             },
-            "description" : "Not a multipart upload, or no workspaceId parameter. The message names the problem."
+            "description" : "Not a multipart upload, a multipart body that cannot be parsed, or no workspaceId parameter. The message names the problem."
           },
           "401" : {
             "content" : {
@@ -521,7 +521,7 @@
                 }
               }
             },
-            "description" : "The body is not JSON"
+            "description" : "The body is not JSON, or does not fit the AMIA 2016 demo BioSample template"
           },
           "401" : {
             "content" : {
@@ -607,7 +607,7 @@
                 }
               }
             },
-            "description" : "The body is not JSON, or is not an object holding instance and, optionally, userFileNames, and no other field. The message names the problem."
+            "description" : "The body is not JSON, or is not an object holding instance and, optionally, userFileNames, and no other field, or holds a userFileNames that cannot be read as a list of file names. The message names the problem."
           },
           "401" : {
             "content" : {
@@ -647,7 +647,7 @@
                 }
               }
             },
-            "description" : "The file names could not be read, or the submission XML could not be generated"
+            "description" : "The submission XML could not be generated"
           },
           "503" : {
             "content" : {
@@ -829,7 +829,7 @@
                 }
               }
             },
-            "description" : "The body is not JSON, or is not an object holding instance and, optionally, userFileNames, and no other field. The message names the problem."
+            "description" : "The body is not JSON, or is not an object holding instance and, optionally, userFileNames, and no other field, or holds a userFileNames that cannot be read as a list of file names. The message names the problem."
           },
           "401" : {
             "content" : {
@@ -869,7 +869,7 @@
                 }
               }
             },
-            "description" : "The file names could not be read, or the submission XML could not be generated"
+            "description" : "The submission XML could not be generated"
           },
           "503" : {
             "content" : {

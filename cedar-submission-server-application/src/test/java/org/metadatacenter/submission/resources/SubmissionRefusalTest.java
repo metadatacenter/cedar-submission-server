@@ -5,6 +5,8 @@ import com.sun.net.httpserver.HttpServer;
 import io.dropwizard.core.setup.Environment;
 import io.dropwizard.testing.DropwizardTestSupport;
 import io.dropwizard.testing.ResourceHelpers;
+import org.apache.commons.fileupload2.core.FileUploadException;
+import org.apache.commons.fileupload2.core.MultipartInput;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
@@ -183,12 +185,12 @@ class SubmissionRefusalTest {
         "The body must be an object holding instance and, optionally, userFileNames, and no other field");
   }
 
+  /** File names that are not strings are the caller's mistake. They were answered as a 500. */
   @ParameterizedTest
   @ValueSource(strings = {"/command/validate-ncbi", "/command/validate-cairr"})
   void fileNamesThatAreNotStringsAreRefusedWithTheirField(String route) throws Exception {
-    JsonNode error = assertRefused(postJson(route, "{\"instance\":{},\"userFileNames\":[{\"name\":\"a.fastq\"}]}"),
-        500, "userFileNames could not be read as a list of file names");
-    assertTrue(error.hasNonNull("errorId"), error.toString());
+    assertRefused(postJson(route, "{\"instance\":{},\"userFileNames\":[{\"name\":\"a.fastq\"}]}"),
+        400, "userFileNames could not be read as a list of file names");
   }
 
   /**
@@ -288,6 +290,32 @@ class SubmissionRefusalTest {
     assertFalse(response.body().contains("127.0.0.1"), response.body());
   }
 
+  /**
+   * A body the multipart parser cannot read is the caller's mistake. It was answered as a 500, as a failure
+   * to reach ImmPort still is.
+   */
+  @Test
+  void aMalformedImmPortSubmissionIsRefusedAsTheCallersMistake() throws Exception {
+    assertRefused(postMultipart("/command/immport-submit-old?workspaceId=ws", "--" + BOUNDARY + "\r\nnot a part"),
+        400, "The request could not be read, or the submission could not be sent to ImmPort");
+    assertEquals(0, immPortCalls.get());
+  }
+
+  /**
+   * The parser reports a failure to read the request, or to write a part to disk, as a plain
+   * FileUploadException caused by that IOException. Only that failure stays a 500.
+   */
+  @Test
+  void onlyAnInputFailureOfTheMultipartParserIsTheServersFault() {
+    assertFalse(ImmPortSubmissionServerResource.isMalformedBody(
+        new FileUploadException("Request 'multipart/form-data' failed: No space left on device",
+            new IOException("No space left on device"))));
+    assertTrue(ImmPortSubmissionServerResource.isMalformedBody(
+        new FileUploadException("the request was rejected because no multipart boundary was found")));
+    assertTrue(ImmPortSubmissionServerResource.isMalformedBody(
+        new MultipartInput.MalformedStreamException("Stream ended unexpectedly", new IOException("No more data"))));
+  }
+
   @Test
   void anImmPortSubmissionThatCannotBeSentIsAnsweredWithAMessageAndAnErrorId() throws Exception {
     immPortAnswer.set(-1);
@@ -298,11 +326,12 @@ class SubmissionRefusalTest {
 
   // The AMIA 2016 demo validation
 
-  @Test
-  void anAmiaInstanceThatCannotBeConvertedIsAnsweredWithoutValidatingAnything() throws Exception {
-    JsonNode error = assertRefused(postJson("/command/validate-biosample", "[]"), 500,
+  /** A body that does not fit the template is the caller's mistake. It was answered as a 500. */
+  @ParameterizedTest
+  @ValueSource(strings = {"[]", "{\"sampleName\":[]}", "{\"comment\":\"extra\"}"})
+  void anAmiaBodyThatDoesNotFitTheTemplateIsRefusedWithoutValidatingAnything(String body) throws Exception {
+    assertRefused(postJson("/command/validate-biosample", body), 400,
         "The instance could not be converted to BioSample XML");
-    assertTrue(error.hasNonNull("errorId"), error.toString());
     assertEquals(0, bioSampleCalls.get());
   }
 

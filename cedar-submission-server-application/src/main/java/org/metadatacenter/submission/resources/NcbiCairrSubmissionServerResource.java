@@ -114,8 +114,7 @@ public class NcbiCairrSubmissionServerResource
           content = @Content(schema = @Schema(implementation = CedarError.class))),
       @ApiResponse(responseCode = "429", description = RATE_LIMITED,
           content = @Content(schema = @Schema(implementation = CedarError.class))),
-      @ApiResponse(responseCode = "500", description = "The file names could not be read, or the submission XML "
-          + "could not be generated",
+      @ApiResponse(responseCode = "500", description = "The submission XML could not be generated",
           content = @Content(schema = @Schema(implementation = CedarError.class))),
       @ApiResponse(responseCode = "503", description = UNAVAILABLE,
           content = @Content(schema = @Schema(implementation = CedarError.class)))
@@ -153,7 +152,8 @@ public class NcbiCairrSubmissionServerResource
                 new TypeReference<ArrayList<String>>() {
                 });
           } catch (IOException e) {
-            return CedarResponse.internalServerError().message(FILE_NAMES_UNREADABLE).exception(e).build();
+            // userFileNames is already parsed, so a failure to read it is a failure of its shape
+            return CedarResponse.badRequest().message(FILE_NAMES_UNREADABLE).build();
           }
           fileNamesValidationResponse =
               this.ncbiCairrValidator.validateFilenames(instance, fileNames);
