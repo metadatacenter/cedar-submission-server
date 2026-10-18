@@ -283,8 +283,6 @@ public class NcbiCairrSubmissionServerResource
       } catch (IOException | JAXBException |
                DatatypeConfigurationException e) {
         return CedarResponse.internalServerError().message(UPLOAD_FAILED).exception(e).build();
-      } catch (IllegalAccessException e) {
-        logger.error("Error reading the multipart content of the CAIRR submission upload request", e);
       }
       return Response.ok().build();
     } else {

@@ -21,7 +21,7 @@ public class FlowUploadUtil {
   final static Logger logger = LoggerFactory.getLogger(FlowUploadUtil.class);
 
   public static FlowData getFlowData(HttpServletRequest request)
-      throws IllegalAccessException, FileUploadException, IOException {
+      throws FileUploadException, IOException {
 
     // Extract all the files or form items that were received within the multipart/form-data POST request
     List<DiskFileItem> fileItems =

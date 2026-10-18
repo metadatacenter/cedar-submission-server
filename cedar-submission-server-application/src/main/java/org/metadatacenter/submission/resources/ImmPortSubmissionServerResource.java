@@ -332,8 +332,7 @@ public class ImmPortSubmissionServerResource extends CedarMicroserviceResource {
         logger.warn("No form data supplied");
         return CedarResponse.badRequest().message(NOT_MULTIPART_UPLOAD).build();
       }
-    } catch (IOException | ParseException | SubmissionInstanceNotFoundException | IllegalAccessException |
-             JAXBException |
+    } catch (IOException | ParseException | SubmissionInstanceNotFoundException | JAXBException |
              DatatypeConfigurationException e) {
       return CedarResponse.internalServerError().message(CHUNK_NOT_SENT).exception(e).build();
     } finally {
