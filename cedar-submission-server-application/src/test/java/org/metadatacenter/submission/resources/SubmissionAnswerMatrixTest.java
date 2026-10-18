@@ -28,6 +28,7 @@ import java.util.stream.Stream;
 import static org.junit.jupiter.api.Assertions.*;
 
 /** Real authenticated submission routes; only the external validator/workspace service is stubbed. */
+@Tag("integration")
 class SubmissionAnswerMatrixTest {
   static HttpServer upstream;
   static final AtomicInteger answer = new AtomicInteger(200);

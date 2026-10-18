@@ -7,6 +7,7 @@ import io.dropwizard.testing.ResourceHelpers;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -49,6 +50,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * The routes run authenticated in the real application with their real validators. Only the BioSample
  * validator, which sends XML to NCBI, is a counter, and an incomplete instance never reaches it.
  */
+@Tag("integration")
 class IncompleteInstanceValidationTest {
 
   private static final String FILE = "reads.fastq";

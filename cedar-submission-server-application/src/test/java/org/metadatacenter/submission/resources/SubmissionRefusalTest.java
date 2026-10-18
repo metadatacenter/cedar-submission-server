@@ -10,6 +10,7 @@ import org.apache.commons.fileupload2.core.MultipartInput;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -61,6 +62,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * and a converter that fails on every one, so a request reaches the conversion without a complete
  * submission.
  */
+@Tag("integration")
 class SubmissionRefusalTest {
 
   private static final String BOUNDARY = "refusal";

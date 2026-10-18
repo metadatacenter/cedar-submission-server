@@ -1,6 +1,7 @@
 package org.metadatacenter.submission.ncbi.queue;
 
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 import org.metadatacenter.server.queue.util.EmbeddedRedis;
@@ -15,6 +16,7 @@ import java.util.concurrent.TimeUnit;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @Timeout(30)
+@Tag("integration")
 class NcbiSubmissionQueueProcessorTest {
 
   private EmbeddedRedis redis;
