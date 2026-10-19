@@ -2,6 +2,8 @@ package org.metadatacenter.submission.resources;
 
 import com.codahale.metrics.annotation.Timed;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -19,6 +21,7 @@ import org.metadatacenter.util.json.JsonMapper;
 import org.apache.hc.core5.http.io.entity.EntityUtils;
 import java.nio.charset.StandardCharsets;
 import org.metadatacenter.rest.context.CedarRequestContext;
+import org.metadatacenter.util.http.CedarError;
 import org.metadatacenter.util.http.CedarResponse;
 import org.metadatacenter.util.http.HttpTimeouts;
 import org.slf4j.Logger;
@@ -33,6 +36,7 @@ import jakarta.ws.rs.core.Response;
 import java.io.IOException;
 
 import static org.metadatacenter.rest.assertion.GenericAssertions.LoggedIn;
+import static org.metadatacenter.submission.resources.SubmissionApiDocs.*;
 
 @Path("/command")
 @Produces(MediaType.APPLICATION_JSON)
@@ -43,6 +47,9 @@ public class LincsSubmissionServerResource extends CedarMicroserviceResource {
   private static final Logger logger = LoggerFactory.getLogger(LincsSubmissionServerResource.class);
 
   private static final String LINCS_VALIDATION_ENDPOINT = "http://dev3.ccs.miami.edu:8080/dcic/api/dataset-validation";
+
+  private static final String LINCS_REFUSED = "The LINCS validator refused the request with this status "
+      + "(upstreamServerError, with the validator's status in parameters.upstreamStatusCode)";
 
   private final String validationEndpoint;
   private final HttpTimeouts timeouts;
@@ -67,10 +74,36 @@ public class LincsSubmissionServerResource extends CedarMicroserviceResource {
           + "refusals retain their status. Transport failures return 503.")
   @ApiResponses({
       @ApiResponse(responseCode = "200", description = "The LINCS validation report"),
-      @ApiResponse(responseCode = "400", description = "Invalid CEDAR request"),
-      @ApiResponse(responseCode = "401", description = "Unauthorized"),
-      @ApiResponse(responseCode = "502", description = "The LINCS validator refused the request or returned an unreadable answer"),
-      @ApiResponse(responseCode = "503", description = "The LINCS validator could not be reached")
+      @ApiResponse(responseCode = "400", description = "The body is not JSON",
+          content = @Content(schema = @Schema(implementation = CedarError.class))),
+      @ApiResponse(responseCode = "401", description = UNAUTHORIZED,
+          content = @Content(schema = @Schema(implementation = CedarError.class))),
+      @ApiResponse(responseCode = "404", description = LINCS_REFUSED,
+          content = @Content(schema = @Schema(implementation = CedarError.class))),
+      @ApiResponse(responseCode = "406", description = NOT_ACCEPTABLE,
+          content = @Content(schema = @Schema(implementation = CedarError.class))),
+      @ApiResponse(responseCode = "409", description = LINCS_REFUSED,
+          content = @Content(schema = @Schema(implementation = CedarError.class))),
+      @ApiResponse(responseCode = "412", description = LINCS_REFUSED,
+          content = @Content(schema = @Schema(implementation = CedarError.class))),
+      @ApiResponse(responseCode = "415", description = NOT_JSON,
+          content = @Content(schema = @Schema(implementation = CedarError.class))),
+      @ApiResponse(responseCode = "422", description = LINCS_REFUSED,
+          content = @Content(schema = @Schema(implementation = CedarError.class))),
+      @ApiResponse(responseCode = "429", description = RATE_LIMITED + ", or the LINCS validator answered 429 "
+          + "(upstreamServerError)",
+          content = @Content(schema = @Schema(implementation = CedarError.class))),
+      @ApiResponse(responseCode = "500", description = INTERNAL_ERROR,
+          content = @Content(schema = @Schema(implementation = CedarError.class))),
+      @ApiResponse(responseCode = "502", description = "The LINCS validator refused the request or returned an "
+          + "unreadable answer (upstreamServerError)",
+          content = @Content(schema = @Schema(implementation = CedarError.class))),
+      @ApiResponse(responseCode = "503", description = "The LINCS validator could not be reached, or answered 503 "
+          + "(upstreamServerError), or the graph database or another service the request depends on is "
+          + "unavailable",
+          content = @Content(schema = @Schema(implementation = CedarError.class))),
+      @ApiResponse(responseCode = "504", description = "The LINCS validator answered 504 (upstreamServerError)",
+          content = @Content(schema = @Schema(implementation = CedarError.class)))
   })
   public Response validateInstance() throws CedarException {
     CedarRequestContext c = buildRequestContext();

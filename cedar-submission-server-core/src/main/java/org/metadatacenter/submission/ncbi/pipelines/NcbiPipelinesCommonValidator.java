@@ -36,12 +36,15 @@ public class NcbiPipelinesCommonValidator {
           messages.add(fieldName + " value must be supplied for SRA");
         }
       }
-      // File type and file names
-      for (JsonNode jsonNode : sra.get(sraFileNameField)) {
-        String fileNameField = jsonNode.asText();
-        Optional<String> fileName = NcbiPipelinesCommonUtil.getTemplateFieldValue(sra, fileNameField);
-        if (fileName.isEmpty()) {
-          messages.add("File name field not present: " + fileNameField);
+      // File type and file names. An entry without its list of file-name fields has no file names to check.
+      JsonNode fileNameFields = sra.get(sraFileNameField);
+      if (fileNameFields != null) {
+        for (JsonNode jsonNode : fileNameFields) {
+          String fileNameField = jsonNode.asText();
+          Optional<String> fileName = NcbiPipelinesCommonUtil.getTemplateFieldValue(sra, fileNameField);
+          if (fileName.isEmpty()) {
+            messages.add("File name field not present: " + fileNameField);
+          }
         }
       }
     }

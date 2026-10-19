@@ -6,6 +6,8 @@ import com.codahale.metrics.annotation.Timed;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -17,7 +19,6 @@ import org.apache.commons.fileupload2.jakarta.servlet6.JakartaServletFileUpload;
 import org.metadatacenter.cedar.util.dw.CedarMicroserviceResource;
 import org.metadatacenter.config.CedarConfig;
 import org.metadatacenter.exception.CedarException;
-import org.metadatacenter.http.CedarResponseStatus;
 import org.metadatacenter.rest.context.CedarRequestContext;
 import org.metadatacenter.submission.CEDARValidationResponse;
 import org.metadatacenter.submission.ncbi.NcbiConstants;
@@ -31,6 +32,7 @@ import org.metadatacenter.submission.ncbi.validation.BioSampleValidator;
 import org.metadatacenter.submission.upload.flow.FlowData;
 import org.metadatacenter.submission.upload.flow.FlowUploadUtil;
 import org.metadatacenter.submission.upload.flow.SubmissionUploadManager;
+import org.metadatacenter.util.http.CedarError;
 import org.metadatacenter.util.http.CedarResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,6 +52,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.metadatacenter.rest.assertion.GenericAssertions.LoggedIn;
+import static org.metadatacenter.submission.resources.SubmissionApiDocs.*;
 
 /**
  * See here for submission instructions to NCBI:
@@ -73,11 +76,22 @@ public class NcbiCairrSubmissionServerResource
   private final NcbiCairrValidator ncbiCairrValidator;
 
   public NcbiCairrSubmissionServerResource(CedarConfig cedarConfig) {
+    this(cedarConfig, new NcbiCairrValidator(), new NcbiCairrTemplateInstance2XMLConverter(),
+        new BioSampleValidator());
+  }
+
+  /**
+   * Builds the resource on the given instance validator, XML converter and BioSample validator. The
+   * BioSample validator sends the submission XML to NCBI, so a test that drives these routes supplies its own.
+   */
+  NcbiCairrSubmissionServerResource(CedarConfig cedarConfig, NcbiCairrValidator ncbiCairrValidator,
+                                    NcbiCairrTemplateInstance2XMLConverter ncbiCairrTemplate2SRAXMLConverter,
+                                    BioSampleValidator bioSampleValidator) {
     super(cedarConfig);
-    this.bioSampleValidator = new BioSampleValidator();
-    this.ncbiCairrTemplate2SRAXMLConverter = new NcbiCairrTemplateInstance2XMLConverter();
+    this.bioSampleValidator = bioSampleValidator;
+    this.ncbiCairrTemplate2SRAXMLConverter = ncbiCairrTemplate2SRAXMLConverter;
     this.ncbiCairrSubmissionXMLFileGenerator = new NcbiCairrSubmissionXMLFileGenerator();
-    this.ncbiCairrValidator = new NcbiCairrValidator();
+    this.ncbiCairrValidator = ncbiCairrValidator;
   }
 
   public static void injectServices(NcbiSubmissionQueueService ncbiSubmissionQueueService) {
@@ -92,9 +106,18 @@ public class NcbiCairrSubmissionServerResource
           + "returning the report. Validation only: nothing is sent to NCBI here.")
   @ApiResponses({
       @ApiResponse(responseCode = "200", description = "The validation report"),
-      @ApiResponse(responseCode = "400", description = "The instance could not be read as an AIRR submission"),
-      @ApiResponse(responseCode = "401", description = "Unauthorized"),
-      @ApiResponse(responseCode = "500", description = "The submission XML could not be generated")
+      @ApiResponse(responseCode = "400", description = VALIDATION_BODY_REFUSED,
+          content = @Content(schema = @Schema(implementation = CedarError.class))),
+      @ApiResponse(responseCode = "401", description = UNAUTHORIZED,
+          content = @Content(schema = @Schema(implementation = CedarError.class))),
+      @ApiResponse(responseCode = "406", description = NOT_ACCEPTABLE,
+          content = @Content(schema = @Schema(implementation = CedarError.class))),
+      @ApiResponse(responseCode = "429", description = RATE_LIMITED,
+          content = @Content(schema = @Schema(implementation = CedarError.class))),
+      @ApiResponse(responseCode = "500", description = "The submission XML could not be generated",
+          content = @Content(schema = @Schema(implementation = CedarError.class))),
+      @ApiResponse(responseCode = "503", description = UNAVAILABLE,
+          content = @Content(schema = @Schema(implementation = CedarError.class)))
   })
   public Response validateCairr() throws CedarException {
 
@@ -129,7 +152,8 @@ public class NcbiCairrSubmissionServerResource
                 new TypeReference<ArrayList<String>>() {
                 });
           } catch (IOException e) {
-            return CedarResponse.internalServerError().exception(e).build();
+            // userFileNames is already parsed, so a failure to read it is a failure of its shape
+            return CedarResponse.badRequest().message(FILE_NAMES_UNREADABLE).build();
           }
           fileNamesValidationResponse =
               this.ncbiCairrValidator.validateFilenames(instance, fileNames);
@@ -138,11 +162,11 @@ public class NcbiCairrSubmissionServerResource
 
       // If 1 and 2 went well, we invoke NCBI's external validation
       if (cedarInstanceValidationResponse.getIsValid() && (fileNamesValidationResponse == null || fileNamesValidationResponse.getIsValid())) {
-        String submissionXML = null;
+        String submissionXML;
         try {
           submissionXML = this.ncbiCairrTemplate2SRAXMLConverter.convertTemplateInstanceToXML(instance);
         } catch (JAXBException | DatatypeConfigurationException | ParseException e) {
-          CedarResponse.status(CedarResponseStatus.INTERNAL_SERVER_ERROR).build();
+          return CedarResponse.internalServerError().message(NOT_CONVERTED).exception(e).build();
         }
         cedarFileNamesValidationResponse = this.bioSampleValidator.validateBioSampleSubmission(submissionXML);
       }
@@ -168,7 +192,7 @@ public class NcbiCairrSubmissionServerResource
       }
       return Response.ok(validationResponse).build();
     } else {
-      return CedarResponse.status(CedarResponseStatus.BAD_REQUEST).build();
+      return CedarResponse.badRequest().message(BODY_REFUSED).build();
     }
   }
 
@@ -187,10 +211,23 @@ public class NcbiCairrSubmissionServerResource
           + "metadata file. Submissions are sent one at a time, through a queue.")
   @ApiResponses({
       @ApiResponse(responseCode = "200", description = "The chunk was stored; any submission it completed has been started"),
-      @ApiResponse(responseCode = "400",
-          description = "Not a multipart upload, or the package does not carry exactly one metadata file"),
-      @ApiResponse(responseCode = "401", description = "Unauthorized"),
-      @ApiResponse(responseCode = "500", description = "The chunk could not be stored or the submission could not be prepared")
+      @ApiResponse(responseCode = "400", description = "Not a multipart upload, the package does not carry "
+          + "exactly one metadata file, or the chunk is refused because an upload field is missing or "
+          + "malformed or the chunk disagrees with the upload it belongs to. The message names the problem.",
+          content = @Content(schema = @Schema(implementation = CedarError.class))),
+      @ApiResponse(responseCode = "401", description = UNAUTHORIZED,
+          content = @Content(schema = @Schema(implementation = CedarError.class))),
+      @ApiResponse(responseCode = "406", description = NOT_ACCEPTABLE,
+          content = @Content(schema = @Schema(implementation = CedarError.class))),
+      @ApiResponse(responseCode = "415", description = NOT_MULTIPART,
+          content = @Content(schema = @Schema(implementation = CedarError.class))),
+      @ApiResponse(responseCode = "429", description = RATE_LIMITED,
+          content = @Content(schema = @Schema(implementation = CedarError.class))),
+      @ApiResponse(responseCode = "500", description = "The chunk could not be stored or the submission could not "
+          + "be prepared",
+          content = @Content(schema = @Schema(implementation = CedarError.class))),
+      @ApiResponse(responseCode = "503", description = UNAVAILABLE,
+          content = @Content(schema = @Schema(implementation = CedarError.class)))
   })
   public Response uploadCAIRRToCEDAR()
       throws CedarException {
@@ -209,7 +246,7 @@ public class NcbiCairrSubmissionServerResource
               "Incorrect number of metadata files (submissionId = " + data.getSubmissionId() + "; metadataFiles = " + data
                   .getMetadataFiles().size();
           logger.info(message);
-          return CedarResponse.status(CedarResponseStatus.BAD_REQUEST).build();
+          return CedarResponse.badRequest().message(metadataFilesRefused(data.getMetadataFiles().size())).build();
         }
         // Every request contains a file chunk that we will save in the appropriate position of a local file
         String submissionLocalFolderPath = FlowUploadUtil
@@ -245,14 +282,27 @@ public class NcbiCairrSubmissionServerResource
 
       } catch (IOException | JAXBException |
                DatatypeConfigurationException e) {
-        logger.error(e.getMessage(), e);
-        return CedarResponse.status(CedarResponseStatus.INTERNAL_SERVER_ERROR).build();
-      } catch (IllegalAccessException e) {
-        logger.error("Error reading the multipart content of the CAIRR submission upload request", e);
+        return CedarResponse.internalServerError().message(UPLOAD_FAILED).exception(e).build();
       }
       return Response.ok().build();
     } else {
-      return CedarResponse.status(CedarResponseStatus.BAD_REQUEST).build();
+      return CedarResponse.badRequest().message(NOT_MULTIPART_UPLOAD).build();
     }
+  }
+
+  private static final String BODY_REFUSED = "The body must be an object holding instance and, optionally, "
+      + "userFileNames, and no other field";
+
+  private static final String FILE_NAMES_UNREADABLE = "userFileNames could not be read as a list of file names";
+
+  private static final String NOT_CONVERTED = "The instance could not be converted to the NCBI submission XML";
+
+  private static final String NOT_MULTIPART_UPLOAD = "The request is not a multipart/form-data upload";
+
+  private static final String UPLOAD_FAILED = "The chunk could not be stored, or the submission could not be "
+      + "prepared";
+
+  private static String metadataFilesRefused(int count) {
+    return "metadataFiles must name exactly one metadata file, but names " + count;
   }
 }

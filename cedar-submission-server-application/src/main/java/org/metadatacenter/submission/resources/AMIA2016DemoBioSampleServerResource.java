@@ -2,21 +2,24 @@ package org.metadatacenter.submission.resources;
 
 import com.codahale.metrics.annotation.Timed;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.exc.InvalidDefinitionException;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.metadatacenter.cedar.util.dw.CedarMicroserviceResource;
 import org.metadatacenter.config.CedarConfig;
 import org.metadatacenter.exception.CedarException;
-import org.metadatacenter.http.CedarResponseStatus;
 import org.metadatacenter.rest.context.CedarRequestContext;
 import org.metadatacenter.submission.AMIA2016DemoBioSampleTemplate;
 import org.metadatacenter.submission.ncbi.validation.BioSampleValidator;
 import org.metadatacenter.submission.ncbi.amia.AMIA2016DemoBioSampleTemplate2BioSampleConverter;
+import org.metadatacenter.util.http.CedarError;
 import org.metadatacenter.util.http.CedarResponse;
 
 import jakarta.ws.rs.Consumes;
@@ -32,6 +35,7 @@ import java.util.Iterator;
 import java.util.Map;
 
 import static org.metadatacenter.rest.assertion.GenericAssertions.LoggedIn;
+import static org.metadatacenter.submission.resources.SubmissionApiDocs.*;
 import static org.metadatacenter.util.json.JsonMapper.STRICT_MAPPER;
 
 @Path("/command")
@@ -45,8 +49,16 @@ public class AMIA2016DemoBioSampleServerResource extends CedarMicroserviceResour
   private final AMIA2016DemoBioSampleTemplate2BioSampleConverter amia2016DemoBioSampleTemplate2BioSampleConverter;
 
   public AMIA2016DemoBioSampleServerResource(CedarConfig cedarConfig) {
+    this(cedarConfig, new BioSampleValidator());
+  }
+
+  /**
+   * Builds the resource on the given BioSample validator, which sends the submission XML to NCBI. A test
+   * that drives this route supplies its own.
+   */
+  AMIA2016DemoBioSampleServerResource(CedarConfig cedarConfig, BioSampleValidator bioSampleValidator) {
     super(cedarConfig);
-    this.bioSampleValidator = new BioSampleValidator();
+    this.bioSampleValidator = bioSampleValidator;
     this.amia2016DemoBioSampleTemplate2BioSampleConverter = new AMIA2016DemoBioSampleTemplate2BioSampleConverter();
   }
 
@@ -66,8 +78,21 @@ public class AMIA2016DemoBioSampleServerResource extends CedarMicroserviceResour
           + "since instances in the wild carry them.")
   @ApiResponses({
       @ApiResponse(responseCode = "200", description = "The BioSample validation report"),
-      @ApiResponse(responseCode = "401", description = "Unauthorized"),
-      @ApiResponse(responseCode = "500", description = "The instance could not be converted to BioSample XML")
+      @ApiResponse(responseCode = "400", description = "The body is not JSON, or does not fit the AMIA 2016 demo "
+          + "BioSample template",
+          content = @Content(schema = @Schema(implementation = CedarError.class))),
+      @ApiResponse(responseCode = "401", description = UNAUTHORIZED,
+          content = @Content(schema = @Schema(implementation = CedarError.class))),
+      @ApiResponse(responseCode = "406", description = NOT_ACCEPTABLE,
+          content = @Content(schema = @Schema(implementation = CedarError.class))),
+      @ApiResponse(responseCode = "415", description = NOT_JSON,
+          content = @Content(schema = @Schema(implementation = CedarError.class))),
+      @ApiResponse(responseCode = "429", description = RATE_LIMITED,
+          content = @Content(schema = @Schema(implementation = CedarError.class))),
+      @ApiResponse(responseCode = "500", description = "The instance could not be converted to BioSample XML",
+          content = @Content(schema = @Schema(implementation = CedarError.class))),
+      @ApiResponse(responseCode = "503", description = UNAVAILABLE,
+          content = @Content(schema = @Schema(implementation = CedarError.class)))
   })
   public Response validateBioSample() throws CedarException {
     CedarRequestContext c = buildRequestContext();
@@ -75,22 +100,30 @@ public class AMIA2016DemoBioSampleServerResource extends CedarMicroserviceResour
 
     String payload = c.request().getRequestBody().asJsonString();
 
+    AMIA2016DemoBioSampleTemplate amia2016BioSampleInstance;
     try {
-
       JsonNode instance = prepareForValidation(payload);
+      amia2016BioSampleInstance = STRICT_MAPPER.readValue(instance.toString(), AMIA2016DemoBioSampleTemplate.class);
+    } catch (InvalidDefinitionException e) {
+      // Jackson cannot use the template class, which is this server's fault rather than the caller's
+      return CedarResponse.internalServerError().message(NOT_CONVERTED).exception(e).build();
+    } catch (IOException e) {
+      // The body was parsed as JSON before this route ran, so a failure here means it does not fit the template
+      return CedarResponse.badRequest().message(NOT_CONVERTED).build();
+    }
 
-      AMIA2016DemoBioSampleTemplate amia2016BioSampleInstance = STRICT_MAPPER.readValue(instance.toString(),
-          AMIA2016DemoBioSampleTemplate.class);
-
+    try {
       String bioSampleSubmissionXML = this.amia2016DemoBioSampleTemplate2BioSampleConverter
           .generateBioSampleSubmissionXMLFromAMIA2016DemoBioSampleTemplateInstance(amia2016BioSampleInstance);
 
       return Response.ok(this.bioSampleValidator.validateBioSampleSubmission(bioSampleSubmissionXML)).build();
 
-    } catch (JAXBException | DatatypeConfigurationException | IOException e) {
-      return CedarResponse.status(CedarResponseStatus.INTERNAL_SERVER_ERROR).build();
+    } catch (JAXBException | DatatypeConfigurationException e) {
+      return CedarResponse.internalServerError().message(NOT_CONVERTED).exception(e).build();
     }
   }
+
+  private static final String NOT_CONVERTED = "The instance could not be converted to BioSample XML";
 
   /* Utilities */
 

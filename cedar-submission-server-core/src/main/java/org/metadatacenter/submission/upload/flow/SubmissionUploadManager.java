@@ -1,6 +1,5 @@
 package org.metadatacenter.submission.upload.flow;
 
-import jakarta.ws.rs.BadRequestException;
 import org.metadatacenter.submission.exception.SubmissionInstanceNotFoundException;
 import org.metadatacenter.util.upload.ChunkUploadStore;
 import java.io.IOException;
@@ -35,7 +34,7 @@ public class SubmissionUploadManager {
   }
   public List<String> getSubmissionFilePaths(String owner, String id) throws SubmissionInstanceNotFoundException {
     var status = required(owner, id);
-    if (!status.complete()) throw new BadRequestException("The upload is not complete");
+    if (!status.complete()) throw FlowUploadUtil.refused("The upload is not complete");
     return status.files().values().stream().map(ChunkUploadStore.FileStatus::path).toList();
   }
   public SubmissionUploadStatus getSubmissionsUploadStatus(String owner, String id) {

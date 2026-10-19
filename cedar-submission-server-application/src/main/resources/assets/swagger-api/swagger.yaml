@@ -12,7 +12,7 @@ info:
     response means the chunk was stored and any submission it completed was started, not that the
     repository has accepted anything.
   title: CEDAR Submission Server API
-  version: 2.9.24
+  version: 2.9.25
 paths:
   /:
     get:
@@ -42,11 +42,52 @@ paths:
           description: "The chunk was stored; ImmPort's result if this completed the\
             \ submission, an empty object if not"
         "400":
-          description: "Not a multipart upload, or no workspace was named"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CedarError"
+          description: "Not a multipart upload, no workspace was named, or the chunk\
+            \ is refused because an upload field is missing or malformed or the chunk\
+            \ disagrees with the upload it belongs to. The message names the problem."
         "401":
-          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CedarError"
+          description: The request carries no valid credentials
+        "406":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CedarError"
+          description: The request does not accept a JSON response
+        "415":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CedarError"
+          description: The body is not declared as multipart/form-data
+        "429":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CedarError"
+          description: "The deployment limits each user's request rate, and the caller\
+            \ exceeded it"
         "500":
-          description: "ImmPort could not be reached, or no ImmPort token is configured"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CedarError"
+          description: "No ImmPort token is available, or ImmPort could not be reached\
+            \ or refused the submission, or the chunk could not be stored"
+        "503":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CedarError"
+          description: "The graph database, or another service the request depends\
+            \ on, is unavailable"
       security:
       - api_key: []
       summary: Upload a submission package and send it to ImmPort
@@ -62,11 +103,51 @@ paths:
         "200":
           description: ImmPort's submission result
         "400":
-          description: "Not a multipart upload, or no workspaceId parameter"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CedarError"
+          description: "Not a multipart upload, a multipart body that cannot be parsed,\
+            \ or no workspaceId parameter. The message names the problem."
         "401":
-          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CedarError"
+          description: The request carries no valid credentials
+        "406":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CedarError"
+          description: The request does not accept a JSON response
+        "415":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CedarError"
+          description: The body is not declared as multipart/form-data
+        "429":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CedarError"
+          description: "The deployment limits each user's request rate, and the caller\
+            \ exceeded it"
         "500":
-          description: "ImmPort could not be reached, or no ImmPort token is configured"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CedarError"
+          description: "No ImmPort token is available, or ImmPort could not be reached\
+            \ or refused the submission, or the request could not be read"
+        "503":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CedarError"
+          description: "The graph database, or another service the request depends\
+            \ on, is unavailable"
       security:
       - api_key: []
       summary: Send a submission to ImmPort in one request
@@ -75,17 +156,96 @@ paths:
   /command/immport-workspaces:
     get:
       description: "Ask ImmPort which workspaces the configured account can submit\
-        \ to, and return them. A submission names one of these."
+        \ to, and return them. A submission names one of these. ImmPort's refusal\
+        \ of the request keeps ImmPort's status, and ImmPort may refuse with a status\
+        \ not listed below, which is relayed the same way. A refusal of the credentials\
+        \ this server holds, an ImmPort failure, a status that is neither 200 nor\
+        \ a refusal, or an answer that cannot be read is a 502, and an ImmPort that\
+        \ does not answer is a 503."
       operationId: immPortWorkspaces
       responses:
         "200":
           description: The available ImmPort workspaces
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CedarError"
+          description: "ImmPort refused the request with this status (upstreamServerError,\
+            \ with ImmPort's status in parameters.upstreamStatusCode)"
         "401":
-          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CedarError"
+          description: The request carries no valid credentials
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CedarError"
+          description: "ImmPort refused the request with this status (upstreamServerError,\
+            \ with ImmPort's status in parameters.upstreamStatusCode)"
+        "406":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CedarError"
+          description: The request does not accept a JSON response
+        "409":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CedarError"
+          description: "ImmPort refused the request with this status (upstreamServerError,\
+            \ with ImmPort's status in parameters.upstreamStatusCode)"
+        "412":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CedarError"
+          description: "ImmPort refused the request with this status (upstreamServerError,\
+            \ with ImmPort's status in parameters.upstreamStatusCode)"
+        "415":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CedarError"
+          description: The request declares a body type other than multipart/form-data
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CedarError"
+          description: "ImmPort refused the request with this status (upstreamServerError,\
+            \ with ImmPort's status in parameters.upstreamStatusCode)"
+        "429":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CedarError"
+          description: "The deployment limits each user's request rate, and the caller\
+            \ exceeded it, or ImmPort is limiting this deployment's requests (upstreamServerError)"
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CedarError"
+          description: Internal server error
         "502":
-          description: ImmPort returned an unusable response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CedarError"
+          description: "ImmPort failed, refused the credentials this server holds,\
+            \ or returned an unusable response (upstreamServerError)"
         "503":
-          description: ImmPort or its authentication is unavailable
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CedarError"
+          description: "ImmPort or its authentication is unavailable (upstreamServerError),\
+            \ or the graph database or another service the request depends on is unavailable"
       security:
       - api_key: []
       summary: List the caller's ImmPort workspaces
@@ -106,13 +266,53 @@ paths:
           description: The chunk was stored; any submission it completed has been
             started
         "400":
-          description: "Not a multipart upload, or the package does not carry exactly\
-            \ one metadata file"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CedarError"
+          description: "Not a multipart upload, the package does not carry exactly\
+            \ one metadata file, or the chunk is refused because an upload field is\
+            \ missing or malformed or the chunk disagrees with the upload it belongs\
+            \ to. The message names the problem."
         "401":
-          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CedarError"
+          description: The request carries no valid credentials
+        "406":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CedarError"
+          description: The request does not accept a JSON response
+        "415":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CedarError"
+          description: The body is not declared as multipart/form-data
+        "429":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CedarError"
+          description: "The deployment limits each user's request rate, and the caller\
+            \ exceeded it"
         "500":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CedarError"
           description: The chunk could not be stored or the submission could not be
             prepared
+        "503":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CedarError"
+          description: "The graph database, or another service the request depends\
+            \ on, is unavailable"
       security:
       - api_key: []
       summary: Upload an AIRR submission package and send it to NCBI
@@ -133,13 +333,53 @@ paths:
           description: The chunk was stored; any submission it completed has been
             started
         "400":
-          description: "Not a multipart upload, or the package does not carry exactly\
-            \ one metadata file"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CedarError"
+          description: "Not a multipart upload, the package does not carry exactly\
+            \ one metadata file, or the chunk is refused because an upload field is\
+            \ missing or malformed or the chunk disagrees with the upload it belongs\
+            \ to. The message names the problem."
         "401":
-          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CedarError"
+          description: The request carries no valid credentials
+        "406":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CedarError"
+          description: The request does not accept a JSON response
+        "415":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CedarError"
+          description: The body is not declared as multipart/form-data
+        "429":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CedarError"
+          description: "The deployment limits each user's request rate, and the caller\
+            \ exceeded it"
         "500":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CedarError"
           description: The chunk could not be stored or the submission could not be
             prepared
+        "503":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CedarError"
+          description: "The graph database, or another service the request depends\
+            \ on, is unavailable"
       security:
       - api_key: []
       summary: Upload a BioSample submission package and send it to NCBI
@@ -156,10 +396,51 @@ paths:
       responses:
         "200":
           description: The BioSample validation report
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CedarError"
+          description: "The body is not JSON, or does not fit the AMIA 2016 demo BioSample\
+            \ template"
         "401":
-          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CedarError"
+          description: The request carries no valid credentials
+        "406":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CedarError"
+          description: The request does not accept a JSON response
+        "415":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CedarError"
+          description: The body is not declared as JSON
+        "429":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CedarError"
+          description: "The deployment limits each user's request rate, and the caller\
+            \ exceeded it"
         "500":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CedarError"
           description: The instance could not be converted to BioSample XML
+        "503":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CedarError"
+          description: "The graph database, or another service the request depends\
+            \ on, is unavailable"
       security:
       - api_key: []
       summary: Validate an AMIA 2016 demo BioSample instance
@@ -175,11 +456,45 @@ paths:
         "200":
           description: The validation report
         "400":
-          description: The instance could not be read as an AIRR submission
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CedarError"
+          description: "The body is not JSON, or is not an object holding instance\
+            \ and, optionally, userFileNames, and no other field, or holds a userFileNames\
+            \ that cannot be read as a list of file names. The message names the problem."
         "401":
-          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CedarError"
+          description: The request carries no valid credentials
+        "406":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CedarError"
+          description: The request does not accept a JSON response
+        "429":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CedarError"
+          description: "The deployment limits each user's request rate, and the caller\
+            \ exceeded it"
         "500":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CedarError"
           description: The submission XML could not be generated
+        "503":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CedarError"
+          description: "The graph database, or another service the request depends\
+            \ on, is unavailable"
       security:
       - api_key: []
       summary: Validate an AIRR instance for NCBI
@@ -196,14 +511,91 @@ paths:
         "200":
           description: The LINCS validation report
         "400":
-          description: Invalid CEDAR request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CedarError"
+          description: The body is not JSON
         "401":
-          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CedarError"
+          description: The request carries no valid credentials
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CedarError"
+          description: "The LINCS validator refused the request with this status (upstreamServerError,\
+            \ with the validator's status in parameters.upstreamStatusCode)"
+        "406":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CedarError"
+          description: The request does not accept a JSON response
+        "409":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CedarError"
+          description: "The LINCS validator refused the request with this status (upstreamServerError,\
+            \ with the validator's status in parameters.upstreamStatusCode)"
+        "412":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CedarError"
+          description: "The LINCS validator refused the request with this status (upstreamServerError,\
+            \ with the validator's status in parameters.upstreamStatusCode)"
+        "415":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CedarError"
+          description: The body is not declared as JSON
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CedarError"
+          description: "The LINCS validator refused the request with this status (upstreamServerError,\
+            \ with the validator's status in parameters.upstreamStatusCode)"
+        "429":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CedarError"
+          description: "The deployment limits each user's request rate, and the caller\
+            \ exceeded it, or the LINCS validator answered 429 (upstreamServerError)"
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CedarError"
+          description: Internal server error
         "502":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CedarError"
           description: The LINCS validator refused the request or returned an unreadable
-            answer
+            answer (upstreamServerError)
         "503":
-          description: The LINCS validator could not be reached
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CedarError"
+          description: "The LINCS validator could not be reached, or answered 503\
+            \ (upstreamServerError), or the graph database or another service the\
+            \ request depends on is unavailable"
+        "504":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CedarError"
+          description: The LINCS validator answered 504 (upstreamServerError)
       security:
       - api_key: []
       summary: Validate an instance against the LINCS validator
@@ -220,11 +612,45 @@ paths:
         "200":
           description: The validation report
         "400":
-          description: The instance could not be read as a BioSample submission
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CedarError"
+          description: "The body is not JSON, or is not an object holding instance\
+            \ and, optionally, userFileNames, and no other field, or holds a userFileNames\
+            \ that cannot be read as a list of file names. The message names the problem."
         "401":
-          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CedarError"
+          description: The request carries no valid credentials
+        "406":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CedarError"
+          description: The request does not accept a JSON response
+        "429":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CedarError"
+          description: "The deployment limits each user's request rate, and the caller\
+            \ exceeded it"
         "500":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CedarError"
           description: The submission XML could not be generated
+        "503":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CedarError"
+          description: "The graph database, or another service the request depends\
+            \ on, is unavailable"
       security:
       - api_key: []
       summary: Validate an instance for NCBI BioSample

@@ -2,6 +2,8 @@ package org.metadatacenter.submission.resources;
 
 import com.codahale.metrics.annotation.Timed;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -47,6 +49,7 @@ import org.metadatacenter.submission.upload.flow.FileUploadStatus;
 import org.metadatacenter.submission.upload.flow.FlowData;
 import org.metadatacenter.submission.upload.flow.FlowUploadUtil;
 import org.metadatacenter.submission.upload.flow.SubmissionUploadManager;
+import org.metadatacenter.util.http.CedarError;
 import org.metadatacenter.util.http.CedarResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -65,6 +68,7 @@ import java.util.*;
 
 import static org.metadatacenter.constant.HttpConstants.*;
 import static org.metadatacenter.rest.assertion.GenericAssertions.LoggedIn;
+import static org.metadatacenter.submission.resources.SubmissionApiDocs.*;
 import static org.metadatacenter.util.json.JsonMapper.STRICT_MAPPER;
 
 @Path("/command")
@@ -88,7 +92,7 @@ public class ImmPortSubmissionServerResource extends CedarMicroserviceResource {
                                  HttpTimeouts workspaceTimeouts) {
     super(cedarConfig);
     this.workspaceTimeouts = workspaceTimeouts;
-    immPortSubmissionUrl = cedarConfig.getSubmissionConfig().getImmPort().getSubmissionEndpoint().getUrl();
+    immPortSubmissionUrl = immPortUtil.getSubmissionUrl();
     immPortUserName = cedarConfig.getSubmissionConfig().getImmPort().getAuthentication().getUser();
     this.immPortUtil = immPortUtil;
   }
@@ -162,12 +166,41 @@ public class ImmPortSubmissionServerResource extends CedarMicroserviceResource {
   @Consumes(MediaType.MULTIPART_FORM_DATA)
   @Operation(summary = "List the caller's ImmPort workspaces",
       description = "Ask ImmPort which workspaces the configured account can submit to, and return "
-          + "them. A submission names one of these.")
+          + "them. A submission names one of these. ImmPort's refusal of the request keeps ImmPort's status, "
+          + "and ImmPort may refuse with a status not listed below, which is relayed the same way. A refusal "
+          + "of the credentials this server holds, an ImmPort failure, a status that is neither 200 nor a "
+          + "refusal, or an answer that cannot be read is a 502, and an ImmPort that does not answer is a 503.")
   @ApiResponses({
       @ApiResponse(responseCode = "200", description = "The available ImmPort workspaces"),
-      @ApiResponse(responseCode = "401", description = "Unauthorized"),
-      @ApiResponse(responseCode = "502", description = "ImmPort returned an unusable response"),
-      @ApiResponse(responseCode = "503", description = "ImmPort or its authentication is unavailable")
+      @ApiResponse(responseCode = "400", description = IMMPORT_REFUSED,
+          content = @Content(schema = @Schema(implementation = CedarError.class))),
+      @ApiResponse(responseCode = "401", description = UNAUTHORIZED,
+          content = @Content(schema = @Schema(implementation = CedarError.class))),
+      @ApiResponse(responseCode = "404", description = IMMPORT_REFUSED,
+          content = @Content(schema = @Schema(implementation = CedarError.class))),
+      @ApiResponse(responseCode = "406", description = NOT_ACCEPTABLE,
+          content = @Content(schema = @Schema(implementation = CedarError.class))),
+      @ApiResponse(responseCode = "409", description = IMMPORT_REFUSED,
+          content = @Content(schema = @Schema(implementation = CedarError.class))),
+      @ApiResponse(responseCode = "412", description = IMMPORT_REFUSED,
+          content = @Content(schema = @Schema(implementation = CedarError.class))),
+      @ApiResponse(responseCode = "415", description = "The request declares a body type other than "
+          + "multipart/form-data",
+          content = @Content(schema = @Schema(implementation = CedarError.class))),
+      @ApiResponse(responseCode = "422", description = IMMPORT_REFUSED,
+          content = @Content(schema = @Schema(implementation = CedarError.class))),
+      @ApiResponse(responseCode = "429", description = RATE_LIMITED + ", or ImmPort is limiting this "
+          + "deployment's requests (upstreamServerError)",
+          content = @Content(schema = @Schema(implementation = CedarError.class))),
+      @ApiResponse(responseCode = "500", description = INTERNAL_ERROR,
+          content = @Content(schema = @Schema(implementation = CedarError.class))),
+      @ApiResponse(responseCode = "502", description = "ImmPort failed, refused the credentials this server "
+          + "holds, or returned an unusable response (upstreamServerError)",
+          content = @Content(schema = @Schema(implementation = CedarError.class))),
+      @ApiResponse(responseCode = "503", description = "ImmPort or its authentication is unavailable "
+          + "(upstreamServerError), or the graph database or another service the request depends on is "
+          + "unavailable",
+          content = @Content(schema = @Schema(implementation = CedarError.class)))
   })
   public Response immPortWorkspaces() throws CedarException {
     CedarRequestContext c = buildRequestContext();
@@ -217,9 +250,23 @@ public class ImmPortSubmissionServerResource extends CedarMicroserviceResource {
   @ApiResponses({
       @ApiResponse(responseCode = "200",
           description = "The chunk was stored; ImmPort's result if this completed the submission, an empty object if not"),
-      @ApiResponse(responseCode = "400", description = "Not a multipart upload, or no workspace was named"),
-      @ApiResponse(responseCode = "401", description = "Unauthorized"),
-      @ApiResponse(responseCode = "500", description = "ImmPort could not be reached, or no ImmPort token is configured")
+      @ApiResponse(responseCode = "400", description = "Not a multipart upload, no workspace was named, "
+          + "or the chunk is refused because an upload field is missing or malformed or the chunk disagrees with "
+          + "the upload it belongs to. The message names the problem.",
+          content = @Content(schema = @Schema(implementation = CedarError.class))),
+      @ApiResponse(responseCode = "401", description = UNAUTHORIZED,
+          content = @Content(schema = @Schema(implementation = CedarError.class))),
+      @ApiResponse(responseCode = "406", description = NOT_ACCEPTABLE,
+          content = @Content(schema = @Schema(implementation = CedarError.class))),
+      @ApiResponse(responseCode = "415", description = NOT_MULTIPART,
+          content = @Content(schema = @Schema(implementation = CedarError.class))),
+      @ApiResponse(responseCode = "429", description = RATE_LIMITED,
+          content = @Content(schema = @Schema(implementation = CedarError.class))),
+      @ApiResponse(responseCode = "500", description = IMMPORT_SUBMISSION_FAILED
+          + ", or the chunk could not be stored",
+          content = @Content(schema = @Schema(implementation = CedarError.class))),
+      @ApiResponse(responseCode = "503", description = UNAVAILABLE,
+          content = @Content(schema = @Schema(implementation = CedarError.class)))
   })
   public Response submitImmPort() throws CedarException {
     CedarRequestContext c = buildRequestContext();
@@ -228,7 +275,7 @@ public class ImmPortSubmissionServerResource extends CedarMicroserviceResource {
     Optional<String> immPortBearerToken = immPortUtil.getImmPortBearerToken();
     if (immPortBearerToken.isEmpty()) {
       logger.warn("No ImmPort token found");
-      return CedarResponse.status(CedarResponseStatus.INTERNAL_SERVER_ERROR).build(); // TODO CEDAR error response
+      return CedarResponse.internalServerError().message(IMMPORT_AUTHENTICATION_UNAVAILABLE).build();
     }
 
     CloseableHttpResponse response = null;
@@ -244,7 +291,7 @@ public class ImmPortSubmissionServerResource extends CedarMicroserviceResource {
           workspaceID = data.getAdditionalParameters().get("workspaceId");
         } else {
           logger.warn("No workspaceId parameter specified");
-          return CedarResponse.status(CedarResponseStatus.BAD_REQUEST).build();  // TODO CEDAR error response
+          return CedarResponse.badRequest().message("Missing field: workspaceId").build();
         }
         String submissionLocalFolderPath = FlowUploadUtil
             .getSubmissionLocalFolderPath(ImmPortConstants.IMMPORT_LOCAL_FOLDER_NAME, userId, data.getSubmissionId());
@@ -275,7 +322,7 @@ public class ImmPortSubmissionServerResource extends CedarMicroserviceResource {
           } else {
             logger.warn("Unexpected status code returned from " + immPortSubmissionUrl + ": " + response
                 .getCode());
-            return CedarResponse.status(CedarResponseStatus.INTERNAL_SERVER_ERROR).build(); // TODO CEDAR error response
+            return CedarResponse.internalServerError().message(immPortAnswered(statusCode)).build();
           }
         } else {
           return Response.ok(new HashMap()).build(); // We are still building the request
@@ -283,13 +330,11 @@ public class ImmPortSubmissionServerResource extends CedarMicroserviceResource {
         }
       } else {
         logger.warn("No form data supplied");
-        return CedarResponse.status(CedarResponseStatus.BAD_REQUEST).build(); // TODO CEDAR error response
+        return CedarResponse.badRequest().message(NOT_MULTIPART_UPLOAD).build();
       }
-    } catch (IOException | ParseException | SubmissionInstanceNotFoundException | IllegalAccessException |
-             JAXBException |
+    } catch (IOException | ParseException | SubmissionInstanceNotFoundException | JAXBException |
              DatatypeConfigurationException e) {
-      logger.warn("Exception submitting to ImmPort: " + e.getMessage());
-      return CedarResponse.status(CedarResponseStatus.INTERNAL_SERVER_ERROR).build(); // TODO CEDAR error response
+      return CedarResponse.internalServerError().message(CHUNK_NOT_SENT).exception(e).build();
     } finally {
       Closer.closeQuietly(response);
       Closer.closeQuietly(client);
@@ -307,9 +352,22 @@ public class ImmPortSubmissionServerResource extends CedarMicroserviceResource {
           + "route is what the workbench uses.")
   @ApiResponses({
       @ApiResponse(responseCode = "200", description = "ImmPort's submission result"),
-      @ApiResponse(responseCode = "400", description = "Not a multipart upload, or no workspaceId parameter"),
-      @ApiResponse(responseCode = "401", description = "Unauthorized"),
-      @ApiResponse(responseCode = "500", description = "ImmPort could not be reached, or no ImmPort token is configured")
+      @ApiResponse(responseCode = "400", description = "Not a multipart upload, a multipart body that cannot be "
+          + "parsed, or no workspaceId parameter. The message names the problem.",
+          content = @Content(schema = @Schema(implementation = CedarError.class))),
+      @ApiResponse(responseCode = "401", description = UNAUTHORIZED,
+          content = @Content(schema = @Schema(implementation = CedarError.class))),
+      @ApiResponse(responseCode = "406", description = NOT_ACCEPTABLE,
+          content = @Content(schema = @Schema(implementation = CedarError.class))),
+      @ApiResponse(responseCode = "415", description = NOT_MULTIPART,
+          content = @Content(schema = @Schema(implementation = CedarError.class))),
+      @ApiResponse(responseCode = "429", description = RATE_LIMITED,
+          content = @Content(schema = @Schema(implementation = CedarError.class))),
+      @ApiResponse(responseCode = "500", description = IMMPORT_SUBMISSION_FAILED
+          + ", or the request could not be read",
+          content = @Content(schema = @Schema(implementation = CedarError.class))),
+      @ApiResponse(responseCode = "503", description = UNAVAILABLE,
+          content = @Content(schema = @Schema(implementation = CedarError.class)))
   })
   public Response submitImmPortOld() throws CedarException {
     CedarRequestContext c = buildRequestContext();
@@ -318,13 +376,13 @@ public class ImmPortSubmissionServerResource extends CedarMicroserviceResource {
     String workspaceID = request.getParameter("workspaceId"); // TODO CEDAR constant for parameter
     if (workspaceID == null || workspaceID.isEmpty()) {
       logger.warn("No workspaceId parameter specified");
-      return CedarResponse.status(CedarResponseStatus.BAD_REQUEST).build();  // TODO CEDAR error response
+      return CedarResponse.badRequest().message("Missing parameter: workspaceId").build();
     }
 
     Optional<String> immPortBearerToken = immPortUtil.getImmPortBearerToken();
     if (immPortBearerToken.isEmpty()) {
       logger.warn("No ImmPort token found");
-      return CedarResponse.status(CedarResponseStatus.INTERNAL_SERVER_ERROR).build(); // TODO CEDAR error response
+      return CedarResponse.internalServerError().message(IMMPORT_AUTHENTICATION_UNAVAILABLE).build();
     }
 
     CloseableHttpResponse response = null;
@@ -357,19 +415,49 @@ public class ImmPortSubmissionServerResource extends CedarMicroserviceResource {
         } else {
           logger.warn("Unexpected status code returned from " + immPortSubmissionUrl + ": " + response
               .getCode());
-          return CedarResponse.status(CedarResponseStatus.INTERNAL_SERVER_ERROR).build(); // TODO CEDAR error response
+          return CedarResponse.internalServerError().message(immPortAnswered(statusCode)).build();
         }
       } else {
         logger.warn("No form data supplied");
-        return CedarResponse.status(CedarResponseStatus.BAD_REQUEST).build(); // TODO CEDAR error response
+        return CedarResponse.badRequest().message(NOT_MULTIPART_UPLOAD).build();
       }
     } catch (IOException | ParseException e) {
-      logger.warn("Exception submitting to ImmmPort " + immPortSubmissionUrl + ": " + e.getMessage());
-      return CedarResponse.status(CedarResponseStatus.INTERNAL_SERVER_ERROR).build(); // TODO CEDAR error response
+      if (e instanceof FileUploadException uploadFailure && isMalformedBody(uploadFailure)) {
+        return CedarResponse.badRequest().message(REQUEST_NOT_SENT).build();
+      }
+      return CedarResponse.internalServerError().message(REQUEST_NOT_SENT).exception(e).build();
     } finally {
       Closer.closeQuietly(response);
       Closer.closeQuietly(client);
     }
+  }
+
+  private static final String IMMPORT_REFUSED = "ImmPort refused the request with this status "
+      + "(upstreamServerError, with ImmPort's status in parameters.upstreamStatusCode)";
+  private static final String IMMPORT_SUBMISSION_FAILED = "No ImmPort token is available, or ImmPort could not "
+      + "be reached or refused the submission";
+
+  private static final String IMMPORT_AUTHENTICATION_UNAVAILABLE = "ImmPort authentication is unavailable";
+
+  private static final String NOT_MULTIPART_UPLOAD = "The request is not a multipart/form-data upload";
+
+  private static final String CHUNK_NOT_SENT = "The chunk could not be stored, or the submission could not be "
+      + "prepared or sent to ImmPort";
+
+  private static final String REQUEST_NOT_SENT = "The request could not be read, or the submission could not be "
+      + "sent to ImmPort";
+
+  private static String immPortAnswered(int statusCode) {
+    return "ImmPort answered the submission with status " + statusCode;
+  }
+
+  /**
+   * Whether the multipart parser refused the request body as malformed. The parser reports a failure to read
+   * the request, or to write a part to disk, as a plain FileUploadException caused by that IOException. Any
+   * other FileUploadException it throws reports a malformed body.
+   */
+  static boolean isMalformedBody(FileUploadException e) {
+    return e.getClass() != FileUploadException.class || !(e.getCause() instanceof IOException);
   }
 
   private HttpEntity getMultipartContentFromRequest(String workspaceID) throws FileUploadException, IOException {
